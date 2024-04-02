@@ -1,0 +1,19 @@
+name: ESLint
+on:
+  workflow_call:
+  pull_request:
+    branches:
+      - main
+      - staging
+jobs:
+  build:
+    name: ESLint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install modules
+        run: npm ci
+      - name: Run Prettier
+        run: npm run format
+      - name: Run ESLint
+        run: npm run lint
