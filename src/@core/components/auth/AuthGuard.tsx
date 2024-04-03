@@ -22,10 +22,6 @@ const AuthGuard = (props: AuthGuardProps) => {
 
   useEffect(
     () => {
-      if (!router.isReady) {
-        return
-      }
-
       if (auth.user === null && !getCookie(authConfig.storageUserDataKeyName)) {
         if (router.asPath !== '/') {
           router.replace({
