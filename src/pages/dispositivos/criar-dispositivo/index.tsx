@@ -70,6 +70,7 @@ const CreateDevice = () => {
     clearErrors,
     reset,
     setValue,
+    resetField,
     formState: { errors }
   } = useForm({
     defaultValues: {
@@ -87,19 +88,17 @@ const CreateDevice = () => {
 
     setTabValue(newValue)
     setValue('type', newValue)
+    setValue('operationType', 'NONE')
 
     switch (newValue) {
       case 'CENTRAL':
         setValue('moduleType', 'INOUT')
-        setValue('operationType', 'NONE')
         break
       case 'KEYPAD':
         setValue('moduleType', 'INPUT')
-        setValue('operationType', 'NONE')
         break
       case 'MODULE':
         setValue('moduleType', 'INPUT')
-        setValue('operationType', 'DIMMER')
         break
     }
 
@@ -108,10 +107,19 @@ const CreateDevice = () => {
 
   const handleChangeModuleType = (event: SyntheticEvent) => {
     const { value } = event.target as HTMLInputElement
-
-    clearErrors()
     setValue('moduleType', value)
-    setModuleTypeInput(value === 'INPUT' ? true : false)
+
+    if (value === 'INPUT') {
+      setValue('operationType', 'NONE')
+      resetField('outputTotal')
+      setModuleTypeInput(true)
+
+      return
+    }
+
+    resetField('inputTotal')
+    setValue('operationType', 'DIMMER')
+    setModuleTypeInput(false)
   }
 
   const onSubmit = (data: FormData) => {

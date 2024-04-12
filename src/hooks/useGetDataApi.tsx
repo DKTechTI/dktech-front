@@ -11,7 +11,7 @@ interface GetDataApiProps {
 
 const useGetDataApi = <T,>({ url, params, callInit = true }: GetDataApiProps) => {
   const [data, setData] = useState<T | null>(null)
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading] = useState(false)
   const [error, setError] = useState<AxiosError | null>(null)
   const [refresh, setRefresh] = useState(false)
 
@@ -21,6 +21,8 @@ const useGetDataApi = <T,>({ url, params, callInit = true }: GetDataApiProps) =>
     if (callInit) {
       if (JSON.stringify(paramsRef.current) !== JSON.stringify(params)) {
         paramsRef.current = params
+
+        setLoading(true)
 
         api
           .get(url, { params: paramsRef.current })
@@ -38,6 +40,8 @@ const useGetDataApi = <T,>({ url, params, callInit = true }: GetDataApiProps) =>
 
   useEffect(() => {
     if (callInit) {
+      setLoading(true)
+
       api
         .get(url, { params: paramsRef.current })
         .then(response => {

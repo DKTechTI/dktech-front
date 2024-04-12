@@ -46,7 +46,7 @@ const CreateProject = ({ handleClickClose, handleToggleOpen, open, setRefresh, r
 
   const { user } = useAuth()
 
-  const { data } = useGetDataApi<ClientDataProps>({ url: `/clients/by-reseller/${user?.id}` })
+  const { data } = useGetDataApi<ClientDataProps>({ url: `/clients/by-reseller/${user?.id}`, callInit: open })
 
   const [createdProject, setCreatedProject] = useState<boolean>(false)
   const [projectId, setProjectId] = useState<string>('')

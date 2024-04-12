@@ -3,8 +3,8 @@ import { useAuth } from 'src/hooks/useAuth'
 import useGetDataApi from 'src/hooks/useGetDataApi'
 import { ResaleProps } from 'src/types/resales'
 import { UserProps } from 'src/types/users'
-import MyAccountContent from 'src/views/pages/myAccount'
-import TabsAccount from 'src/views/pages/myAccount/tabsAccount'
+import MyAccountContent from 'src/views/pages/minha-conta'
+import TabsAccount from 'src/views/pages/minha-conta/tabsAccount'
 
 interface UseGetDataApiProps {
   data: UserProps | ResaleProps

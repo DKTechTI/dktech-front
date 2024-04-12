@@ -3,13 +3,22 @@ import { useState, MouseEvent } from 'react'
 import { useRouter } from 'next/router'
 
 import { Button, IconButton, Menu, MenuItem, useMediaQuery, Box } from '@mui/material'
+
 import DialogAlert from 'src/@core/components/dialogs/dialog-alert'
 import Icon from 'src/@core/components/icon'
+
+import { api } from 'src/services/api'
+
+import useClipBoard from 'src/hooks/useClipboard'
+
+import toast from 'react-hot-toast'
 
 const RowOptions = ({ id, handleConfirmDelete }: { id: string; handleConfirmDelete: (id: string) => void }) => {
   const router = useRouter()
 
   const matches = useMediaQuery('(min-width:600px)')
+
+  const { copyToClipboard } = useClipBoard()
 
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
   const [open, setOpen] = useState(false)
@@ -24,8 +33,21 @@ const RowOptions = ({ id, handleConfirmDelete }: { id: string; handleConfirmDele
     setAnchorEl(null)
   }
 
-  const handleViewResaleClick = () => {
+  const handleViewResaleClick = (id: string) => {
     router.push(`/revendas/${id}`)
+  }
+
+  const handleFirstAccessClick = async (id: string) => {
+    api
+      .get(`/users/first-access/${id}`)
+      .then(response => {
+        if (response.status === 200) {
+          copyToClipboard(response.data, 'Link copiado para a área de transferência')
+        }
+      })
+      .catch(() => {
+        toast.error('Erro ao gerar link de primeiro acesso, tente novamente mais tarde')
+      })
   }
 
   const handleDeleteResaleClick = () => {
@@ -47,13 +69,37 @@ const RowOptions = ({ id, handleConfirmDelete }: { id: string; handleConfirmDele
             size='small'
             variant='outlined'
             color='primary'
-            onClick={handleViewResaleClick}
+            onClick={() => handleViewResaleClick(id)}
           >
-            Ver
+            Ver Revenda
           </Button>
-          <Button size='small' variant='outlined' color='primary' onClick={handleDeleteResaleClick}>
-            Deletar
-          </Button>
+          <IconButton size='small' onClick={handleRowOptionsClick}>
+            <Icon icon='tabler:dots-vertical' />
+          </IconButton>
+          <Menu
+            keepMounted
+            anchorEl={anchorEl}
+            open={rowOptionsOpen}
+            onClose={handleRowOptionsClose}
+            anchorOrigin={{
+              vertical: 'bottom',
+              horizontal: 'right'
+            }}
+            transformOrigin={{
+              vertical: 'top',
+              horizontal: 'right'
+            }}
+            PaperProps={{ style: { minWidth: '8rem' } }}
+          >
+            <MenuItem sx={{ '& svg': { mr: 2 } }} onClick={() => handleFirstAccessClick(id)}>
+              <Icon icon='tabler:link' fontSize={20} />
+              Primeiro Acesso
+            </MenuItem>
+            <MenuItem sx={{ '& svg': { mr: 2 } }} onClick={handleDeleteResaleClick}>
+              <Icon icon='tabler:trash' fontSize={20} />
+              Deletar
+            </MenuItem>
+          </Menu>
         </Box>
       ) : (
         <>
@@ -75,9 +121,13 @@ const RowOptions = ({ id, handleConfirmDelete }: { id: string; handleConfirmDele
             }}
             PaperProps={{ style: { minWidth: '8rem' } }}
           >
-            <MenuItem sx={{ '& svg': { mr: 2 } }} onClick={handleViewResaleClick}>
+            <MenuItem sx={{ '& svg': { mr: 2 } }} onClick={() => handleViewResaleClick(id)}>
               <Icon icon='tabler:eye' fontSize={20} />
-              Ver
+              Ver Revenda
+            </MenuItem>
+            <MenuItem sx={{ '& svg': { mr: 2 } }} onClick={() => handleFirstAccessClick(id)}>
+              <Icon icon='tabler:link' fontSize={20} />
+              Primeiro Acesso
             </MenuItem>
             <MenuItem sx={{ '& svg': { mr: 2 } }} onClick={handleDeleteResaleClick}>
               <Icon icon='tabler:trash' fontSize={20} />

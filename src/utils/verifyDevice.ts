@@ -7,7 +7,7 @@ const verifyDeviceType = (deviceType: string) => {
     case 'KEYPAD':
       return 'keypad'
     default:
-      return 'Tipo não encontrado'
+      return deviceType
   }
 }
 
@@ -20,7 +20,7 @@ const verifyModuleType = (moduleType: string) => {
     case 'INOUT':
       return 'Entrada/Saída'
     default:
-      return 'Tipo não encontrado'
+      return moduleType
   }
 }
 
@@ -31,7 +31,7 @@ const verifyDeviceStatus = (status: string) => {
     case 'INACTIVE':
       return 'Inativo'
     default:
-      return 'Status não encontrado'
+      return status
   }
 }
 
