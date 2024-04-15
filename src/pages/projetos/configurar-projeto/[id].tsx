@@ -1,3 +1,4 @@
+import { ActionsDnDProvider } from 'src/context/ActionsDnDContext'
 import { DeviceKeysProvider } from 'src/context/DeviceKeysContext'
 import { ProjectProvider } from 'src/context/ProjectContext'
 import { ProjectMenuProvider } from 'src/context/ProjectMenuContext'
@@ -8,7 +9,9 @@ const ProjectConfig = () => {
     <ProjectProvider>
       <ProjectMenuProvider>
         <DeviceKeysProvider>
-          <ProjectConfigContent />
+          <ActionsDnDProvider>
+            <ProjectConfigContent />
+          </ActionsDnDProvider>
         </DeviceKeysProvider>
       </ProjectMenuProvider>
     </ProjectProvider>

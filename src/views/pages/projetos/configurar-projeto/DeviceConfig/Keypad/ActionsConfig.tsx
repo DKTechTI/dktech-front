@@ -8,30 +8,6 @@ import CustomTextField from 'src/@core/components/mui/text-field'
 import ActionsList from './ActionsList'
 import ActionAddDialog from './ActionsAddDialog'
 
-const acoes = [
-  {
-    id: 1,
-    name: 'luz mesa jantar',
-    order: 1,
-    type: 'dimmer',
-    action: '70'
-  },
-  {
-    id: 2,
-    name: 'delay',
-    order: 2,
-    type: null,
-    action: '0.2'
-  },
-  {
-    id: 3,
-    name: 'luz corredor',
-    order: 3,
-    type: 'rele',
-    action: 'on'
-  }
-]
-
 // const schemaScene = yup.object().shape({
 //   name: yup.string().required('Nome da tecla obrigatório'),
 //   eventValue: yup.string().required('Tipo da tecla obrigatório'),
@@ -89,7 +65,7 @@ const ActionsConfig = () => {
               />
             </Grid>
             <Grid item xs={12}>
-              <ActionsList data={acoes} />
+              <ActionsList />
             </Grid>
           </Grid>
         </CardContent>
