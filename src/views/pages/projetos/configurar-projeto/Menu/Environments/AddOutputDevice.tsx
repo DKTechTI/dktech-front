@@ -18,14 +18,15 @@ import {
 import CustomTextField from 'src/@core/components/mui/text-field'
 
 import useGetDataApi from 'src/hooks/useGetDataApi'
+import { useProjectMenu } from 'src/hooks/useProjectMenu'
+
+import { checkInitialValue, checkPortName, checkSequenceIndex } from 'src/utils/project'
 
 import toast from 'react-hot-toast'
 
 import * as yup from 'yup'
 import { useForm, Controller } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
-import { useProject } from 'src/hooks/useProject'
-import { checkInitialValue, checkPortName, checkSequenceIndex } from 'src/utils/project'
 
 import { api } from 'src/services/api'
 
@@ -75,7 +76,7 @@ const AddOutputDevice = ({
 
   const { id } = router.query
 
-  const { handleAvaliableOutputPorts } = useProject()
+  const { handleAvaliableOutputPorts } = useProjectMenu()
 
   const [ports, setPorts] = useState<any[]>([])
 
@@ -310,7 +311,6 @@ const AddOutputDevice = ({
             <Grid item xs={12} sm={6}>
               <Controller
                 name='deviceId'
-
                 control={control}
                 render={({ field: { value, onChange, onBlur } }) => (
                   <CustomTextField
@@ -348,7 +348,6 @@ const AddOutputDevice = ({
                   <CustomTextField
                     fullWidth
                     label='Nome do Dispositivo de saída'
-
                     required
                     value={value || ''}
                     onBlur={onBlur}

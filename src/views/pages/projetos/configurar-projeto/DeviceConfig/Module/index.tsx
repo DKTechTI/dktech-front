@@ -20,7 +20,7 @@ import * as yup from 'yup'
 import { useForm, Controller } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
 
-import { useProject } from 'src/hooks/useProject'
+import { useProjectMenu } from 'src/hooks/useProjectMenu'
 
 import { checkPortName, checkSequenceIndex } from 'src/utils/project'
 
@@ -77,7 +77,8 @@ interface ModuleProps {
 const Module = ({ deviceData, refresh, setRefresh }: ModuleProps) => {
   const theme = useTheme()
 
-  const { handleAvaliableInputPorts, handleAvaliableOutputPorts, setRefreshMenu, refreshMenu } = useProject()
+  const { handleAvaliableInputPorts, handleAvaliableOutputPorts, setRefreshMenu, refreshMenu } = useProjectMenu()
+
   const [selected, setSelected] = useState<number>(1)
 
   const {

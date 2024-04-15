@@ -6,7 +6,7 @@ import * as yup from 'yup'
 import { useForm, Controller } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
 
-import { useProject } from 'src/hooks/useProject'
+import { useProjectMenu } from 'src/hooks/useProjectMenu'
 
 import Keys from './Keys'
 
@@ -40,7 +40,7 @@ interface KeypadProps {
 }
 
 const Keypad = ({ deviceData, refresh, setRefresh }: KeypadProps) => {
-  const { handleAvaliableInputPorts, handleAvaliableOutputPorts, setRefreshMenu, refreshMenu } = useProject()
+  const { handleAvaliableInputPorts, handleAvaliableOutputPorts, setRefreshMenu, refreshMenu } = useProjectMenu()
 
   const {
     control,

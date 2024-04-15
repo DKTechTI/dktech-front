@@ -1,13 +1,16 @@
 import { DeviceKeysProvider } from 'src/context/DeviceKeysContext'
 import { ProjectProvider } from 'src/context/ProjectContext'
+import { ProjectMenuProvider } from 'src/context/ProjectMenuContext'
 import ProjectConfigContent from 'src/views/pages/projetos/configurar-projeto'
 
 const ProjectConfig = () => {
   return (
     <ProjectProvider>
-      <DeviceKeysProvider>
-        <ProjectConfigContent />
-      </DeviceKeysProvider>
+      <ProjectMenuProvider>
+        <DeviceKeysProvider>
+          <ProjectConfigContent />
+        </DeviceKeysProvider>
+      </ProjectMenuProvider>
     </ProjectProvider>
   )
 }

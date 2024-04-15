@@ -7,10 +7,10 @@ import Devices from './Devices'
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 import ChevronRightIcon from '@mui/icons-material/ChevronRight'
 
-import { useProject } from 'src/hooks/useProject'
+import { useProjectMenu } from 'src/hooks/useProjectMenu'
 
 export default function Menu() {
-  const { menu } = useProject()
+  const { menu } = useProjectMenu()
 
   const defaultExpandedValues = menu
     ? menu.devices

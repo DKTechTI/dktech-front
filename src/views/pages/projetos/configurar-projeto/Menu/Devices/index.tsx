@@ -3,6 +3,12 @@ import { useState } from 'react'
 import { Typography, Box } from '@mui/material'
 import { TreeItem } from '@mui/x-tree-view/TreeItem'
 
+import { useProjectMenu } from 'src/hooks/useProjectMenu'
+import { useProject } from 'src/hooks/useProject'
+
+import { checkPortName } from 'src/utils/project'
+import { verifyDeviceType } from 'src/utils/verifyDevice'
+
 import AddCircleIcon from '@mui/icons-material/AddCircle'
 import EditNoteIcon from '@mui/icons-material/EditNote'
 import CloseIcon from '@mui/icons-material/Close'
@@ -10,20 +16,17 @@ import HighlightOffIcon from '@mui/icons-material/HighlightOff'
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline'
 import ExitToAppIcon from '@mui/icons-material/ExitToApp'
 
-import { checkPortName } from 'src/utils/project'
-import { verifyDeviceType } from 'src/utils/verifyDevice'
-
-import DeleteDevice from './Delete'
-import { useProject } from 'src/hooks/useProject'
 import AddCentral from './AddCentral'
 import EditCentral from './EditCentral'
+import DeleteDevice from './Delete'
 
 interface DevicesProps {
   devices: any
 }
 
 const Devices = ({ devices }: DevicesProps) => {
-  const { refreshMenu, setRefreshMenu, setProjectDeviceId } = useProject()
+  const { setProjectDeviceId } = useProject()
+  const { refreshMenu, setRefreshMenu } = useProjectMenu()
 
   const [showAddCentralDialog, setShowAddCentralDialog] = useState<boolean>(false)
   const [showEditCentralDialog, setShowEditCentralDialog] = useState<boolean>(false)
@@ -177,7 +180,9 @@ const Devices = ({ devices }: DevicesProps) => {
                               key={'input' + input.projectDeviceId + input.deviceName}
                               nodeId={'input' + input.projectDeviceId + input.deviceName}
                               label={
-                                <Box sx={{ display: 'flex', alignItems: 'end', justifyContent: 'space-between', gap: 2 }}>
+                                <Box
+                                  sx={{ display: 'flex', alignItems: 'end', justifyContent: 'space-between', gap: 2 }}
+                                >
                                   <Box sx={{ display: 'flex', alignItems: 'end', gap: 2 }}>
                                     <Typography
                                       component={'span'}
@@ -256,7 +261,9 @@ const Devices = ({ devices }: DevicesProps) => {
                               key={'output' + output.projectDeviceId + output.deviceName}
                               nodeId={'output' + output.projectDeviceId + output.deviceName}
                               label={
-                                <Box sx={{ display: 'flex', alignItems: 'end', justifyContent: 'space-between', gap: 2 }}>
+                                <Box
+                                  sx={{ display: 'flex', alignItems: 'end', justifyContent: 'space-between', gap: 2 }}
+                                >
                                   <Box sx={{ display: 'flex', alignItems: 'end', gap: 2 }}>
                                     <Typography
                                       component={'span'}

@@ -9,11 +9,11 @@ import EditNoteIcon from '@mui/icons-material/EditNote'
 
 import ExitToAppIcon from '@mui/icons-material/ExitToApp'
 
+import { useProjectMenu } from 'src/hooks/useProjectMenu'
+
 import CreateEnvironment from './Create'
 import DeleteEnvironment from './Delete'
 import AddInputDevice from './AddInputDevice'
-
-import { useProject } from 'src/hooks/useProject'
 
 import AddOutputDevice from './AddOutputDevice'
 import EditEnvironment from './Edit'
@@ -23,7 +23,7 @@ interface EnvironmentsProps {
 }
 
 const Environments = ({ environments }: EnvironmentsProps) => {
-  const { refreshMenu, setRefreshMenu } = useProject()
+  const { refreshMenu, setRefreshMenu } = useProjectMenu()
 
   const [showDialog, setShowDialog] = useState<boolean>(false)
   const [showEditDialog, setShowEditDialog] = useState<boolean>(false)
