@@ -1,5 +1,7 @@
 import { Dispatch, Fragment, SetStateAction } from 'react'
 
+import { useProjectMenu } from 'src/hooks/useProjectMenu'
+
 import Button from '@mui/material/Button'
 import Dialog from '@mui/material/Dialog'
 import DialogTitle from '@mui/material/DialogTitle'
@@ -10,7 +12,6 @@ import DialogContentText from '@mui/material/DialogContentText'
 import toast from 'react-hot-toast'
 
 import { api } from 'src/services/api'
-import { useProject } from 'src/hooks/useProject'
 
 interface DeleteEnvironmentProps {
   id: string
@@ -21,7 +22,7 @@ interface DeleteEnvironmentProps {
 }
 
 const DeleteEnvironment = ({ id, open, setOpen, description, question }: DeleteEnvironmentProps) => {
-  const { setRefreshMenu, refreshMenu } = useProject()
+  const { setRefreshMenu, refreshMenu } = useProjectMenu()
 
   const handleConfirmDelete = (environmentId: string) => {
     api

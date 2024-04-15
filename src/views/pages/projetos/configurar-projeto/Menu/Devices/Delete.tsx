@@ -11,7 +11,7 @@ import toast from 'react-hot-toast'
 
 import { api } from 'src/services/api'
 
-import { useProject } from 'src/hooks/useProject'
+import { useProjectMenu } from 'src/hooks/useProjectMenu'
 
 interface DeleteDeviceProps {
   id: string
@@ -22,7 +22,7 @@ interface DeleteDeviceProps {
 }
 
 const DeleteDevice = ({ id, open, question, setOpen, description }: DeleteDeviceProps) => {
-  const { setRefreshMenu, refreshMenu } = useProject()
+  const { setRefreshMenu, refreshMenu } = useProjectMenu()
 
   const handleConfirmDelete = (deviceId: string) => {
     api

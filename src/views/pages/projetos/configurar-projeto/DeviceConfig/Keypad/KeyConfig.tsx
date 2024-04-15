@@ -20,11 +20,12 @@ import { useForm, Controller } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
 
 import useGetDataApi from 'src/hooks/useGetDataApi'
+import { useDeviceKeys } from 'src/hooks/useDeviceKeys'
+import { useProjectMenu } from 'src/hooks/useProjectMenu'
 
 import { api } from 'src/services/api'
+
 import ScenesConfig from './ScenesConfig'
-import { useDeviceKeys } from 'src/hooks/useDeviceKeys'
-import { useProject } from 'src/hooks/useProject'
 
 const schemaKey = yup.object().shape({
   name: yup.string().required('Nome da tecla obrigatório'),
@@ -51,7 +52,7 @@ const KeyConfig = () => {
   const { id } = router.query
 
   const { refreshDeviceKeys, setRefreshDeviceKeys, keyId, environmentId } = useDeviceKeys()
-  const { refreshMenu, setRefreshMenu } = useProject()
+  const { refreshMenu, setRefreshMenu } = useProjectMenu()
 
   const { data: keyData, loading } = useGetDataApi<any>({
     url: `/projectDeviceKeys/${keyId}`,
