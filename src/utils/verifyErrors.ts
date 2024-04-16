@@ -32,4 +32,8 @@ const verifyChangePasswordAdminErrors = (error: number, message: string) => {
   }
 }
 
-export { verifyChangePasswordErrors, verifyChangePasswordAdminErrors }
+const verifyObjectErrorsIsEmpty = (errors: any) => {
+  return Object.keys(errors).length === 0
+}
+
+export { verifyChangePasswordErrors, verifyChangePasswordAdminErrors, verifyObjectErrorsIsEmpty }

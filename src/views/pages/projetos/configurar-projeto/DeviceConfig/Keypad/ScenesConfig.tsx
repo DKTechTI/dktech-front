@@ -23,6 +23,7 @@ import { useForm, Controller } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
 
 import { checkEventTypeValue, checkSceneTypeValue, formatSceneObject } from 'src/utils/scene'
+import { useActionsDnD } from 'src/hooks/useActionsDnD'
 
 // import useGetDataApi from 'src/hooks/useGetDataApi'
 
@@ -63,6 +64,8 @@ const ScenesConfig = ({ keyId }: ScenesConfigProps) => {
   const router = useRouter()
 
   const { id } = router.query
+
+  const { setProjectSceneId } = useActionsDnD()
 
   const {
     control: controlScene,
@@ -197,6 +200,7 @@ const ScenesConfig = ({ keyId }: ScenesConfigProps) => {
     if (sceneData?.data) {
       const sceneTypeValue = checkSceneTypeValue(sceneData?.data?.sceneType)
       handleSwitchSceneType(sceneTypeValue)
+      setProjectSceneId(sceneData.data?._id)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
