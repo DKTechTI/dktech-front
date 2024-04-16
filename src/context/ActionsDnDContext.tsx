@@ -12,6 +12,8 @@ type actionsDnDValuesType = {
   loadingActions: boolean
   refreshActions: boolean
   setRefreshActions: (value: boolean) => void
+  projectSceneId: null | string
+  setProjectSceneId: (value: string) => void
   draggedItem: null | any
   beginDrag: (value: any) => void
   endDrag: () => void
@@ -23,6 +25,8 @@ const defaultProvider: actionsDnDValuesType = {
   loadingActions: true,
   refreshActions: false,
   setRefreshActions: () => Boolean,
+  projectSceneId: null,
+  setProjectSceneId: () => null,
   draggedItem: null,
   beginDrag: () => null,
   endDrag: () => null
@@ -60,6 +64,7 @@ const acoes = [
 
 const ActionsDnDProvider = ({ children }: Props) => {
   const [actions, setActions] = useState<any>(acoes)
+  const [projectSceneId, setProjectSceneId] = useState<string | null>(null)
   const [draggedItem, setDraggedItem] = useState<DraggableItem | null>(null)
 
   const beginDrag = (item: DraggableItem) => {
@@ -86,6 +91,8 @@ const ActionsDnDProvider = ({ children }: Props) => {
         loadingActions: false,
         refreshActions: false,
         setRefreshActions: () => Boolean,
+        projectSceneId,
+        setProjectSceneId,
         draggedItem,
         beginDrag,
         endDrag
