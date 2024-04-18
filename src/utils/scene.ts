@@ -19,6 +19,8 @@ const checkEventTypeValue = (eventType: string, value: number) => {
 
     if (eventType === 'TIME_PRESSED' && pressTimeObj[value]) return pressTimeObj[value]
   }
+
+  return 'repeat'
 }
 
 const checkSceneTypeValue = (sceneType: string) => {
@@ -33,48 +35,78 @@ const checkSceneTypeValue = (sceneType: string) => {
       return ''
   }
 }
-
 const formatSceneObject = (scene: any) => {
-  if (scene) {
-    if (scene?.eventType === 'PULSE') {
-      return {
-        id: scene.id ?? null,
-        deviceId: scene.deviceId,
-        projectId: scene.projectId,
-        projectDeviceKeyId: scene.projectDeviceKeyId,
-        name: scene.name,
-        eventType: scene.eventType,
-        sceneType: scene.sceneType,
-        pulseQuantity: scene.pulseQuantity,
-        isRepeatEvent: scene.isRepeatEvent
-      }
-    }
+  if (!scene) return null
 
-    if (scene?.eventType === 'TIME_PRESSED') {
-      return {
-        id: scene.id ?? null,
-        deviceId: scene.deviceId,
-        projectId: scene.projectId,
-        projectDeviceKeyId: scene.projectDeviceKeyId,
-        name: scene.name,
-        eventType: scene.eventType,
-        sceneType: scene.sceneType,
-        timePressed: scene.timePressed,
-        isRepeatEvent: scene.isRepeatEvent
-      }
-    }
+  const sceneObj: any = {
+    deviceId: scene.deviceId,
+    projectId: scene.projectId,
+    projectDeviceKeyId: scene.projectDeviceKeyId,
+    name: scene.name,
+    eventType: scene.eventType,
+    sceneType: scene.sceneType,
+    isRepeatEvent: scene.isRepeatEvent
+  }
 
+  if (scene.sceneId) {
+    sceneObj.sceneId = scene.sceneId
+  }
+
+  if (scene.eventType === 'PULSE') {
     return {
-      id: scene.id ?? null,
-      deviceId: scene.deviceId,
-      projectId: scene.projectId,
-      projectDeviceKeyId: scene.projectDeviceKeyId,
-      name: scene.name,
-      eventType: scene.eventType,
-      sceneType: scene.sceneType,
-      isRepeatEvent: scene.isRepeatEvent
+      ...sceneObj,
+      pulseQuantity: scene.pulseQuantity
     }
   }
+
+  if (scene.eventType === 'TIME_PRESSED') {
+    return {
+      ...sceneObj,
+      timePressed: scene.timePressed
+    }
+  }
+
+  return sceneObj
 }
 
-export { checkEventTypeValue, checkSceneTypeValue, formatSceneObject }
+const formatEventValueForRequest = (eventValue: any) => {
+  const eventValueObj: { [key: string]: number | string } = {
+    onePulse: 1,
+    twoPulse: 2,
+    threePulse: 3,
+    fourPulse: 4,
+    fivePulse: 5,
+    twoTimePressed: 2,
+    threeTimePressed: 3,
+    fourTimePressed: 4,
+    fiveTimePressed: 5,
+    repeat: ''
+  }
+
+  if (eventValue && eventValueObj[eventValue]) return eventValueObj[eventValue]
+}
+
+const formatEventTypeForRequest = (eventType: string) => {
+  const eventTypeObj: { [key: string]: string } = {
+    onePulse: 'PULSE',
+    twoPulse: 'PULSE',
+    threePulse: 'PULSE',
+    fourPulse: 'PULSE',
+    fivePulse: 'PULSE',
+    twoTimePressed: 'TIME_PRESSED',
+    threeTimePressed: 'TIME_PRESSED',
+    fourTimePressed: 'TIME_PRESSED',
+    fiveTimePressed: 'TIME_PRESSED',
+    repeat: 'REPEAT'
+  }
+
+  if (eventType && eventTypeObj[eventType]) return eventTypeObj[eventType]
+}
+
+export {
+  checkEventTypeValue,
+  checkSceneTypeValue,
+  formatSceneObject,
+  formatEventValueForRequest,
+  formatEventTypeForRequest
+}
