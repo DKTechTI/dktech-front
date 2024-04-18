@@ -8,6 +8,8 @@ type deviceKeysValuesType = {
   setKeyId: (value: any) => void
   projectDeviceId: null | any
   setProjectDeviceId: (value: any) => void
+  deviceId: null | any
+  setDeviceId: (value: any) => void
   environmentId: null | any
   setEnvironmentId: (value: any) => void
   loadingDeviceKeys: boolean
@@ -21,6 +23,8 @@ const defaultDeviceKeysProvider: deviceKeysValuesType = {
   setKeyId: () => null,
   projectDeviceId: null,
   setProjectDeviceId: () => null,
+  deviceId: null,
+  setDeviceId: () => null,
   environmentId: null,
   setEnvironmentId: () => null,
   loadingDeviceKeys: true,
@@ -41,6 +45,7 @@ const DeviceKeysProvider = ({ children }: Props) => {
 
   const [keyId, setKeyId] = useState('')
   const [projectDeviceId, setProjectDeviceId] = useState('')
+  const [deviceId, setDeviceId] = useState('')
   const [environmentId, setEnvironmentId] = useState('')
 
   const {
@@ -65,6 +70,8 @@ const DeviceKeysProvider = ({ children }: Props) => {
         setKeyId,
         projectDeviceId,
         setProjectDeviceId,
+        deviceId,
+        setDeviceId,
         environmentId,
         setEnvironmentId,
         loadingDeviceKeys,

@@ -15,6 +15,8 @@ import { checkPortName, checkSequenceIndex } from 'src/utils/project'
 import toast from 'react-hot-toast'
 
 import { api } from 'src/services/api'
+import { useEffect } from 'react'
+import { useDeviceKeys } from 'src/hooks/useDeviceKeys'
 
 const schema = yup.object().shape({
   name: yup.string().required('Nome obrigatório'),
@@ -40,6 +42,7 @@ interface KeypadProps {
 }
 
 const Keypad = ({ deviceData, refresh, setRefresh }: KeypadProps) => {
+  const { setDeviceId } = useDeviceKeys()
   const { handleAvaliableInputPorts, handleAvaliableOutputPorts, setRefreshMenu, refreshMenu } = useProjectMenu()
 
   const {
@@ -120,6 +123,10 @@ const Keypad = ({ deviceData, refresh, setRefresh }: KeypadProps) => {
         toast.error('Erro ao alterar dados, tente novamente mais tarde')
       })
   }
+
+  useEffect(() => {
+    if (deviceData) setDeviceId(deviceData?.deviceId)
+  }, [deviceData, setDeviceId])
 
   return (
     <Box>
