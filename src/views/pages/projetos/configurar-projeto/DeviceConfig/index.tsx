@@ -19,7 +19,7 @@ const DeviceConfig = ({ projectDeviceId }: DeviceConfigProps) => {
   if (loading) {
     return (
       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
-        <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
+        <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, padding: '6rem 1rem' }}>
           <CircularProgress />
           <Typography variant='h4'>Carregando...</Typography>
         </Box>

@@ -19,6 +19,7 @@ import ExitToAppIcon from '@mui/icons-material/ExitToApp'
 import AddCentral from './AddCentral'
 import EditCentral from './EditCentral'
 import DeleteDevice from './Delete'
+import { useDeviceKeys } from 'src/hooks/useDeviceKeys'
 
 interface DevicesProps {
   devices: any
@@ -26,6 +27,8 @@ interface DevicesProps {
 
 const Devices = ({ devices }: DevicesProps) => {
   const { setProjectDeviceId } = useProject()
+  const { setKeyId } = useDeviceKeys()
+
   const { refreshMenu, setRefreshMenu } = useProjectMenu()
 
   const [showAddCentralDialog, setShowAddCentralDialog] = useState<boolean>(false)
@@ -187,7 +190,10 @@ const Devices = ({ devices }: DevicesProps) => {
                                     <Typography
                                       component={'span'}
                                       variant={'h6'}
-                                      onClick={() => setProjectDeviceId(input.projectDeviceId)}
+                                      onClick={() => {
+                                        setProjectDeviceId(input.projectDeviceId)
+                                        setKeyId(null)
+                                      }}
                                     >
                                       {verifyDeviceType(input.deviceType)} {input.deviceName}
                                     </Typography>
@@ -268,7 +274,10 @@ const Devices = ({ devices }: DevicesProps) => {
                                     <Typography
                                       component={'span'}
                                       variant={'h6'}
-                                      onClick={() => setProjectDeviceId(output.projectDeviceId)}
+                                      onClick={() => {
+                                        setProjectDeviceId(output.projectDeviceId)
+                                        setKeyId(null)
+                                      }}
                                     >
                                       {verifyDeviceType(output.deviceType)} {output.deviceName}
                                     </Typography>

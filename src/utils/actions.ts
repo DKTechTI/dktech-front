@@ -1,4 +1,14 @@
-// const checkActionValue = (action: any) => {
-//   if (action.type === 'DELAY') return 
-//   if (action.actionValueReles) return ''
-// }
+const checkActionValueEngine = (action: string) => {
+  const values: { [key: string]: string } = {
+    OPEN: 'Abrir',
+    CLOSE: 'Fechar',
+    STOP: 'Parar',
+    'OPEN/STOP': 'Abrir/Parar',
+    'CLOSE/STOP': 'Fechar/Parar',
+    'OPEN/STOP/CLOSE/STOP': 'Abrir/Parar/Fechar/Parar'
+  }
+
+  return values[action] || ''
+}
+
+export { checkActionValueEngine }

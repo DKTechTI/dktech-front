@@ -6,7 +6,7 @@ import Menu from 'src/views/pages/projetos/configurar-projeto/Menu'
 
 import HeaderProject from './HeaderProject'
 import DeviceConfig from './DeviceConfig'
-import KeyConfig from './DeviceConfig/Keypad/KeyConfig'
+import KeyConfig from './DeviceConfig/Keypad/Config'
 
 export default function ProjectConfig() {
   const { project, projectDeviceId } = useProject()

@@ -42,7 +42,7 @@ interface FormData {
   }[]
 }
 
-interface StatusKeysProps {
+interface StatusProps {
   keys: any[]
   open: boolean
   handleClose: () => void
@@ -50,7 +50,7 @@ interface StatusKeysProps {
   setRefresh: (value: boolean) => void
 }
 
-const StatusKeys = ({ keys, handleClose, open, refresh, setRefresh }: StatusKeysProps) => {
+const Status = ({ keys, handleClose, open, refresh, setRefresh }: StatusProps) => {
   const theme = useTheme()
 
   const [keysIndexUpdated, setKeysIndexUpdated] = useState<number[]>([])
@@ -196,4 +196,4 @@ const StatusKeys = ({ keys, handleClose, open, refresh, setRefresh }: StatusKeys
   )
 }
 
-export default StatusKeys
+export default Status
