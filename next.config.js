@@ -5,7 +5,13 @@ const path = require('path')
 
 // Remove this if you're not using Fullcalendar features
 
-module.exports = {
+const withPWA = require('next-pwa')({
+  dest: 'public',
+  register: true,
+  skipWaiting: true
+})
+
+module.exports = withPWA({
   trailingSlash: true,
   reactStrictMode: false,
   webpack: config => {
@@ -16,4 +22,4 @@ module.exports = {
 
     return config
   }
-}
+})

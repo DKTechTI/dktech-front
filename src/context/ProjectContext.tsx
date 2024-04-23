@@ -1,4 +1,4 @@
-import { createContext, useState } from 'react'
+import { createContext, useEffect, useState } from 'react'
 
 import { useRouter } from 'next/router'
 
@@ -39,11 +39,16 @@ const ProjectProvider = ({ children }: Props) => {
     data: project,
     refresh: refreshProject,
     setRefresh: setRefreshProject,
-    loading: loadingProject
+    loading: loadingProject,
+    error: errorProject
   } = useGetDataApi<any>({
     url: `/projects/${id}`,
     callInit: router.isReady
   })
+
+  useEffect(() => {
+    if (!loadingProject) errorProject && router.push('/404')
+  }, [errorProject, loadingProject, router])
 
   return (
     <ProjectContext.Provider

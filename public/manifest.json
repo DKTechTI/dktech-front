@@ -1,0 +1,19 @@
+{
+  "name": "Plataforma DKtech",
+  "short_name": "DKtech",
+  "theme_color": "#2196f3",
+  "background_color": "#2196f3",
+  "display": "standalone",
+  "orientation": "portrait",
+  "scope": "/",
+  "start_url": "/",
+  "icons": [
+    {
+      "src": "./images/apple-touch-icon.png",
+      "sizes": "any",
+      "type": "image/png",
+      "purpose": "maskable any"
+    }
+  ],
+  "splash_pages": null
+}
