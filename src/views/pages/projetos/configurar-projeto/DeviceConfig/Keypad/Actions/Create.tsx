@@ -65,12 +65,12 @@ interface FormData {
   }[]
 }
 
-interface EditProfileProps {
+interface CreateProps {
   open: boolean
   handleClose: () => void
 }
 
-const ActionAddDialog = ({ open, handleClose }: EditProfileProps) => {
+const Create = ({ open, handleClose }: CreateProps) => {
   const theme = useTheme()
 
   const router = useRouter()
@@ -79,7 +79,7 @@ const ActionAddDialog = ({ open, handleClose }: EditProfileProps) => {
 
   const { menu } = useProjectMenu()
   const { keyId } = useDeviceKeys()
-  const { projectSceneId } = useActionsDnD()
+  const { projectSceneId, refreshActions, setRefreshActions } = useActionsDnD()
 
   const [environments, setEnvironments] = useState<any[]>([])
 
@@ -139,6 +139,7 @@ const ActionAddDialog = ({ open, handleClose }: EditProfileProps) => {
       .then(() => {
         handleClose()
         toast.success('Ações adicionadas com sucesso!')
+        setRefreshActions(!refreshActions)
       })
       .catch(() => {
         handleClose()
@@ -298,4 +299,4 @@ const ActionAddDialog = ({ open, handleClose }: EditProfileProps) => {
   )
 }
 
-export default ActionAddDialog
+export default Create

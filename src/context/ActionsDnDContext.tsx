@@ -1,5 +1,7 @@
-import { createContext, useState } from 'react'
+import { useRouter } from 'next/router'
+import { createContext, useEffect, useState } from 'react'
 import { DragDropContext } from 'react-beautiful-dnd'
+import useGetDataApi from 'src/hooks/useGetDataApi'
 
 type DraggableItem = {
   id: string
@@ -13,7 +15,7 @@ type actionsDnDValuesType = {
   refreshActions: boolean
   setRefreshActions: (value: boolean) => void
   projectSceneId: null | string
-  setProjectSceneId: (value: string) => void
+  setProjectSceneId: (value: string | null) => void
   draggedItem: null | any
   beginDrag: (value: any) => void
   endDrag: () => void
@@ -38,34 +40,24 @@ type Props = {
   children: React.ReactNode
 }
 
-const acoes = [
-  {
-    id: 1,
-    name: 'luz mesa jantar',
-    order: 1,
-    type: 'dimmer',
-    action: '70'
-  },
-  {
-    id: 2,
-    name: 'delay',
-    order: 2,
-    type: null,
-    action: '0.2'
-  },
-  {
-    id: 3,
-    name: 'luz corredor',
-    order: 3,
-    type: 'rele',
-    action: 'on'
-  }
-]
-
 const ActionsDnDProvider = ({ children }: Props) => {
-  const [actions, setActions] = useState<any>(acoes)
+  const router = useRouter()
+
+  const { id } = router.query
+
+  const [actions, setActions] = useState<any[]>([])
   const [projectSceneId, setProjectSceneId] = useState<string | null>(null)
   const [draggedItem, setDraggedItem] = useState<DraggableItem | null>(null)
+
+  const {
+    data,
+    loading: loadingActions,
+    refresh: refreshActions,
+    setRefresh: setRefreshActions
+  } = useGetDataApi<any>({
+    url: `/projectSceneActions/by-project/${id}/by-scene/${projectSceneId}`,
+    callInit: Boolean(id) && Boolean(projectSceneId)
+  })
 
   const beginDrag = (item: DraggableItem) => {
     setDraggedItem(item)
@@ -77,20 +69,31 @@ const ActionsDnDProvider = ({ children }: Props) => {
 
   const handleDragEnd = (result: any) => {
     if (!result.destination) return
-    const tempData = Array.from(actions)
-    const [sourceData] = tempData.splice(result.source.index, 1)
-    tempData.splice(result.destination.index, 0, sourceData)
-    setActions(tempData)
+
+    if (actions) {
+      const tempData = Array.from(actions)
+      const [sourceData] = tempData.splice(result.source.index, 1)
+      tempData.splice(result.destination.index, 0, sourceData)
+      setActions(tempData)
+    }
   }
+
+  useEffect(() => {
+    if (!projectSceneId) return setActions([])
+
+    if (data?.data && data.data.length > 0) return setActions(data?.data)
+
+    setActions([])
+  }, [data, projectSceneId])
 
   return (
     <ActionsDnDContext.Provider
       value={{
         actions,
         setActions,
-        loadingActions: false,
-        refreshActions: false,
-        setRefreshActions: () => Boolean,
+        loadingActions,
+        refreshActions,
+        setRefreshActions,
         projectSceneId,
         setProjectSceneId,
         draggedItem,

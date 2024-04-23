@@ -25,7 +25,7 @@ import { useProjectMenu } from 'src/hooks/useProjectMenu'
 
 import { api } from 'src/services/api'
 
-import ScenesConfig from './ScenesConfig'
+import Scenes from './Scenes'
 
 const schemaKey = yup.object().shape({
   name: yup.string().required('Nome da tecla obrigatório'),
@@ -46,7 +46,7 @@ interface FormDataKey {
   name: string
 }
 
-const KeyConfig = () => {
+const Config = () => {
   const router = useRouter()
 
   const { id } = router.query
@@ -108,7 +108,7 @@ const KeyConfig = () => {
 
   if (loading) {
     return (
-      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', padding: '8.75rem' }}>
         <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
           <CircularProgress />
           <Typography variant='h4'>Carregando...</Typography>
@@ -243,7 +243,7 @@ const KeyConfig = () => {
             </Box>
           </CardActions>
         </Box>
-        <ScenesConfig keyId={keyId} />
+        <Scenes keyId={keyId} />
       </Box>
     )
   }
@@ -264,4 +264,4 @@ const KeyConfig = () => {
   )
 }
 
-export default KeyConfig
+export default Config

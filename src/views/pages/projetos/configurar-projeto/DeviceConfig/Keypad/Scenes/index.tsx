@@ -17,8 +17,6 @@ import {
 
 import CustomTextField from 'src/@core/components/mui/text-field'
 
-import ActionsConfig from './ActionsConfig'
-
 import * as yup from 'yup'
 import { useForm, Controller } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
@@ -38,6 +36,7 @@ import {
 } from 'src/utils/scene'
 
 import toast from 'react-hot-toast'
+import Config from '../Actions/Config'
 
 const schemaScene = yup.object().shape({
   name: yup.string().required('Nome da cena obrigatório'),
@@ -59,11 +58,11 @@ interface FormDataScene {
   name: string
 }
 
-interface ScenesConfigProps {
+interface ScenesProps {
   keyId: string
 }
 
-const ScenesConfig = ({ keyId }: ScenesConfigProps) => {
+const Scenes = ({ keyId }: ScenesProps) => {
   const router = useRouter()
 
   const { id } = router.query
@@ -94,7 +93,7 @@ const ScenesConfig = ({ keyId }: ScenesConfigProps) => {
     resolver: yupResolver(schemaScene)
   })
 
-  const { data: sceneData } = useGetDataApi<any>({
+  const { data: sceneData, error } = useGetDataApi<any>({
     url: `/projectScenes/by-event-type/${keyId}`,
     params: {
       eventType: formatEventTypeForRequest(watchScene('eventValue')),
@@ -229,7 +228,7 @@ const ScenesConfig = ({ keyId }: ScenesConfigProps) => {
           .patch('/projectScenes', data)
           .then(response => {
             if (response.status) {
-              setProjectSceneId(response.data._id)
+              setProjectSceneId(response.data.data._id)
               toast.success(responseMessage[response.status])
             }
           })
@@ -241,6 +240,11 @@ const ScenesConfig = ({ keyId }: ScenesConfigProps) => {
         console.error(err)
       })
   }
+
+  useEffect(() => {
+    if (error?.response?.status === 404) setProjectSceneId(null)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [error])
 
   useEffect(() => {
     if (sceneData?.data) {
@@ -261,6 +265,8 @@ const ScenesConfig = ({ keyId }: ScenesConfigProps) => {
       const sceneTypeValue = checkSceneTypeValue(sceneData?.data?.sceneType)
       handleSwitchSceneType(sceneTypeValue)
       setProjectSceneId(sceneData.data?._id)
+
+      return
     }
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -379,9 +385,9 @@ const ScenesConfig = ({ keyId }: ScenesConfigProps) => {
           </Box>
         </CardActions>
       </Card>
-      <ActionsConfig />
+      <Config />
     </Box>
   )
 }
 
-export default ScenesConfig
+export default Scenes

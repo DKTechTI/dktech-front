@@ -13,7 +13,7 @@ import {
   useTheme
 } from '@mui/material'
 
-import StatusKeys from './StatusKeys'
+import StatusKeys from './Status'
 
 import { useDeviceKeys } from 'src/hooks/useDeviceKeys'
 
@@ -93,7 +93,7 @@ const Keys = ({ projectDeviceId, environmentId }: KeysProps) => {
 
   if (loadingDeviceKeys) {
     return (
-      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', padding: 47 }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', padding: '8.75rem' }}>
         <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
           <CircularProgress />
           <Typography variant='h4'>Carregando...</Typography>
