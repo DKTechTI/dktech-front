@@ -6,10 +6,12 @@ import Menu from 'src/views/pages/projetos/configurar-projeto/Menu'
 
 import HeaderProject from './HeaderProject'
 import DeviceConfig from './DeviceConfig'
-import KeyConfig from './DeviceConfig/Keypad/Config'
+import KeyConfig from './DeviceConfig/inputDevice/KeyConfig'
+import { useDeviceKeys } from 'src/hooks/useDeviceKeys'
 
 export default function ProjectConfig() {
   const { project, projectDeviceId } = useProject()
+  const { projectDeviceModuleType } = useDeviceKeys()
 
   return (
     <Card>
@@ -46,7 +48,7 @@ export default function ProjectConfig() {
           {DeviceConfig({ projectDeviceId })}
         </Grid>
         <Grid item xs={12} sm={6} lg={4}>
-          <KeyConfig />
+          {projectDeviceModuleType === 'INPUT' && <KeyConfig />}
         </Grid>
       </Grid>
     </Card>

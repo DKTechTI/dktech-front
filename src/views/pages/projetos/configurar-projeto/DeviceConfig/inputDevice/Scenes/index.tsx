@@ -17,6 +17,8 @@ import {
 
 import CustomTextField from 'src/@core/components/mui/text-field'
 
+import ActionsConfig from '../Actions/Config'
+
 import * as yup from 'yup'
 import { useForm, Controller } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
@@ -36,7 +38,6 @@ import {
 } from 'src/utils/scene'
 
 import toast from 'react-hot-toast'
-import Config from '../Actions/Config'
 
 const schemaScene = yup.object().shape({
   name: yup.string().required('Nome da cena obrigatório'),
@@ -67,7 +68,7 @@ const Scenes = ({ keyId }: ScenesProps) => {
 
   const { id } = router.query
 
-  const { deviceId } = useDeviceKeys()
+  const { deviceId, projectDeviceType } = useDeviceKeys()
 
   const { setProjectSceneId } = useActionsDnD()
 
@@ -362,7 +363,7 @@ const Scenes = ({ keyId }: ScenesProps) => {
               <FormControlLabel
                 control={
                   <Switch
-                    disabled
+                    disabled={projectDeviceType === 'KEYPAD' ? true : false}
                     checked={switchOptions.onOffScene}
                     onChange={() => handleSwitchSceneType('onOffScene')}
                     name='onOffScene'
@@ -385,7 +386,7 @@ const Scenes = ({ keyId }: ScenesProps) => {
           </Box>
         </CardActions>
       </Card>
-      <Config />
+      <ActionsConfig />
     </Box>
   )
 }

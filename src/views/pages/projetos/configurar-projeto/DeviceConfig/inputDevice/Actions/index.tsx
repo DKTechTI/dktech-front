@@ -1,6 +1,6 @@
 import { Table, TableCell, TableContainer, TableHead, TableRow } from '@mui/material'
 
-import DroppableArea from '../../../DroppableArea'
+import DroppableArea from './DroppableArea'
 import DraggableAction from './DraggableAction'
 
 interface ActionsProps {
