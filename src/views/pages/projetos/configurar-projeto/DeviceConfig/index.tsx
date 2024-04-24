@@ -1,8 +1,14 @@
+import { useEffect } from 'react'
 import { useRouter } from 'next/router'
-import useGetDataApi from 'src/hooks/useGetDataApi'
-import Module from './Module'
+
 import { Box, CircularProgress, Typography } from '@mui/material'
-import Keypad from './Keypad'
+
+import useGetDataApi from 'src/hooks/useGetDataApi'
+import { useDeviceKeys } from 'src/hooks/useDeviceKeys'
+
+import Module from './inputDevice/Module'
+import Keypad from './inputDevice/Keypad'
+import ModuleOutput from './outputDevice/Module'
 
 interface DeviceConfigProps {
   projectDeviceId: string
@@ -11,10 +17,19 @@ interface DeviceConfigProps {
 const DeviceConfig = ({ projectDeviceId }: DeviceConfigProps) => {
   const router = useRouter()
 
+  const { setProjectDeviceType, setProjectDeviceModuleType } = useDeviceKeys()
+
   const { data, loading, refresh, setRefresh } = useGetDataApi<any>({
     url: `/projectDevices/${projectDeviceId}`,
     callInit: Boolean(projectDeviceId && router.isReady)
   })
+
+  useEffect(() => {
+    if (data?.data) {
+      setProjectDeviceType(data.data.type)
+      setProjectDeviceModuleType(data.data.moduleType)
+    }
+  }, [data, setProjectDeviceModuleType, setProjectDeviceType])
 
   if (loading) {
     return (
@@ -27,12 +42,20 @@ const DeviceConfig = ({ projectDeviceId }: DeviceConfigProps) => {
     )
   }
 
-  if (projectDeviceId && data) {
-    return data.data.type === 'MODULE' ? (
-      <Module deviceData={data.data} refresh={refresh} setRefresh={setRefresh} />
-    ) : (
-      <Keypad deviceData={data.data} refresh={refresh} setRefresh={setRefresh} />
-    )
+  if (projectDeviceId && data?.data) {
+    if (data.data.moduleType === 'INPUT') {
+      const isModule = data.data.type === 'MODULE'
+
+      return isModule ? (
+        <Module deviceData={data.data} refresh={refresh} setRefresh={setRefresh} />
+      ) : (
+        <Keypad deviceData={data.data} refresh={refresh} setRefresh={setRefresh} />
+      )
+    }
+
+    if (data.data.moduleType === 'OUTPUT') {
+      return <ModuleOutput deviceData={data.data} refresh={refresh} setRefresh={setRefresh} />
+    }
   }
 
   return (

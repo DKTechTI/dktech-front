@@ -8,6 +8,10 @@ type deviceKeysValuesType = {
   setKeyId: (value: any) => void
   projectDeviceId: null | any
   setProjectDeviceId: (value: any) => void
+  projectDeviceType: null | string
+  setProjectDeviceType: (value: string | null) => void
+  projectDeviceModuleType: null | string
+  setProjectDeviceModuleType: (value: string | null) => void
   deviceId: null | any
   setDeviceId: (value: any) => void
   environmentId: null | any
@@ -23,6 +27,10 @@ const defaultDeviceKeysProvider: deviceKeysValuesType = {
   setKeyId: () => null,
   projectDeviceId: null,
   setProjectDeviceId: () => null,
+  projectDeviceType: null,
+  setProjectDeviceType: () => null,
+  projectDeviceModuleType: null,
+  setProjectDeviceModuleType: () => null,
   deviceId: null,
   setDeviceId: () => null,
   environmentId: null,
@@ -46,6 +54,8 @@ const DeviceKeysProvider = ({ children }: Props) => {
   const [keyId, setKeyId] = useState('')
   const [projectDeviceId, setProjectDeviceId] = useState('')
   const [deviceId, setDeviceId] = useState('')
+  const [projectDeviceType, setProjectDeviceType] = useState<string | null>(null)
+  const [projectDeviceModuleType, setProjectDeviceModuleType] = useState<string | null>(null)
   const [environmentId, setEnvironmentId] = useState('')
 
   const {
@@ -70,6 +80,10 @@ const DeviceKeysProvider = ({ children }: Props) => {
         setKeyId,
         projectDeviceId,
         setProjectDeviceId,
+        projectDeviceType,
+        setProjectDeviceType,
+        projectDeviceModuleType,
+        setProjectDeviceModuleType,
         deviceId,
         setDeviceId,
         environmentId,

@@ -24,8 +24,7 @@ import { useDeviceKeys } from 'src/hooks/useDeviceKeys'
 import { useProjectMenu } from 'src/hooks/useProjectMenu'
 
 import { api } from 'src/services/api'
-
-import Scenes from './Scenes'
+import Scenes from '../../Scenes'
 
 const schemaKey = yup.object().shape({
   name: yup.string().required('Nome da tecla obrigatório'),

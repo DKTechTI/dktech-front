@@ -1,26 +1,15 @@
-import { useState } from 'react'
+import { useEffect } from 'react'
 
-import {
-  Box,
-  Button,
-  CardContent,
-  CardHeader,
-  Grid,
-  List,
-  ListItem,
-  ListItemButton,
-  ListItemText,
-  MenuItem,
-  useTheme
-} from '@mui/material'
+import { Box, Button, CardContent, CardHeader, Grid, MenuItem } from '@mui/material'
 
 import CustomTextField from 'src/@core/components/mui/text-field'
+
+import { useDeviceKeys } from 'src/hooks/useDeviceKeys'
+import { useProjectMenu } from 'src/hooks/useProjectMenu'
 
 import * as yup from 'yup'
 import { useForm, Controller } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
-
-import { useProjectMenu } from 'src/hooks/useProjectMenu'
 
 import { checkPortName, checkSequenceIndex } from 'src/utils/project'
 
@@ -33,29 +22,6 @@ const schema = yup.object().shape({
   boardIndex: yup.string().required('Porta obrigatório'),
   index: yup.string().required('Sequência obrigatório')
 })
-
-const keys = [
-  {
-    id: 1,
-    name: 'luz mesa jantar',
-    model: 'module_four'
-  },
-  {
-    id: 2,
-    name: 'luz mesa jantar',
-    model: 'module_four'
-  },
-  {
-    id: 3,
-    name: 'luz mesa jantar',
-    model: 'module_four'
-  },
-  {
-    id: 4,
-    name: 'luz mesa jantar',
-    model: 'module_four'
-  }
-]
 
 interface FormData {
   projectId: string
@@ -75,11 +41,8 @@ interface ModuleProps {
 }
 
 const Module = ({ deviceData, refresh, setRefresh }: ModuleProps) => {
-  const theme = useTheme()
-
+  const { setDeviceId } = useDeviceKeys()
   const { handleAvaliableInputPorts, handleAvaliableOutputPorts, setRefreshMenu, refreshMenu } = useProjectMenu()
-
-  const [selected, setSelected] = useState<number>(1)
 
   const {
     control,
@@ -159,6 +122,10 @@ const Module = ({ deviceData, refresh, setRefresh }: ModuleProps) => {
         toast.error('Erro ao alterar dados, tente novamente mais tarde')
       })
   }
+
+  useEffect(() => {
+    if (deviceData) setDeviceId(deviceData?.deviceId)
+  }, [deviceData, setDeviceId])
 
   return (
     <Box>
@@ -263,48 +230,14 @@ const Module = ({ deviceData, refresh, setRefresh }: ModuleProps) => {
                 )}
               />
             </Grid>
-            <Grid item xs={12} justifyContent={'center'}>
-              <List
-                sx={{
-                  width: '100%',
-                  bgcolor: 'background.paper',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  justifyContent: 'center',
-                  gap: 3
-                }}
-                aria-label='keys'
-              >
-                {keys.map(item => (
-                  <ListItem
-                    key={item.id}
-                    disablePadding
-                    sx={{
-                      maxWidth: 300,
-                      width: '100%',
-                      margin: '0 auto',
-                      border: `1px solid ${theme.palette.divider}`
-                    }}
-                  >
-                    <ListItemButton
-                      selected={selected === item.id}
-                      onClick={() => setSelected(item.id)}
-                      sx={{
-                        textAlign: 'center'
-                      }}
-                    >
-                      <ListItemText primary={item.name} />
-                    </ListItemButton>
-                  </ListItem>
-                ))}
-              </List>
-            </Grid>
             <Grid item xs={12} sm={12}>
               <Box sx={{ display: 'flex', alignItems: 'end', justifyContent: 'end' }}>
                 <Button type='submit' variant='contained' sx={{ mr: 2 }}>
                   salvar
                 </Button>
               </Box>
+            </Grid>
+            <Grid item xs={12} justifyContent={'center'}>
             </Grid>
           </Grid>
         </form>
