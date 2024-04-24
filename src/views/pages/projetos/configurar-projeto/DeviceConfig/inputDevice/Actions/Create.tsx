@@ -45,7 +45,9 @@ const schema = yup.object().shape({
         actionProjectDeviceId: yup.string().required('Dispositivo obrigatório'),
         boardId: yup.string().required('Placa obrigatória'),
         type: yup.string().required('Tipo obrigatório'),
-        actionValueReles: yup.boolean().required('Valor obrigatório')
+        actionValueReles: yup.boolean(),
+        actionValueEngine: yup.string(),
+        actionValueDimmer: yup.string()
       })
     )
     .min(1, 'Pelo menos uma saída deve ser adicionada')
@@ -62,6 +64,8 @@ interface FormData {
     boardId: string
     type: string
     actionValueReles?: boolean
+    actionValueEngine?: string | boolean
+    actionValueDimmer?: string
   }[]
 }
 
@@ -101,7 +105,23 @@ const Create = ({ open, handleClose }: CreateProps) => {
     name: 'outputs'
   })
 
+  const handleCheckOperationType = (value: string) => {
+    const rele = ['TRUE', 'FALSE']
+    const engine = ['OPEN', 'CLOSE', 'STOP', 'OPEN/STOP', 'CLOSE/STOP', 'OPEN/STOP/CLOSE/STOP']
+    const dimmer = ['0', '10', '20', '30', '40', '50', '60', '70', '80', '90', '100', 'INCREASE', 'DECREASE', 'DIM']
+
+    if (rele.includes(value)) return 'RELE'
+    if (engine.includes(value)) return 'ENGINE'
+    if (dimmer.includes(value)) return 'DIMMER'
+  }
+
   const handleSelectOutput = (environmentId: string, deviceName: string) => {
+    if (!projectSceneId) {
+      handleClose()
+
+      return toast.error('Selecione uma cena antes de adicionar uma ação')
+    }
+
     const environmentSelected: any = environments.filter(environment => environment.environmentId === environmentId)
 
     const outputSelected: any = environmentSelected[0].outputs.filter((output: any) => output.deviceName === deviceName)
@@ -109,22 +129,31 @@ const Create = ({ open, handleClose }: CreateProps) => {
     if (outputSelected.length > 0) {
       const output: any = outputSelected[0]
 
-      if (!projectSceneId) {
-        handleClose()
-        toast.error('Selecione uma cena antes de adicionar uma ação')
+      api
+        .get(`/projectDevices/${output.projectDeviceId}`)
+        .then(response => {
+          const { data } = response
 
-        return
-      }
+          const initialValue = data?.data.initialValue
+          const operationType = handleCheckOperationType(initialValue)
 
-      append({
-        projectId: id as string,
-        projectSceneId: projectSceneId,
-        projectDeviceKeyId: keyId,
-        actionProjectDeviceId: output.projectDeviceId,
-        boardId: output.deviceName,
-        type: 'EXTERNAL',
-        actionValueReles: true
-      })
+          if (initialValue && operationType) {
+            append({
+              projectId: id as string,
+              projectSceneId: projectSceneId,
+              projectDeviceKeyId: keyId,
+              actionProjectDeviceId: output.projectDeviceId,
+              boardId: output.deviceName,
+              type: 'EXTERNAL',
+              ...(operationType === 'RELE' && { actionValueReles: initialValue }),
+              ...(operationType === 'ENGINE' && { actionValueEngine: initialValue }),
+              ...(operationType === 'DIMMER' && { actionValueDimmer: initialValue })
+            })
+          }
+        })
+        .catch(() => {
+          toast.error('Erro ao buscar informações do dispositivo, tente novamente mais tarde')
+        })
     }
   }
 
