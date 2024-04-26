@@ -55,7 +55,7 @@ const typeMap: Record<ValueType, TypeMapEntry> = {
   }
 }
 
-function NumberInput({ field, errors, inputProps, startAdornment, handleSubmit }: any) {
+function NumberInput({ field, errors, inputProps, startAdornment, handleSubmit, onChange }: any) {
   return (
     <TextField
       {...field}
@@ -64,6 +64,7 @@ function NumberInput({ field, errors, inputProps, startAdornment, handleSubmit }
       error={!!errors[field.name]}
       helperText={errors[field.name]?.message}
       inputProps={inputProps}
+      onChange={onChange}
       InputProps={{
         startAdornment: startAdornment
       }}
@@ -76,7 +77,7 @@ function NumberInput({ field, errors, inputProps, startAdornment, handleSubmit }
   )
 }
 
-function SelectInput({ field, errors, options, handleSubmit }: any) {
+function SelectInput({ field, errors, options, handleSubmit, onChange }: any) {
   return (
     <TextField
       {...field}
@@ -84,7 +85,7 @@ function SelectInput({ field, errors, options, handleSubmit }: any) {
       size='small'
       error={!!errors[field.name as ValueType]}
       defaultValue={field?.value || ''}
-      onChange={e => field?.onChange(e.target.value)}
+      onChange={onChange}
       onBlur={handleSubmit}
       sx={{
         minWidth: '140px',

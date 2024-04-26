@@ -1,16 +1,6 @@
 import { useRouter } from 'next/router'
 
-import {
-  Box,
-  Button,
-  CardActions,
-  CardContent,
-  CardHeader,
-  CircularProgress,
-  Grid,
-  MenuItem,
-  Typography
-} from '@mui/material'
+import { Box, Button, CardActions, CardContent, CardHeader, Grid, MenuItem, Typography } from '@mui/material'
 
 import CustomTextField from 'src/@core/components/mui/text-field'
 import toast from 'react-hot-toast'
@@ -45,18 +35,17 @@ interface FormDataKey {
   name: string
 }
 
-const Config = () => {
+interface ConfigProps {
+  keyData: any
+}
+
+const Config = ({ keyData }: ConfigProps) => {
   const router = useRouter()
 
   const { id } = router.query
 
   const { refreshDeviceKeys, setRefreshDeviceKeys, keyId, environmentId } = useDeviceKeys()
   const { refreshMenu, setRefreshMenu } = useProjectMenu()
-
-  const { data: keyData, loading } = useGetDataApi<any>({
-    url: `/projectDeviceKeys/${keyId}`,
-    callInit: Boolean(keyId)
-  })
 
   const { data: environments } = useGetDataApi<any>({
     url: `/projectEnvironments/${environmentId}`,
@@ -71,14 +60,14 @@ const Config = () => {
   } = useForm({
     values: {
       projectId: id ?? '',
-      projectDeviceId: keyData?.data?.projectDeviceId ?? '',
-      environmentId: keyData?.data?.environmentId ?? '',
-      centralId: keyData?.data?.centralId ?? '',
-      name: keyData?.data?.name ?? '',
-      moduleType: keyData?.data?.moduleType ?? '',
-      keyType: keyData?.data?.keyType ?? '',
-      keyOrder: String(keyData?.data?.keyOrder) ?? '',
-      ledAction: keyData?.data?.ledAction ?? ''
+      projectDeviceId: keyData?.projectDeviceId ?? '',
+      environmentId: keyData?.environmentId ?? '',
+      centralId: keyData?.centralId ?? '',
+      name: keyData?.name ?? '',
+      moduleType: keyData?.moduleType ?? '',
+      keyType: keyData?.keyType ?? '',
+      keyOrder: String(keyData?.keyOrder) ?? '',
+      ledAction: keyData?.ledAction ?? ''
     } as FormDataKey,
     mode: 'onBlur',
     resolver: yupResolver(schemaKey)
@@ -103,17 +92,6 @@ const Config = () => {
       .catch(() => {
         toast.error('Erro ao atualizar tecla, tente novamente mais tarde')
       })
-  }
-
-  if (loading) {
-    return (
-      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', padding: '8.75rem' }}>
-        <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
-          <CircularProgress />
-          <Typography variant='h4'>Carregando...</Typography>
-        </Box>
-      </Box>
-    )
   }
 
   if (keyId) {

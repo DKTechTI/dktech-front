@@ -58,6 +58,7 @@ import 'src/iconify-bundle/icons-bundle-react'
 
 // ** Global css styles
 import '../../styles/globals.css'
+import { AutoSaveProvider } from 'src/context/AutoSaveContext'
 
 // ** Extend App Props with Emotion
 type ExtendedAppProps = AppProps & {
@@ -125,7 +126,7 @@ const App = (props: ExtendedAppProps) => {
                   <Guard authGuard={authGuard} guestGuard={guestGuard}>
                     <AclGuard aclAbilities={aclAbilities} guestGuard={guestGuard} authGuard={authGuard}>
                       <DynamicSEO defaultTitle={themeConfig.templateName} />
-                      {getLayout(<Component {...pageProps} />)}
+                      <AutoSaveProvider>{getLayout(<Component {...pageProps} />)}</AutoSaveProvider>
                     </AclGuard>
                   </Guard>
                   <ReactHotToast>

@@ -1,11 +1,24 @@
 import { useRouter } from 'next/router'
-import { createContext, useEffect, useState } from 'react'
+import React, { createContext, useEffect, useMemo, useState } from 'react'
 import { DragDropContext } from 'react-beautiful-dnd'
 import useGetDataApi from 'src/hooks/useGetDataApi'
 
 type DraggableItem = {
   id: string
   type: string
+}
+
+type ChildProps = {
+  actions: any
+  setActions: any
+  loadingActions: any
+  refreshActions: any
+  setRefreshActions: any
+  projectSceneId: any
+  setProjectSceneId: any
+  draggedItem: any
+  beginDrag: any
+  endDrag: any
 }
 
 type actionsDnDValuesType = {
@@ -86,6 +99,27 @@ const ActionsDnDProvider = ({ children }: Props) => {
     setActions([])
   }, [data, projectSceneId])
 
+  const memoizedChildren = useMemo(() => {
+    return React.Children.map(children, child => {
+      if (React.isValidElement<ChildProps>(child)) {
+        return React.cloneElement<ChildProps>(child, {
+          actions,
+          setActions,
+          loadingActions,
+          refreshActions,
+          setRefreshActions,
+          projectSceneId,
+          setProjectSceneId,
+          draggedItem,
+          beginDrag,
+          endDrag
+        })
+      }
+
+      return child
+    })
+  }, [children, actions, loadingActions, refreshActions, setRefreshActions, projectSceneId, draggedItem])
+
   return (
     <ActionsDnDContext.Provider
       value={{
@@ -101,7 +135,7 @@ const ActionsDnDProvider = ({ children }: Props) => {
         endDrag
       }}
     >
-      <DragDropContext onDragEnd={handleDragEnd}>{children}</DragDropContext>
+      <DragDropContext onDragEnd={handleDragEnd}>{memoizedChildren}</DragDropContext>
     </ActionsDnDContext.Provider>
   )
 }
