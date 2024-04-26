@@ -43,7 +43,7 @@ interface KeypadProps {
 }
 
 const Keypad = ({ deviceData, refresh, setRefresh }: KeypadProps) => {
-  const { setDeviceId, setProjectDeviceId, setEnvironmentId, deviceKeys, loadingDeviceKeys } = useDeviceKeys()
+  const { setDeviceId, setProjectDeviceId, deviceKeys, loadingDeviceKeys } = useDeviceKeys()
   const { handleAvaliableInputPorts, handleAvaliableOutputPorts, setRefreshMenu, refreshMenu } = useProjectMenu()
 
   const deviceKeysRef = useRef(deviceKeys)
@@ -130,10 +130,9 @@ const Keypad = ({ deviceData, refresh, setRefresh }: KeypadProps) => {
   useEffect(() => {
     if (deviceData) {
       setDeviceId(deviceData?.deviceId)
-      setEnvironmentId(deviceData?.environmentId)
       setProjectDeviceId(deviceData?._id)
     }
-  }, [deviceData, setDeviceId, setEnvironmentId, setProjectDeviceId])
+  }, [deviceData, setDeviceId, setProjectDeviceId])
 
   return (
     <Box>
@@ -262,7 +261,9 @@ const Keypad = ({ deviceData, refresh, setRefresh }: KeypadProps) => {
                   </Box>
                 </Box>
               )}
-              {deviceData && deviceKeysRef.current !== deviceKeys && !loadingDeviceKeys && <Keys keys={deviceKeys.data} />}
+              {deviceData && deviceKeysRef.current !== deviceKeys && !loadingDeviceKeys && (
+                <Keys keys={deviceKeys.data} />
+              )}
             </Grid>
           </Grid>
         </form>
