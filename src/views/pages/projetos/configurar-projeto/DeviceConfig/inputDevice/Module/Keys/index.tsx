@@ -1,18 +1,9 @@
 import { SyntheticEvent, useState } from 'react'
 
-import {
-  Box,
-  Button,
-  Grid,
-  List,
-  ListItem,
-  ListItemButton,
-  ListItemText,
-  Typography,
-  useTheme
-} from '@mui/material'
+import { Box, Button, Grid, List, ListItem, ListItemButton, ListItemText, Typography, useTheme } from '@mui/material'
 
 import StatusKeys from './Status'
+import toast from 'react-hot-toast'
 
 import { useDeviceKeys } from 'src/hooks/useDeviceKeys'
 
@@ -41,6 +32,10 @@ const Keys = ({ keys }: KeysProps) => {
     e.stopPropagation()
 
     if (!id) return setSelected('')
+
+    const key = keys.find(key => key._id === id)
+
+    if (key && key.status === 'INACTIVE') return toast.error('Tecla inativa, não é possível selecionar')
 
     setSelected(id)
     setKeyId(id)

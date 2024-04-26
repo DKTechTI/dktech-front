@@ -81,7 +81,7 @@ const Status = ({ keys, handleClose, open, refresh, setRefresh }: StatusProps) =
 
   const onSubmit = (formData: FormData) => {
     const updateKey = async (data: any) => {
-      return api.put(`/projectDevices/${data.projectDeviceId}`, {
+      return api.put(`/projectDeviceKeys/${data._id}`, {
         projectId: data.projectId,
         projectDeviceId: data.projectDeviceId,
         environmentId: data.environmentId,
