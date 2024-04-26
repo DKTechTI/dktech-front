@@ -1,9 +1,8 @@
-import { SyntheticEvent, useEffect, useState } from 'react'
+import { SyntheticEvent, useState } from 'react'
 
 import {
   Box,
   Button,
-  CircularProgress,
   Grid,
   List,
   ListItem,
@@ -27,23 +26,13 @@ const keyStatusObj: KeyStatusProps = {
 }
 
 interface KeysProps {
-  projectDeviceId: string
-  environmentId: string
+  keys: any[]
 }
 
-const Keys = ({ projectDeviceId, environmentId }: KeysProps) => {
+const Keys = ({ keys }: KeysProps) => {
   const theme = useTheme()
 
-  const { setKeyId } = useDeviceKeys()
-
-  const {
-    setProjectDeviceId,
-    setEnvironmentId,
-    deviceKeys,
-    loadingDeviceKeys,
-    refreshDeviceKeys,
-    setRefreshDeviceKeys
-  } = useDeviceKeys()
+  const { setKeyId, refreshDeviceKeys, setRefreshDeviceKeys } = useDeviceKeys()
 
   const [selected, setSelected] = useState<string>('')
   const [showDialogStatusKeys, setShowDialogStatusKeys] = useState<boolean>(false)
@@ -86,26 +75,10 @@ const Keys = ({ projectDeviceId, environmentId }: KeysProps) => {
     })
   }
 
-  useEffect(() => {
-    setEnvironmentId(environmentId)
-    setProjectDeviceId(projectDeviceId)
-  }, [environmentId, projectDeviceId, setEnvironmentId, setProjectDeviceId])
-
-  if (loadingDeviceKeys) {
-    return (
-      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', padding: '8.75rem' }}>
-        <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
-          <CircularProgress />
-          <Typography variant='h4'>Carregando...</Typography>
-        </Box>
-      </Box>
-    )
-  }
-
   return (
     <>
       <StatusKeys
-        keys={deviceKeys?.data}
+        keys={keys}
         open={showDialogStatusKeys}
         handleClose={() => setShowDialogStatusKeys(false)}
         refresh={refreshDeviceKeys}
@@ -141,7 +114,7 @@ const Keys = ({ projectDeviceId, environmentId }: KeysProps) => {
           }}
           onClick={e => handleSelectKeyHighlight(e, '')}
         >
-          {deviceKeys && handleShowKeys(deviceKeys.data)}
+          {keys && handleShowKeys(keys)}
         </List>
       </Box>
     </>

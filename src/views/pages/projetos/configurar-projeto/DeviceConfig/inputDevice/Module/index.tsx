@@ -1,23 +1,23 @@
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 
-import { Box, Button, CardContent, CardHeader, Grid, MenuItem } from '@mui/material'
+import { Box, Button, CardContent, CardHeader, CircularProgress, Grid, MenuItem, Typography } from '@mui/material'
 
 import CustomTextField from 'src/@core/components/mui/text-field'
-
-import { useDeviceKeys } from 'src/hooks/useDeviceKeys'
-import { useProjectMenu } from 'src/hooks/useProjectMenu'
 
 import * as yup from 'yup'
 import { useForm, Controller } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
 
-import { checkPortName, checkSequenceIndex } from 'src/utils/project'
+import { useDeviceKeys } from 'src/hooks/useDeviceKeys'
+import { useProjectMenu } from 'src/hooks/useProjectMenu'
+
+import Keys from './Keys'
 
 import toast from 'react-hot-toast'
 
 import { api } from 'src/services/api'
 
-import Keys from './Keys'
+import { checkPortName, checkSequenceIndex } from 'src/utils/project'
 
 const schema = yup.object().shape({
   name: yup.string().required('Nome obrigatório'),
@@ -43,8 +43,10 @@ interface ModuleProps {
 }
 
 const Module = ({ deviceData, refresh, setRefresh }: ModuleProps) => {
-  const { setDeviceId } = useDeviceKeys()
+  const { setDeviceId, setProjectDeviceId, setEnvironmentId, deviceKeys, loadingDeviceKeys } = useDeviceKeys()
   const { handleAvaliableInputPorts, handleAvaliableOutputPorts, setRefreshMenu, refreshMenu } = useProjectMenu()
+
+  const deviceKeysRef = useRef(deviceKeys)
 
   const {
     control,
@@ -126,8 +128,12 @@ const Module = ({ deviceData, refresh, setRefresh }: ModuleProps) => {
   }
 
   useEffect(() => {
-    if (deviceData) setDeviceId(deviceData?.deviceId)
-  }, [deviceData, setDeviceId])
+    if (deviceData) {
+      setDeviceId(deviceData?.deviceId)
+      setEnvironmentId(deviceData?.environmentId)
+      setProjectDeviceId(deviceData?._id)
+    }
+  }, [deviceData, setDeviceId, setEnvironmentId, setProjectDeviceId])
 
   return (
     <Box>
@@ -240,7 +246,23 @@ const Module = ({ deviceData, refresh, setRefresh }: ModuleProps) => {
               </Box>
             </Grid>
             <Grid item xs={12} justifyContent={'center'}>
-              <Keys projectDeviceId={deviceData?._id} environmentId={deviceData?.environmentId} />
+              {loadingDeviceKeys && (
+                <Box
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    height: '100%',
+                    padding: '8.75rem'
+                  }}
+                >
+                  <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
+                    <CircularProgress />
+                    <Typography variant='h4'>Carregando...</Typography>
+                  </Box>
+                </Box>
+              )}
+              {deviceData && deviceKeysRef.current !== deviceKeys && !loadingDeviceKeys && <Keys keys={deviceKeys.data} />}
             </Grid>
           </Grid>
         </form>

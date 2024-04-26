@@ -26,7 +26,11 @@ const KeyConfig = () => {
   }
 
   if (keyId && keyData?.data && projectDeviceType) {
-    return projectDeviceType === 'MODULE' ? <ModuleKeyConfig keyData={keyData.data} /> : <KeypadKeyConfig />
+    return projectDeviceType === 'MODULE' ? (
+      <ModuleKeyConfig keyData={keyData.data} />
+    ) : (
+      <KeypadKeyConfig keyData={keyData.data} />
+    )
   }
 
   return (

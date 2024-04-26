@@ -17,6 +17,7 @@ import { yupResolver } from '@hookform/resolvers/yup'
 import { api } from 'src/services/api'
 
 import { ValueType, typeMap } from './typeMap'
+import { useAutoSave } from 'src/hooks/useAutoSave'
 
 interface DraggableActionProps {
   row: any
@@ -25,9 +26,11 @@ interface DraggableActionProps {
 
 const DraggableAction = ({ row, index }: DraggableActionProps) => {
   const { setActions, actions } = useActionsDnD()
+  const { setApiUrl, setStorageData, setHttpMethod } = useAutoSave()
 
   const [actionId, setActionId] = useState('')
   const [type, setType] = useState<ValueType | null>(null)
+  const [isDirty, setIsDirty] = useState(false)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
 
   const handleConfirmDeleteAction = (id: string) => {
@@ -46,13 +49,9 @@ const DraggableAction = ({ row, index }: DraggableActionProps) => {
       })
   }
 
-  const handleInputChange = (key: string, value: any) => {
-    setValue(key, value)
-  }
-
   const handleFormData = (data: any) => {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { __v, createdAt, updatedAt, ...formattedData } = data
+    const { _id, __v, createdAt, updatedAt, ...formattedData } = data
 
     return formattedData
   }
@@ -65,7 +64,7 @@ const DraggableAction = ({ row, index }: DraggableActionProps) => {
         return type == 'actionValueReles' ? schema.required('Valor obrigatório') : schema.notRequired()
       }),
       actionValueDimmer: yup
-        .number()
+        .string()
         .typeError('Valor deve ser um número')
         .min(0, 'Valor deve ser entre 0 e 100')
         .max(100, 'Valor deve ser entre 0 e 100')
@@ -91,29 +90,27 @@ const DraggableAction = ({ row, index }: DraggableActionProps) => {
   const {
     control,
     setValue,
-    watch,
-    reset,
-    formState: { errors, isDirty },
+    formState: { errors },
     handleSubmit
   } = useForm<any>({
-    defaultValues: row,
+    values: row,
     mode: 'onBlur',
     resolver: yupResolver(createSchema(type as ValueType))
   })
 
+  const handleInputChange = (key: string, value: any) => {
+    setValue(key, value)
+    setActions(actions.map((action: any) => (action._id === row._id ? { ...action, [key]: value } : action)))
+    setIsDirty(true)
+  }
+
   const onSubmit = (data: any): void => {
     if (isDirty) {
-      api
-        .put(`/projectSceneActions/${data._id}`, handleFormData(data))
-        .then(response => {
-          if (response.status === 200) {
-            toast.success('Ação atualizada com sucesso!')
-            reset(watch(), { keepValues: false, keepDirty: false, keepDefaultValues: false })
-          }
-        })
-        .catch(() => {
-          toast.error('Erro ao atualizar ação, tente novamente mais tarde!')
-        })
+      const formattedData = handleFormData(data)
+      setApiUrl(`/projectSceneActions/${row._id}`)
+      setHttpMethod('PUT')
+      setStorageData(formattedData)
+      setIsDirty(false)
     }
   }
 
@@ -165,7 +162,7 @@ const DraggableAction = ({ row, index }: DraggableActionProps) => {
                         options={options}
                         inputProps={inputProps}
                         startAdornment={startAdornment}
-                        onChange={(value: any) => handleInputChange(type, value)}
+                        onChange={(e: any) => handleInputChange(type, e.target.value)}
                         handleSubmit={handleSubmit(onSubmit)}
                       />
                     )
