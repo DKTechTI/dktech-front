@@ -1,3 +1,5 @@
+import { useEffect, useRef } from 'react'
+
 import { Box, CircularProgress, Typography } from '@mui/material'
 
 import useGetDataApi from 'src/hooks/useGetDataApi'
@@ -14,6 +16,12 @@ const KeyConfig = () => {
     callInit: Boolean(keyId)
   })
 
+  const keyIdRef = useRef(keyId)
+
+  useEffect(() => {
+    if (keyIdRef.current !== keyId) keyIdRef.current = keyId
+  }, [keyId])
+
   if (loading) {
     return (
       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', padding: '8.75rem' }}>
@@ -25,7 +33,7 @@ const KeyConfig = () => {
     )
   }
 
-  if (keyId && keyData?.data && projectDeviceType) {
+  if (keyId && keyIdRef.current === keyId && keyData?.data && projectDeviceType) {
     return projectDeviceType === 'MODULE' ? (
       <ModuleKeyConfig keyData={keyData.data} />
     ) : (
