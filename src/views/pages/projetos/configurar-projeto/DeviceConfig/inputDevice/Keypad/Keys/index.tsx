@@ -23,7 +23,7 @@ interface KeysProps {
 const Keys = ({ keys }: KeysProps) => {
   const theme = useTheme()
 
-  const { setKeyId, refreshDeviceKeys, setRefreshDeviceKeys } = useDeviceKeys()
+  const { setKeyId, refreshDeviceKeys, setRefreshDeviceKeys, setEnvironmentId } = useDeviceKeys()
 
   const [selected, setSelected] = useState<string>('')
   const [showDialogStatusKeys, setShowDialogStatusKeys] = useState<boolean>(false)
@@ -39,6 +39,7 @@ const Keys = ({ keys }: KeysProps) => {
 
     setSelected(id)
     setKeyId(id)
+    setEnvironmentId(key.environmentId)
   }
 
   const handleShowKeys = (keys: any[]) => {
