@@ -141,11 +141,11 @@ const DraggableAction = ({ row, index }: DraggableActionProps) => {
         handleConfirmDelete={() => handleConfirmDeleteAction(actionId)}
       />
 
-      <Draggable key={row._id} draggableId={row.boardId} index={index}>
+      <Draggable key={row._id} draggableId={row._id} index={index}>
         {provider => (
           <TableRow {...provider.draggableProps} ref={provider.innerRef}>
             <TableCell {...provider.dragHandleProps} sx={{ minWidth: '140px' }}>
-              <Typography>{row.boardId}</Typography>
+              <Typography>{row.name}</Typography>
             </TableCell>
             <TableCell align='right'>
               {type && (

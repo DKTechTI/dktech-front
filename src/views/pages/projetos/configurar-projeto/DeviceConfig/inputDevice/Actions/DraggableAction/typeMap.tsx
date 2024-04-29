@@ -14,8 +14,8 @@ const typeMap: Record<ValueType, TypeMapEntry> = {
   actionValueReles: {
     Input: SelectInput,
     options: [
-      { value: 'true', label: 'Ligado' },
-      { value: 'false', label: 'Desligado' }
+      { value: 'TRUE', label: 'Ligado' },
+      { value: 'FALSE', label: 'Desligado' }
     ]
   },
   actionValueDimmer: {
@@ -78,13 +78,15 @@ function NumberInput({ field, errors, inputProps, startAdornment, handleSubmit, 
 }
 
 function SelectInput({ field, errors, options, handleSubmit, onChange }: any) {
+  const selectedValue = field.value !== undefined ? field.value : ''
+
   return (
     <TextField
       {...field}
       select
       size='small'
       error={!!errors[field.name as ValueType]}
-      defaultValue={field?.value || ''}
+      value={selectedValue}
       onChange={onChange}
       onBlur={handleSubmit}
       sx={{
@@ -93,11 +95,15 @@ function SelectInput({ field, errors, options, handleSubmit, onChange }: any) {
         textAlign: 'left'
       }}
     >
-      {options.map((option: any) => (
-        <MenuItem key={option.value} value={option.value}>
-          {option.label}
-        </MenuItem>
-      ))}
+      <MenuItem value='' disabled>
+        Selecione
+      </MenuItem>
+      {options &&
+        options.map((option: any) => (
+          <MenuItem key={option.value} value={option.value}>
+            {option.label}
+          </MenuItem>
+        ))}
     </TextField>
   )
 }

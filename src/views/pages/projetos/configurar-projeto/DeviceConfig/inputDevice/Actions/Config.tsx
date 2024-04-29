@@ -33,9 +33,8 @@ interface formData {
   projectId: string
   projectSceneId: string
   projectDeviceKeyId: string
-  boardId: string
   type: string
-  actionProjectDeviceId: string
+  actionProjectDeviceKeyId: string
   actionValueDelay: number
 }
 
@@ -44,7 +43,7 @@ const Config = () => {
 
   const { id: projectId } = router.query
 
-  const { keyId, projectDeviceId } = useDeviceKeys()
+  const { keyId } = useDeviceKeys()
   const { actions, projectSceneId, setActions } = useActionsDnD()
 
   const [addDialogOpen, setAddDialogOpen] = useState<boolean>(false)
@@ -58,9 +57,7 @@ const Config = () => {
       projectId: projectId,
       projectSceneId: projectSceneId,
       projectDeviceKeyId: keyId,
-      boardId: 'Delay',
       type: 'DELAY',
-      actionProjectDeviceId: projectDeviceId,
       actionValueDelay: 0.1
     } as formData,
     mode: 'onBlur',
@@ -83,7 +80,13 @@ const Config = () => {
     api
       .post('/projectSceneActions', data)
       .then(response => {
-        if (response.status === 201) setActions((prevState: any) => [...prevState, response.data.data])
+        if (response.status === 201) {
+          const newData = {
+            ...response.data.data,
+            name: 'DELAY'
+          }
+          setActions((prevState: any) => [...prevState, newData])
+        }
       })
       .catch(() => toast.error('Erro ao adicionar ação, tente novamente mais tarde!'))
   }
