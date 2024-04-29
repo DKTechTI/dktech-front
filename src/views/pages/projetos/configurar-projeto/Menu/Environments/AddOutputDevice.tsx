@@ -111,7 +111,9 @@ const AddOutputDevice = ({
     setPorts([])
 
     if (value) {
-      setPorts(handleAvaliableOutputPorts(value))
+      handleAvaliableOutputPorts(value).then((response: any[]) => {
+        setPorts(response)
+      })
 
       const central = projectDevices.data.filter((device: any) => device.centralId === value)[0]
 
@@ -264,14 +266,16 @@ const AddOutputDevice = ({
                     error={Boolean(errors.boardIndex)}
                     {...(errors.boardIndex && { helperText: errors.boardIndex.message })}
                   >
-                    <MenuItem value=''>
+                    <MenuItem value='' disabled>
                       <em>{watch('centralId') ? 'Selecione' : 'Selecione uma central primeiro'}</em>
                     </MenuItem>
-                    {ports.map((port: any, index: number) => (
-                      <MenuItem key={index} value={port.port} disabled={!port.avaliable}>
-                        {checkPortName(Number(port?.port))}
-                      </MenuItem>
-                    ))}
+                    {ports.length > 0
+                      ? ports.map((port: any, index: number) => (
+                          <MenuItem key={index} value={port.port} disabled={!port.avaliable}>
+                            {checkPortName(Number(port?.port))}
+                          </MenuItem>
+                        ))
+                      : null}
                   </CustomTextField>
                 )}
               />
@@ -293,7 +297,7 @@ const AddOutputDevice = ({
                     error={Boolean(errors.index)}
                     {...(errors.index && { helperText: errors.index.message })}
                   >
-                    <MenuItem value=''>
+                    <MenuItem value='' disabled>
                       <em>{watch('boardIndex') ? 'Selecione' : 'Selecione uma porta primeiro'}</em>
                     </MenuItem>
                     {ports.length > 0 && watch('boardIndex')
@@ -324,11 +328,11 @@ const AddOutputDevice = ({
                     error={Boolean(errors.deviceId)}
                     {...(errors.deviceId && { helperText: errors.deviceId.message })}
                   >
-                    <MenuItem value=''>
-                      <em>selecione</em>
+                    <MenuItem value='' disabled>
+                      <em>{watch('boardId') ? 'Selecione' : 'Selecione uma porta primeiro'}</em>
                     </MenuItem>
                     {devices?.data.map((device: any) => {
-                      if (device.moduleType === 'OUTPUT') {
+                      if (device.moduleType === 'OUTPUT' && watch('boardId')) {
                         return (
                           <MenuItem key={device._id} value={device._id}>
                             {device.modelName}
