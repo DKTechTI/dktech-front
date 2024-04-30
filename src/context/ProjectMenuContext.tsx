@@ -18,6 +18,7 @@ interface PortsProps {
   keysQuantity: number
   keysQuantityAvaliable: number
   sequence: SequenceProps[]
+  sequenceUpdate: SequenceProps[]
 }
 
 type projectMenuValuesType = {
@@ -27,6 +28,7 @@ type projectMenuValuesType = {
   setRefreshMenu: (value: boolean) => void
   handleAvaliableInputPorts: (centralId: string) => Promise<any[]>
   handleAvaliableOutputPorts: (centralId: string) => Promise<any[]>
+  handleCheckDeviceSequence: (deviceId: string, centralId: string, where: string) => number | null
 }
 
 const defaultProvider: projectMenuValuesType = {
@@ -35,7 +37,8 @@ const defaultProvider: projectMenuValuesType = {
   refreshMenu: false,
   setRefreshMenu: () => Boolean,
   handleAvaliableInputPorts: () => Promise.resolve([]),
-  handleAvaliableOutputPorts: () => Promise.resolve([])
+  handleAvaliableOutputPorts: () => Promise.resolve([]),
+  handleCheckDeviceSequence: () => null
 }
 
 const ProjectMenuContext = createContext(defaultProvider)
@@ -82,9 +85,17 @@ const ProjectMenuProvider = ({ children }: Props) => {
         }
 
         const arraySequenceAvaliable: SequenceProps[] = []
+        const arraySequenceUpdate: SequenceProps[] = []
 
         for (let i = 0; i < sequenceLimit; i++) {
           const isAvailable = central.indexMenuDevices.inputs[inputPort][i] === null
+
+          if (!isAvailable) {
+            arraySequenceUpdate.push({
+              index: String(i),
+              avaliable: !isAvailable
+            })
+          }
 
           arraySequenceAvaliable.push({
             index: String(i),
@@ -102,7 +113,8 @@ const ProjectMenuProvider = ({ children }: Props) => {
           keysLimit: keysLimit,
           keysQuantity: keysQuantity,
           keysQuantityAvaliable: keysQuantityAvaliable,
-          sequence: arraySequenceAvaliable
+          sequence: arraySequenceAvaliable,
+          sequenceUpdate: arraySequenceUpdate
         })
       })
 
@@ -140,9 +152,17 @@ const ProjectMenuProvider = ({ children }: Props) => {
         }
 
         const arraySequenceAvaliable: SequenceProps[] = []
+        const arraySequenceUpdate: SequenceProps[] = []
 
         for (let i = 0; i < sequenceLimit; i++) {
           const isAvailable = central.indexMenuDevices.outputs[outputPort][i] === null
+
+          if (!isAvailable) {
+            arraySequenceUpdate.push({
+              index: String(i),
+              avaliable: !isAvailable
+            })
+          }
 
           arraySequenceAvaliable.push({
             index: String(i),
@@ -160,7 +180,8 @@ const ProjectMenuProvider = ({ children }: Props) => {
           keysLimit: keysLimit,
           keysQuantity: keysQuantity,
           keysQuantityAvaliable: keysQuantityAvaliable,
-          sequence: arraySequenceAvaliable
+          sequence: arraySequenceAvaliable,
+          sequenceUpdate: arraySequenceUpdate
         })
       })
 
@@ -172,6 +193,25 @@ const ProjectMenuProvider = ({ children }: Props) => {
     }
   }
 
+  const handleCheckDeviceSequence = (deviceId: string, centralId: string, where: string) => {
+    const central = menu.devices.find((central: any) => central.projectDeviceId === centralId)
+    if (central) {
+      const portQuantity = central[where].length
+
+      for (let i = 0; i < portQuantity; i++) {
+        const devices = central[where][i]
+
+        if (devices['inputs'].length > 0) {
+          const deviceSequence = devices['inputs'].findIndex((device: any) => device.projectDeviceId === deviceId)
+
+          if (deviceSequence >= 0) {
+            return deviceSequence
+          }
+        }
+      }
+    }
+  }
+
   return (
     <ProjectMenuContext.Provider
       value={{
@@ -180,7 +220,8 @@ const ProjectMenuProvider = ({ children }: Props) => {
         refreshMenu,
         setRefreshMenu,
         handleAvaliableInputPorts,
-        handleAvaliableOutputPorts
+        handleAvaliableOutputPorts,
+        handleCheckDeviceSequence
       }}
     >
       {children}

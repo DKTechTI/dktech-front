@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { SyntheticEvent, useEffect, useRef, useState } from 'react'
 
 import { Box, Button, CardContent, CardHeader, CircularProgress, Grid, MenuItem, Typography } from '@mui/material'
 
@@ -44,7 +44,7 @@ interface KeypadProps {
 
 const Keypad = ({ deviceData, refresh, setRefresh }: KeypadProps) => {
   const { setDeviceId, setProjectDeviceId, deviceKeys, loadingDeviceKeys } = useDeviceKeys()
-  const { handleAvaliableInputPorts, setRefreshMenu, refreshMenu } = useProjectMenu()
+  const { handleAvaliableInputPorts, setRefreshMenu, refreshMenu, handleCheckDeviceSequence } = useProjectMenu()
 
   const deviceKeysRef = useRef(deviceKeys)
 
@@ -56,6 +56,9 @@ const Keypad = ({ deviceData, refresh, setRefresh }: KeypadProps) => {
     handleSubmit,
     watch,
     getValues,
+    setValue,
+    setError,
+    clearErrors,
     formState: { errors }
   } = useForm({
     values: {
@@ -72,28 +75,58 @@ const Keypad = ({ deviceData, refresh, setRefresh }: KeypadProps) => {
     resolver: yupResolver(schema)
   })
 
-  const handleCheckAvailablePorts = async (data: any) => {
-    const inputPorts = await handleAvaliableInputPorts(data.centralId)
+  const handleCheckAvailablePortsAndSequences = async (centralId: string) => {
+    const inputPorts = await handleAvaliableInputPorts(centralId)
+    const inputSequence = inputPorts[Number(watch('boardIndex'))]?.sequenceUpdate
 
-    return Array.isArray(inputPorts)
+    const portsOptions = Array.isArray(inputPorts)
       ? inputPorts.map((port: any, index: number) => (
           <MenuItem key={index} value={port.port} disabled={!port.avaliable}>
             {checkPortName(Number(port?.port))}
           </MenuItem>
         ))
       : null
-  }
 
-  const handleCheckAvailableSequence = async (data: any) => {
-    const inputSequence = (await handleAvaliableInputPorts(data.centralId))[Number(watch('boardIndex'))]?.sequence
-
-    return Array.isArray(inputSequence)
+    const sequencesOptions = Array.isArray(inputSequence)
       ? inputSequence.map((sequence: any, index: number) => (
           <MenuItem key={index} value={sequence.index} disabled={!sequence.avaliable}>
             {checkSequenceIndex(sequence.index)}
           </MenuItem>
         ))
       : null
+
+    return { portsOptions, sequencesOptions }
+  }
+
+  const handleChangeSequence = (event: SyntheticEvent, data: any) => {
+    const { value } = event.target as HTMLInputElement
+
+    if (value) {
+      const previousSequence = getValues('index')
+
+      api
+        .put(`/projectDevices/update-menu-index/${data?.centralId}`, {
+          from: Number(previousSequence),
+          to: Number(value),
+          moduleType: data?.moduleType,
+          boardIndex: data?.boardIndex
+        })
+        .then(response => {
+          if (response.status === 200) {
+            setValue('index', value)
+            clearErrors('index')
+            setRefreshMenu(!refreshMenu)
+          }
+        })
+        .catch(() => {
+          toast.error('Erro ao alterar sequência, tente novamente mais tarde')
+        })
+
+      return
+    }
+
+    setValue('index', value)
+    setError('index', { type: 'manual', message: 'Sequência obrigatória' })
   }
 
   const onSubmit = (formData: FormData) => {
@@ -128,13 +161,14 @@ const Keypad = ({ deviceData, refresh, setRefresh }: KeypadProps) => {
   useEffect(() => {
     const fetchData = async () => {
       if (deviceData) {
-        const [portsResponse, sequencesResponse] = await Promise.all([
-          handleCheckAvailablePorts(deviceData),
-          handleCheckAvailableSequence(deviceData)
-        ])
+        const { portsOptions, sequencesOptions } = await handleCheckAvailablePortsAndSequences(deviceData?.centralId)
 
-        setPorts(portsResponse)
-        setSequences(sequencesResponse)
+        setPorts(portsOptions)
+        setSequences(sequencesOptions)
+
+        const deviceSequence = handleCheckDeviceSequence(deviceData?._id, deviceData?.centralId, 'inputPorts')
+
+        if (String(deviceSequence)) setValue('index', String(deviceSequence))
       }
     }
 
@@ -165,7 +199,7 @@ const Keypad = ({ deviceData, refresh, setRefresh }: KeypadProps) => {
                     error={Boolean(errors.modelName)}
                     {...(errors.modelName && { helperText: errors.modelName.message })}
                   >
-                    <MenuItem value=''>
+                    <MenuItem value='' disabled>
                       <em>selecione</em>
                     </MenuItem>
                     {deviceData?.modelName && <MenuItem value={deviceData.modelName}>{deviceData.modelName}</MenuItem>}
@@ -210,7 +244,7 @@ const Keypad = ({ deviceData, refresh, setRefresh }: KeypadProps) => {
                     error={Boolean(errors.boardIndex)}
                     {...(errors.boardIndex && { helperText: errors.boardIndex.message })}
                   >
-                    <MenuItem value=''>
+                    <MenuItem value='' disabled>
                       <em>selecione</em>
                     </MenuItem>
                     {ports}
@@ -222,7 +256,7 @@ const Keypad = ({ deviceData, refresh, setRefresh }: KeypadProps) => {
               <Controller
                 name='index'
                 control={control}
-                render={({ field: { value, onChange, onBlur } }) => (
+                render={({ field: { value, onBlur } }) => (
                   <CustomTextField
                     select
                     fullWidth
@@ -230,11 +264,11 @@ const Keypad = ({ deviceData, refresh, setRefresh }: KeypadProps) => {
                     required
                     value={value || ''}
                     onBlur={onBlur}
-                    onChange={onChange}
+                    onChange={e => handleChangeSequence(e, deviceData)}
                     error={Boolean(errors.index)}
                     {...(errors.index && { helperText: errors.index.message })}
                   >
-                    <MenuItem value=''>
+                    <MenuItem value='' disabled>
                       <em>selecione</em>
                     </MenuItem>
                     {sequences}

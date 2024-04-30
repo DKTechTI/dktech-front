@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { SyntheticEvent, useEffect, useState } from 'react'
 
 import { Box, Button, CardContent, CardHeader, Grid, MenuItem } from '@mui/material'
 
@@ -42,7 +42,7 @@ interface ModuleProps {
 
 const Module = ({ deviceData, refresh, setRefresh }: ModuleProps) => {
   const { setDeviceId } = useDeviceKeys()
-  const { handleAvaliableOutputPorts, setRefreshMenu, refreshMenu } = useProjectMenu()
+  const { handleAvaliableOutputPorts, setRefreshMenu, refreshMenu, handleCheckDeviceSequence } = useProjectMenu()
 
   const [ports, setPorts] = useState<any[] | null>(null)
   const [sequences, setSequences] = useState<any[] | null>(null)
@@ -52,6 +52,9 @@ const Module = ({ deviceData, refresh, setRefresh }: ModuleProps) => {
     handleSubmit,
     watch,
     getValues,
+    setValue,
+    setError,
+    clearErrors,
     formState: { errors }
   } = useForm({
     values: {
@@ -68,25 +71,58 @@ const Module = ({ deviceData, refresh, setRefresh }: ModuleProps) => {
     resolver: yupResolver(schema)
   })
 
-  const handleCheckAvailablePorts = async (deviceData: any) => {
-    const outputPorts = await handleAvaliableOutputPorts(deviceData.centralId)
+  const handleCheckAvailablePortsAndSequences = async (centralId: string) => {
+    const outputPorts = await handleAvaliableOutputPorts(centralId)
+    const outputSequence = outputPorts[Number(watch('boardIndex'))]?.sequenceUpdate
 
-    return outputPorts.map((port: any, index: number) => (
-      <MenuItem key={index} value={port.port} disabled={!port.avaliable}>
-        {checkPortName(Number(port?.port))}
-      </MenuItem>
-    ))
+    const portsOptions = Array.isArray(outputSequence)
+      ? outputPorts.map((port: any, index: number) => (
+          <MenuItem key={index} value={port.port} disabled={!port.avaliable}>
+            {checkPortName(Number(port?.port))}
+          </MenuItem>
+        ))
+      : null
+
+    const sequencesOptions = Array.isArray(outputSequence)
+      ? outputSequence.map((sequence: any, index: number) => (
+          <MenuItem key={index} value={sequence.index} disabled={!sequence.avaliable}>
+            {checkSequenceIndex(sequence.index)}
+          </MenuItem>
+        ))
+      : null
+
+    return { portsOptions, sequencesOptions }
   }
 
-  const handleCheckAvailableSequence = async (deviceData: any) => {
-    const outputSequence = (await handleAvaliableOutputPorts(deviceData.centralId))[Number(watch('boardIndex'))]
-      ?.sequence
+  const handleChangeSequence = (event: SyntheticEvent, data: any) => {
+    const { value } = event.target as HTMLInputElement
 
-    return outputSequence.map((sequence: any, index: number) => (
-      <MenuItem key={index} value={sequence.index} disabled={!sequence.avaliable}>
-        {checkSequenceIndex(sequence.index)}
-      </MenuItem>
-    ))
+    if (value) {
+      const previousSequence = getValues('index')
+
+      api
+        .put(`/projectDevices/update-menu-index/${data?.centralId}`, {
+          from: Number(previousSequence),
+          to: Number(value),
+          moduleType: data?.moduleType,
+          boardIndex: data?.boardIndex
+        })
+        .then(response => {
+          if (response.status === 200) {
+            setValue('index', value)
+            clearErrors('index')
+            setRefreshMenu(!refreshMenu)
+          }
+        })
+        .catch(() => {
+          toast.error('Erro ao alterar sequência, tente novamente mais tarde')
+        })
+
+      return
+    }
+
+    setValue('index', value)
+    setError('index', { type: 'manual', message: 'Sequência obrigatória' })
   }
 
   const onSubmit = (formData: FormData) => {
@@ -118,13 +154,14 @@ const Module = ({ deviceData, refresh, setRefresh }: ModuleProps) => {
   useEffect(() => {
     const fetchData = async () => {
       if (deviceData) {
-        const [portsResponse, sequencesResponse] = await Promise.all([
-          handleCheckAvailablePorts(deviceData),
-          handleCheckAvailableSequence(deviceData)
-        ])
+        const { portsOptions, sequencesOptions } = await handleCheckAvailablePortsAndSequences(deviceData?.centralId)
 
-        setPorts(portsResponse)
-        setSequences(sequencesResponse)
+        setPorts(portsOptions)
+        setSequences(sequencesOptions)
+
+        const deviceSequence = handleCheckDeviceSequence(deviceData?._id, deviceData?.centralId, 'outputPorts')
+
+        if (String(deviceSequence)) setValue('index', String(deviceSequence))
       }
     }
 
@@ -155,7 +192,7 @@ const Module = ({ deviceData, refresh, setRefresh }: ModuleProps) => {
                     error={Boolean(errors.modelName)}
                     {...(errors.modelName && { helperText: errors.modelName.message })}
                   >
-                    <MenuItem value=''>
+                    <MenuItem value='' disabled>
                       <em>selecione</em>
                     </MenuItem>
                     {deviceData?.modelName && <MenuItem value={deviceData.modelName}>{deviceData.modelName}</MenuItem>}
@@ -200,7 +237,7 @@ const Module = ({ deviceData, refresh, setRefresh }: ModuleProps) => {
                     error={Boolean(errors.boardIndex)}
                     {...(errors.boardIndex && { helperText: errors.boardIndex.message })}
                   >
-                    <MenuItem value=''>
+                    <MenuItem value='' disabled>
                       <em>selecione</em>
                     </MenuItem>
                     {ports}
@@ -213,7 +250,7 @@ const Module = ({ deviceData, refresh, setRefresh }: ModuleProps) => {
               <Controller
                 name='index'
                 control={control}
-                render={({ field: { value, onChange, onBlur } }) => (
+                render={({ field: { value, onBlur } }) => (
                   <CustomTextField
                     select
                     fullWidth
@@ -221,11 +258,11 @@ const Module = ({ deviceData, refresh, setRefresh }: ModuleProps) => {
                     required
                     value={value || ''}
                     onBlur={onBlur}
-                    onChange={onChange}
+                    onChange={e => handleChangeSequence(e, deviceData)}
                     error={Boolean(errors.index)}
                     {...(errors.index && { helperText: errors.index.message })}
                   >
-                    <MenuItem value=''>
+                    <MenuItem value='' disabled>
                       <em>selecione</em>
                     </MenuItem>
                     {sequences}
