@@ -47,6 +47,8 @@ interface FormData {
   centralId: string
   boardId: string
   boardIndex: string
+  type: string
+  moduleType: string
   index: number
   environmentId: string
   deviceId: string
@@ -140,6 +142,24 @@ const AddOutputDevice = ({
 
     setValue('boardIndex', value)
     setError('boardIndex', { type: 'manual', message: 'Porta obrigatória' })
+  }
+
+  const handleSetDevice = (event: SyntheticEvent, devices: any) => {
+    const { value } = event.target as HTMLInputElement
+
+    if (value) {
+      const device = devices.filter((device: any) => device._id === value)[0]
+
+      setValue('deviceId', value)
+      setValue('moduleType', device.moduleType)
+      setValue('type', device.type)
+      clearErrors('deviceId')
+
+      return
+    }
+
+    setValue('deviceId', value)
+    setError('deviceId', { type: 'manual', message: 'Dispositivo de entrada obrigatório' })
   }
 
   const handleSetVoiceActivation = (event: SyntheticEvent) => {
@@ -316,7 +336,7 @@ const AddOutputDevice = ({
               <Controller
                 name='deviceId'
                 control={control}
-                render={({ field: { value, onChange, onBlur } }) => (
+                render={({ field: { value, onBlur } }) => (
                   <CustomTextField
                     select
                     fullWidth
@@ -324,7 +344,7 @@ const AddOutputDevice = ({
                     required
                     value={value || ''}
                     onBlur={onBlur}
-                    onChange={onChange}
+                    onChange={e => handleSetDevice(e, devices?.data)}
                     error={Boolean(errors.deviceId)}
                     {...(errors.deviceId && { helperText: errors.deviceId.message })}
                   >
