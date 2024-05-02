@@ -17,6 +17,7 @@ import AddInputDevice from './AddInputDevice'
 
 import AddOutputDevice from './AddOutputDevice'
 import EditEnvironment from './Edit'
+import { Draggable, Droppable } from 'react-beautiful-dnd'
 
 interface EnvironmentsProps {
   environments: any
@@ -197,19 +198,33 @@ const Environments = ({ environments }: EnvironmentsProps) => {
                   </Box>
                 }
               >
-                {environment.outputs.map((output: any, index: number) => {
-                  return (
-                    <TreeItem
-                      key={output.projectDeviceId + output.projectDeviceKeyId}
-                      nodeId={output.projectDeviceId + output.projectDeviceKeyId}
-                      label={
-                        <Typography component={'span'} variant={'h6'}>
-                          [{index + 1}] {output.deviceKeyName} {output.deviceName}
-                        </Typography>
-                      }
-                    ></TreeItem>
-                  )
-                })}
+                <Droppable droppableId='outputs'>
+                  {provided => (
+                    <Box ref={provided.innerRef} {...provided.droppableProps}>
+                      {environment.outputs.map((output: any, index: number) => (
+                        <Draggable
+                          key={output.projectDeviceKeyId}
+                          draggableId={output.projectDeviceKeyId}
+                          index={index}
+                        >
+                          {provided => (
+                            <Box ref={provided.innerRef} {...provided.draggableProps} {...provided.dragHandleProps}>
+                              <TreeItem
+                                nodeId={output.projectDeviceId + output.projectDeviceKeyId}
+                                label={
+                                  <Typography component={'span'} variant={'h6'}>
+                                    [{index + 1}] {output.deviceKeyName} {output.deviceName}
+                                  </Typography>
+                                }
+                              />
+                            </Box>
+                          )}
+                        </Draggable>
+                      ))}
+                      {provided.placeholder}
+                    </Box>
+                  )}
+                </Droppable>
               </TreeItem>
             </TreeItem>
           )

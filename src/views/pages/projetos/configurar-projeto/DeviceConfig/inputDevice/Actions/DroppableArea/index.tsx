@@ -7,7 +7,7 @@ interface DroppableAreaProps {
 
 const DroppableArea = ({ children }: DroppableAreaProps) => {
   return (
-    <Droppable droppableId='droppable-1'>
+    <Droppable droppableId='updateIndex'>
       {provider => (
         <TableBody ref={provider.innerRef} {...provider.droppableProps}>
           {children}

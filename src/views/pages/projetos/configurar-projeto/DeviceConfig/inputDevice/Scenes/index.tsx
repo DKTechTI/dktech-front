@@ -70,7 +70,7 @@ const Scenes = ({ keyId }: ScenesProps) => {
 
   const { deviceId, projectDeviceType } = useDeviceKeys()
 
-  const { setProjectSceneId } = useActionsDnD()
+  const { setProjectSceneId, setOrderActions } = useActionsDnD()
 
   const {
     control: controlScene,
@@ -266,6 +266,7 @@ const Scenes = ({ keyId }: ScenesProps) => {
       const sceneTypeValue = checkSceneTypeValue(sceneData?.data?.sceneType)
       handleSwitchSceneType(sceneTypeValue)
       setProjectSceneId(sceneData.data?._id)
+      sceneData.data.indexActions ? setOrderActions(sceneData.data.indexActions) : setOrderActions(null)
 
       return
     }
