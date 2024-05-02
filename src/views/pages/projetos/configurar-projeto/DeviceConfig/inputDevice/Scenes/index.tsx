@@ -27,8 +27,6 @@ import useGetDataApi from 'src/hooks/useGetDataApi'
 import { useActionsDnD } from 'src/hooks/useActionsDnD'
 import { useDeviceKeys } from 'src/hooks/useDeviceKeys'
 
-import { api } from 'src/services/api'
-
 import {
   checkEventTypeValue,
   checkSceneTypeValue,
@@ -38,6 +36,7 @@ import {
 } from 'src/utils/scene'
 
 import toast from 'react-hot-toast'
+import { useAutoSave } from 'src/hooks/useAutoSave'
 
 const schemaScene = yup.object().shape({
   name: yup.string().required('Nome da cena obrigatório'),
@@ -70,8 +69,8 @@ const Scenes = ({ keyId }: ScenesProps) => {
 
   const { id } = router.query
 
+  const { handleSaveOnStateChange } = useAutoSave()
   const { deviceId, projectDeviceType } = useDeviceKeys()
-
   const { setProjectSceneId, setOrderActions } = useActionsDnD()
 
   const {
@@ -111,44 +110,11 @@ const Scenes = ({ keyId }: ScenesProps) => {
     onOffScene: false
   })
 
-  const handleSwitchSceneType = useCallback(
-    (sceneType: string) => {
-      switch (sceneType) {
-        case 'loadingScene':
-          setSwitchOptions({
-            loadingScene: true,
-            toggleScene: false,
-            onOffScene: false
-          })
-          setValueScene('sceneType', 'LOAD')
+  const handleCheckIsEmpty = (data: any) => {
+    return Object.keys(data).length === 0
+  }
 
-          return
-        case 'toggleScene':
-          setSwitchOptions({
-            loadingScene: false,
-            toggleScene: true,
-            onOffScene: false
-          })
-          setValueScene('sceneType', 'TOGGLE')
-
-          return
-        case 'onOffScene':
-          setSwitchOptions({
-            loadingScene: false,
-            toggleScene: false,
-            onOffScene: true
-          })
-          setValueScene('sceneType', 'ON/OFF')
-
-          return
-        default:
-          return switchOptions
-      }
-    },
-    [setValueScene, switchOptions]
-  )
-
-  const handleChangeEventType = (event: SyntheticEvent) => {
+  const handleChangeEventType = async (event: SyntheticEvent) => {
     const target = event.target as HTMLInputElement
 
     resetScene()
@@ -218,31 +184,73 @@ const Scenes = ({ keyId }: ScenesProps) => {
   }
 
   const onSubmitScene = (formData: FormDataScene) => {
-    handleEventValueForRequest(formData.eventValue)
-      .then(() => {
-        const responseMessage: { [key: number]: string } = {
-          201: 'Cena criada com sucesso!',
-          200: 'Cena atualizada com sucesso!'
+    handleEventValueForRequest(formData.eventValue).then(() => {
+      const responseMessage: { [key: number]: string } = {
+        201: 'Cena criada com sucesso!',
+        200: 'Cena atualizada com sucesso!',
+        404: 'Erro ao criar cena, tente novamente mais tarde',
+        409: 'Erro ao criar cena, tente novamente mais tarde',
+        500: 'Erro ao criar cena, tente novamente mais tarde'
+      }
+
+      const data = formatSceneObject(getValuesScene())
+
+      handleSaveOnStateChange(`/projectScenes`, data, 'PATCH').then(response => {
+        if (response) {
+          if (response.status >= 200) {
+            toast.success(responseMessage[response.status])
+            setProjectSceneId(response.data.data._id)
+
+            return
+          }
+
+          toast.error(responseMessage[response.status])
         }
-
-        const data = formatSceneObject(getValuesScene())
-
-        api
-          .patch('/projectScenes', data)
-          .then(response => {
-            if (response.status) {
-              setProjectSceneId(response.data.data._id)
-              toast.success(responseMessage[response.status])
-            }
-          })
-          .catch(() => {
-            toast.error('Erro ao criar cena, tente novamente mais tarde')
-          })
       })
-      .catch(err => {
-        console.error(err)
-      })
+    })
   }
+
+  const handleSwitchSceneType = useCallback(
+    (sceneType: string) => {
+      switch (sceneType) {
+        case 'loadingScene':
+          setSwitchOptions({
+            loadingScene: true,
+            toggleScene: false,
+            onOffScene: false
+          })
+          setValueScene('sceneType', 'LOAD')
+          if (handleCheckIsEmpty(errorsScene)) onSubmitScene(watchScene())
+
+          return
+        case 'toggleScene':
+          setSwitchOptions({
+            loadingScene: false,
+            toggleScene: true,
+            onOffScene: false
+          })
+          setValueScene('sceneType', 'TOGGLE')
+          if (handleCheckIsEmpty(errorsScene)) onSubmitScene(watchScene())
+
+          return
+        case 'onOffScene':
+          setSwitchOptions({
+            loadingScene: false,
+            toggleScene: false,
+            onOffScene: true
+          })
+          setValueScene('sceneType', 'ON/OFF')
+          if (handleCheckIsEmpty(errorsScene)) onSubmitScene(watchScene())
+
+          return
+        default:
+          return switchOptions
+      }
+    },
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [setValueScene, switchOptions]
+  )
 
   useEffect(() => {
     if (error?.response?.status === 404) setProjectSceneId(null)
@@ -288,13 +296,13 @@ const Scenes = ({ keyId }: ScenesProps) => {
               <Controller
                 name='name'
                 control={controlScene}
-                render={({ field: { value, onChange, onBlur } }) => (
+                render={({ field: { value, onChange } }) => (
                   <CustomTextField
                     fullWidth
                     label='Nome da Cena'
                     required
                     value={value || ''}
-                    onBlur={onBlur}
+                    onBlur={handleSubmitScene(onSubmitScene)}
                     onChange={onChange}
                     placeholder='Nome da Cena'
                     error={Boolean(errorsScene.name)}
@@ -307,14 +315,14 @@ const Scenes = ({ keyId }: ScenesProps) => {
               <Controller
                 name='eventValue'
                 control={controlScene}
-                render={({ field: { value, onBlur } }) => (
+                render={({ field: { value } }) => (
                   <CustomTextField
                     select
                     fullWidth
                     label='Tipo de Evento'
                     required
                     value={value || ''}
-                    onBlur={onBlur}
+                    onBlur={handleSubmitScene(onSubmitScene)}
                     onChange={e => handleChangeEventType(e)}
                     error={Boolean(errorsScene.eventValue)}
                     {...(errorsScene.eventValue && { helperText: errorsScene.eventValue.message })}
@@ -346,14 +354,14 @@ const Scenes = ({ keyId }: ScenesProps) => {
               <Controller
                 name='ledAction'
                 control={controlScene}
-                render={({ field: { value, onChange, onBlur } }) => (
+                render={({ field: { value, onChange } }) => (
                   <CustomTextField
                     select
                     fullWidth
                     label='Led de Ação'
                     required
                     value={value || ''}
-                    onBlur={onBlur}
+                    onBlur={handleSubmitScene(onSubmitScene)}
                     onChange={onChange}
                     error={Boolean(errorsScene.ledAction)}
                     {...(errorsScene.ledAction && { helperText: errorsScene.ledAction.message })}
@@ -404,17 +412,6 @@ const Scenes = ({ keyId }: ScenesProps) => {
             </Grid>
           </Grid>
         </CardContent>
-        <CardActions
-          sx={{
-            paddingBottom: '0px !important'
-          }}
-        >
-          <Box sx={{ width: '100%', display: 'flex', alignContent: 'center', justifyContent: 'end' }}>
-            <Button variant='contained' onClick={handleSubmitScene(onSubmitScene)}>
-              Salvar
-            </Button>
-          </Box>
-        </CardActions>
       </Card>
       <ActionsConfig />
     </Box>

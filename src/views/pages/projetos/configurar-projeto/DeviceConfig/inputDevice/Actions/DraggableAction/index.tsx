@@ -26,7 +26,7 @@ interface DraggableActionProps {
 
 const DraggableAction = ({ row, index }: DraggableActionProps) => {
   const { setActions, actions } = useActionsDnD()
-  const { setApiUrl, setStorageData, setHttpMethod } = useAutoSave()
+  const { handleSaveOnStateChange } = useAutoSave()
 
   const [actionId, setActionId] = useState('')
   const [type, setType] = useState<ValueType | null>(null)
@@ -107,9 +107,7 @@ const DraggableAction = ({ row, index }: DraggableActionProps) => {
   const onSubmit = (data: any): void => {
     if (isDirty) {
       const formattedData = handleFormData(data)
-      setApiUrl(`/projectSceneActions/${row._id}`)
-      setHttpMethod('PUT')
-      setStorageData(formattedData)
+      handleSaveOnStateChange(`/projectSceneActions/${row._id}`, formattedData, 'PUT')
       setIsDirty(false)
     }
   }

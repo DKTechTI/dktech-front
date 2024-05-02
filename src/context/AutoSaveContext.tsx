@@ -1,94 +1,100 @@
-import React, { createContext, useEffect, useRef, useState } from 'react'
+import React, { createContext, useRef, useState } from 'react'
 import equals from 'fast-deep-equal'
+
+import { useProjectMenu } from 'src/hooks/useProjectMenu'
+import { useDeviceKeys } from 'src/hooks/useDeviceKeys'
+
 import { api } from 'src/services/api'
-import toast from 'react-hot-toast'
 
 type HttpMethod = 'PATCH' | 'PUT' | 'POST'
+type refreshTypeValues = 'menu' | 'deviceKeys'
 
-type autoSaveValuesType = {
+type AutoSaveValuesType = {
   saveState: string
-  setStorageData: (data: any) => void
-  setApiUrl: (url: string | null) => void
-  setHttpMethod: (method: HttpMethod) => void
+  handleSaveOnStateChange: (
+    apiUrl: string,
+    storageData: any,
+    httpMethod: HttpMethod,
+    refreshOn?: refreshTypeValues[]
+  ) => Promise<any>
 }
 
-const defaultProvider: autoSaveValuesType = {
+const defaultProvider: AutoSaveValuesType = {
   saveState: 'saved',
-  setStorageData: () => null,
-  setApiUrl: () => null,
-  setHttpMethod: () => null
+  handleSaveOnStateChange: () => Promise.resolve()
 }
 
 const AutoSaveContext = createContext(defaultProvider)
 
-type Props = {
-  children: React.ReactNode
-}
-
-const AutoSaveProvider = ({ children }: Props) => {
+const AutoSaveProvider = ({ children }: { children: React.ReactNode }) => {
   const [saveState, setSaveState] = useState<string>('saved')
-  const [storageData, setStorageData] = useState<any>({})
-  const [apiUrl, setApiUrl] = useState<string | null>(null)
-  const [httpMethod, setHttpMethod] = useState<HttpMethod>('POST')
+
+  const { refreshMenu, setRefreshMenu } = useProjectMenu()
+  const { refreshDeviceKeys, setRefreshDeviceKeys } = useDeviceKeys()
+
+  const refreshType: { [key in refreshTypeValues]: () => void } = {
+    menu: () => setRefreshMenu(!refreshMenu),
+    deviceKeys: () => setRefreshDeviceKeys(!refreshDeviceKeys)
+  }
 
   const prevData = useRef<any>({})
 
-  useEffect(() => {
-    if (saveState === 'saved' && !equals(prevData.current, storageData)) {
-      setSaveState('waitingToSave')
-    }
-    prevData.current = storageData
-  }, [saveState, storageData])
+  const handleSaveOnStateChange = async (
+    apiUrl: string,
+    storageData: any,
+    httpMethod: HttpMethod,
+    refreshOn?: refreshTypeValues[]
+  ) => {
+    let response = null
 
-  useEffect(() => {
-    const handleSaveOnStateChange = () => {
-      if (saveState === 'waitingToSave') {
-        const timeoutId = setTimeout(() => {
-          setSaveState('saving')
-          const savePromise = apiUrl ? saveToApi(storageData) : Promise.resolve()
+    const saveToApi = async () => {
+      try {
+        setSaveState('saving')
+        const savePromise = apiUrl ? saveToApiMethod(apiUrl, storageData, httpMethod) : Promise.resolve()
 
-          if (savePromise && typeof savePromise.then === 'function') {
-            savePromise
-              .then(() => {
-                setSaveState('saved')
-                toast.success('Salvo com sucesso!')
-              })
-              .catch(() => {
-                setSaveState('saved')
-                toast.error('Erro ao salvar, tente novamente mais tarde!')
-              })
+        if (savePromise && typeof savePromise.then === 'function') {
+          const response = await savePromise
+
+          if (refreshOn && refreshOn.length > 0) {
+            refreshOn.forEach((refresh: refreshTypeValues) => refreshType[refresh]())
           }
-        }, 0)
 
-        return () => {
-          clearTimeout(timeoutId)
+          setSaveState('saved')
+
+          return response
         }
+      } catch (error) {
+        setSaveState('saved')
+
+        return error
       }
     }
 
-    handleSaveOnStateChange()
+    if (saveState === 'saved' && !equals(prevData.current, storageData)) {
+      response = await saveToApi()
+    }
 
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [saveState])
+    prevData.current = storageData
 
-  const saveToApi = (data: any) => {
+    return response
+  }
+
+  const saveToApiMethod = async (apiUrl: string, storageData: any, httpMethod: HttpMethod) => {
     switch (httpMethod) {
       case 'PATCH':
-        return api.patch(apiUrl!, data)
+        return api.patch(apiUrl, storageData)
       case 'PUT':
-        return api.put(apiUrl!, data)
+        return api.put(apiUrl, storageData)
       case 'POST':
-        return api.post(apiUrl!, data)
+        return api.post(apiUrl, storageData)
       default:
         throw new Error('Método HTTP inválido')
     }
   }
 
-  const contextValue: autoSaveValuesType = {
+  const contextValue: AutoSaveValuesType = {
     saveState,
-    setHttpMethod,
-    setStorageData,
-    setApiUrl
+    handleSaveOnStateChange
   }
 
   return <AutoSaveContext.Provider value={contextValue}>{children}</AutoSaveContext.Provider>
