@@ -42,6 +42,7 @@ import toast from 'react-hot-toast'
 const schemaScene = yup.object().shape({
   name: yup.string().required('Nome da cena obrigatório'),
   eventValue: yup.string().required('Tipo de evento obrigatório'),
+  ledAction: yup.string().required('Led de ação obrigatório'),
   sceneType: yup.string().required('Tipo da cena obrigatório')
 })
 
@@ -55,6 +56,7 @@ interface FormDataScene {
   eventValue: string
   pulseQuantity?: number
   timePressed?: number
+  ledAction: string
   isRepeatEvent: boolean
   name: string
 }
@@ -301,7 +303,7 @@ const Scenes = ({ keyId }: ScenesProps) => {
                 )}
               />
             </Grid>
-            <Grid item xs={12}>
+            <Grid item xs={12} sm={6}>
               <Controller
                 name='eventValue'
                 control={controlScene}
@@ -336,6 +338,33 @@ const Scenes = ({ keyId }: ScenesProps) => {
                       Repetição
                     </MenuItem>
                     <MenuItem value='repeat'>Manter pressionado</MenuItem>
+                  </CustomTextField>
+                )}
+              />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <Controller
+                name='ledAction'
+                control={controlScene}
+                render={({ field: { value, onChange, onBlur } }) => (
+                  <CustomTextField
+                    select
+                    fullWidth
+                    label='Led de Ação'
+                    required
+                    value={value || ''}
+                    onBlur={onBlur}
+                    onChange={onChange}
+                    error={Boolean(errorsScene.ledAction)}
+                    {...(errorsScene.ledAction && { helperText: errorsScene.ledAction.message })}
+                  >
+                    <MenuItem disabled value=''>
+                      <em>selecione</em>
+                    </MenuItem>
+                    <MenuItem value='ON'>Ligar</MenuItem>
+                    <MenuItem value='OFF'>Desligar</MenuItem>
+                    <MenuItem value='FOLLOW'>Seguir a Cena</MenuItem>
+                    <MenuItem value='NONE'>Sem Efeito</MenuItem>
                   </CustomTextField>
                 )}
               />

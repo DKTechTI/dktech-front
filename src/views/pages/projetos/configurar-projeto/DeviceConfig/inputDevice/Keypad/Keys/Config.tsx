@@ -18,7 +18,6 @@ import Scenes from '../../Scenes'
 
 const schemaKey = yup.object().shape({
   name: yup.string().required('Nome da tecla obrigatório'),
-  ledAction: yup.string().required('Led keypad obrigatório'),
   keyType: yup.string().required('Tipo da tecla obrigatório'),
   environmentId: yup.string().required('Ambiente da tecla obrigatório')
 })
@@ -31,7 +30,6 @@ interface FormDataKey {
   moduleType: string
   keyType: string
   keyOrder: string
-  ledAction: string
   name: string
 }
 
@@ -66,8 +64,7 @@ const Config = ({ keyData }: ConfigProps) => {
       name: keyData?.name ?? '',
       moduleType: keyData?.moduleType ?? '',
       keyType: keyData?.keyType ?? '',
-      keyOrder: String(keyData?.keyOrder) ?? '',
-      ledAction: keyData?.ledAction ?? ''
+      keyOrder: String(keyData?.keyOrder) ?? ''
     } as FormDataKey,
     mode: 'onBlur',
     resolver: yupResolver(schemaKey)
@@ -104,7 +101,7 @@ const Config = ({ keyData }: ConfigProps) => {
               <Grid item xs={12}>
                 <Typography variant='h6'>Configuração da Tecla</Typography>
               </Grid>
-              <Grid item xs={12} sm={6}>
+              <Grid item xs={12}>
                 <Controller
                   name='name'
                   control={controlKey}
@@ -120,33 +117,6 @@ const Config = ({ keyData }: ConfigProps) => {
                       error={Boolean(errorsKey.name)}
                       {...(errorsKey.name && { helperText: errorsKey.name.message })}
                     />
-                  )}
-                />
-              </Grid>
-              <Grid item xs={12} sm={6}>
-                <Controller
-                  name='ledAction'
-                  control={controlKey}
-                  render={({ field: { value, onChange, onBlur } }) => (
-                    <CustomTextField
-                      select
-                      fullWidth
-                      label='Led Keypad'
-                      required
-                      value={value || ''}
-                      onBlur={onBlur}
-                      onChange={onChange}
-                      error={Boolean(errorsKey.ledAction)}
-                      {...(errorsKey.ledAction && { helperText: errorsKey.ledAction.message })}
-                    >
-                      <MenuItem disabled value=''>
-                        <em>selecione</em>
-                      </MenuItem>
-                      <MenuItem value='ON'>Ligar</MenuItem>
-                      <MenuItem value='OFF'>Desligar</MenuItem>
-                      <MenuItem value='FOLLOW'>Seguir a Cena</MenuItem>
-                      <MenuItem value='NONE'>Sem Efeito</MenuItem>
-                    </CustomTextField>
                   )}
                 />
               </Grid>
