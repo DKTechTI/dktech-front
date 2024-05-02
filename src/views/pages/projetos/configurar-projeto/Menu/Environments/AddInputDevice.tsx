@@ -43,6 +43,8 @@ interface FormData {
   centralId: string
   boardId: string
   boardIndex: string
+  type: string
+  moduleType: string
   index: number
   deviceId: string
   environmentId: string
@@ -51,7 +53,6 @@ interface FormData {
 interface AddInputDeviceProps {
   environmentId: string
   environmentName: string
-
   open: boolean
   handleClose: () => void
   refresh: boolean
@@ -104,7 +105,9 @@ const AddInputDevice = ({
     setPorts([])
 
     if (value) {
-      setPorts(handleAvaliableInputPorts(value))
+      handleAvaliableInputPorts(value).then((response: any[]) => {
+        setPorts(response)
+      })
 
       const central = projectDevices.data.filter((device: any) => device.centralId === value)[0]
 
@@ -131,6 +134,47 @@ const AddInputDevice = ({
 
     setValue('boardIndex', value)
     setError('boardIndex', { type: 'manual', message: 'Porta obrigatória' })
+  }
+
+  const handleSetDevice = (event: SyntheticEvent, devices: any) => {
+    const { value } = event.target as HTMLInputElement
+
+    if (value) {
+      const device = devices.filter((device: any) => device._id === value)[0]
+
+      setValue('deviceId', value)
+      setValue('moduleType', device.moduleType)
+      setValue('type', device.type)
+      clearErrors('deviceId')
+
+      return
+    }
+
+    setValue('deviceId', value)
+    setError('deviceId', { type: 'manual', message: 'Dispositivo de entrada obrigatório' })
+  }
+
+  const handleRenderDeviceOptions = (devices: any[]) => {
+    const validDevices = devices?.filter(
+      device =>
+        device.moduleType === 'INPUT' &&
+        (device?.keysQuantity <= ports[Number(watch('boardIndex'))]?.keysQuantityAvaliable ||
+          device?.inputTotal <= ports[Number(watch('boardIndex'))]?.keysQuantityAvaliable)
+    )
+
+    if (validDevices.length === 0) {
+      return (
+        <MenuItem value='' disabled>
+          <em>Nenhum dispositivo de entrada disponível</em>
+        </MenuItem>
+      )
+    }
+
+    return validDevices.map(device => (
+      <MenuItem key={device._id} value={device._id}>
+        {device.modelName}
+      </MenuItem>
+    ))
   }
 
   const onSubmit = (formData: FormData) => {
@@ -213,7 +257,7 @@ const AddInputDevice = ({
                     error={Boolean(errors.centralId)}
                     {...(errors.centralId && { helperText: errors.centralId.message })}
                   >
-                    <MenuItem value=''>
+                    <MenuItem value='' disabled>
                       <em>selecione</em>
                     </MenuItem>
                     {projectDevices?.data.map((device: any) => {
@@ -245,14 +289,16 @@ const AddInputDevice = ({
                     error={Boolean(errors.boardIndex)}
                     {...(errors.boardIndex && { helperText: errors.boardIndex.message })}
                   >
-                    <MenuItem value=''>
+                    <MenuItem value='' disabled>
                       <em>{watch('centralId') ? 'Selecione' : 'Selecione uma central primeiro'}</em>
                     </MenuItem>
-                    {ports.map((port: any, index: number) => (
-                      <MenuItem key={index} value={port.port} disabled={!port.avaliable}>
-                        {checkPortName(Number(port?.port))}
-                      </MenuItem>
-                    ))}
+                    {ports.length > 0
+                      ? ports.map((port: any, index: number) => (
+                          <MenuItem key={index} value={port.port} disabled={!port.avaliable}>
+                            {checkPortName(Number(port?.port))}
+                          </MenuItem>
+                        ))
+                      : null}
                   </CustomTextField>
                 )}
               />
@@ -273,7 +319,7 @@ const AddInputDevice = ({
                     error={Boolean(errors.index)}
                     {...(errors.index && { helperText: errors.index.message })}
                   >
-                    <MenuItem value=''>
+                    <MenuItem value='' disabled>
                       <em>{watch('boardIndex') ? 'Selecione' : 'Selecione uma porta primeiro'}</em>
                     </MenuItem>
                     {ports.length > 0 && watch('boardIndex')
@@ -292,7 +338,7 @@ const AddInputDevice = ({
               <Controller
                 name='deviceId'
                 control={control}
-                render={({ field: { value, onChange, onBlur } }) => (
+                render={({ field: { value, onBlur } }) => (
                   <CustomTextField
                     select
                     fullWidth
@@ -300,22 +346,14 @@ const AddInputDevice = ({
                     required
                     value={value || ''}
                     onBlur={onBlur}
-                    onChange={onChange}
+                    onChange={e => handleSetDevice(e, devices?.data)}
                     error={Boolean(errors.deviceId)}
                     {...(errors.deviceId && { helperText: errors.deviceId.message })}
                   >
-                    <MenuItem value=''>
-                      <em>selecione</em>
+                    <MenuItem value='' disabled>
+                      <em>{watch('boardId') ? 'Selecione' : 'Selecione uma porta primeiro'}</em>
                     </MenuItem>
-                    {devices?.data.map((device: any) => {
-                      if (device.moduleType === 'INPUT') {
-                        return (
-                          <MenuItem key={device._id} value={device._id}>
-                            {device.modelName}
-                          </MenuItem>
-                        )
-                      }
-                    })}
+                    {devices && watch('boardId') && handleRenderDeviceOptions(devices?.data)}
                   </CustomTextField>
                 )}
               />
@@ -356,7 +394,7 @@ const AddInputDevice = ({
                     error={Boolean(errors.environmentId)}
                     {...(errors.environmentId && { helperText: errors.environmentId.message })}
                   >
-                    <MenuItem value=''>
+                    <MenuItem value='' disabled>
                       <em>selecione</em>
                     </MenuItem>
                     <MenuItem value={environmentId}>{environmentName}</MenuItem>

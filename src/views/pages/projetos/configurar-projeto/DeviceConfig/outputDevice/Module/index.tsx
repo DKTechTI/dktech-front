@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { SyntheticEvent, useEffect, useState } from 'react'
 
 import { Box, Button, CardContent, CardHeader, Grid, MenuItem } from '@mui/material'
 
@@ -42,13 +42,19 @@ interface ModuleProps {
 
 const Module = ({ deviceData, refresh, setRefresh }: ModuleProps) => {
   const { setDeviceId } = useDeviceKeys()
-  const { handleAvaliableInputPorts, handleAvaliableOutputPorts, setRefreshMenu, refreshMenu } = useProjectMenu()
+  const { handleAvaliableOutputPorts, setRefreshMenu, refreshMenu, handleCheckDeviceSequence } = useProjectMenu()
+
+  const [ports, setPorts] = useState<any[] | null>(null)
+  const [sequences, setSequences] = useState<any[] | null>(null)
 
   const {
     control,
     handleSubmit,
     watch,
     getValues,
+    setValue,
+    setError,
+    clearErrors,
     formState: { errors }
   } = useForm({
     values: {
@@ -65,40 +71,58 @@ const Module = ({ deviceData, refresh, setRefresh }: ModuleProps) => {
     resolver: yupResolver(schema)
   })
 
-  const handleCheckDeviceTypeForAvailablePorts = (moduleType: string) => {
-    if (moduleType === 'INPUT') {
-      return handleAvaliableInputPorts(deviceData.centralId).map((port: any, index: number) => (
-        <MenuItem key={index} value={port.port} disabled={!port.avaliable}>
-          {checkPortName(Number(port?.port))}
-        </MenuItem>
-      ))
-    }
+  const handleCheckAvailablePortsAndSequences = async (centralId: string) => {
+    const outputPorts = await handleAvaliableOutputPorts(centralId)
+    const outputSequence = outputPorts[Number(watch('boardIndex'))]?.sequenceUpdate
 
-    return handleAvaliableOutputPorts(deviceData.centralId).map((port: any, index: number) => (
-      <MenuItem key={index} value={port.port} disabled={!port.avaliable}>
-        {checkPortName(Number(port?.port))}
-      </MenuItem>
-    ))
-  }
+    const portsOptions = Array.isArray(outputSequence)
+      ? outputPorts.map((port: any, index: number) => (
+          <MenuItem key={index} value={port.port} disabled={!port.avaliable}>
+            {checkPortName(Number(port?.port))}
+          </MenuItem>
+        ))
+      : null
 
-  const handleCheckDeviceTypeForAvailableSequence = (moduleType: string) => {
-    if (moduleType === 'INPUT') {
-      return handleAvaliableInputPorts(deviceData.centralId)[Number(watch('boardIndex'))]?.sequence.map(
-        (sequence: any, index: number) => (
+    const sequencesOptions = Array.isArray(outputSequence)
+      ? outputSequence.map((sequence: any, index: number) => (
           <MenuItem key={index} value={sequence.index} disabled={!sequence.avaliable}>
             {checkSequenceIndex(sequence.index)}
           </MenuItem>
-        )
-      )
+        ))
+      : null
+
+    return { portsOptions, sequencesOptions }
+  }
+
+  const handleChangeSequence = (event: SyntheticEvent, data: any) => {
+    const { value } = event.target as HTMLInputElement
+
+    if (value) {
+      const previousSequence = getValues('index')
+
+      api
+        .put(`/projectDevices/update-menu-index/${data?.centralId}`, {
+          from: Number(previousSequence),
+          to: Number(value),
+          moduleType: data?.moduleType,
+          boardIndex: data?.boardIndex
+        })
+        .then(response => {
+          if (response.status === 200) {
+            setValue('index', value)
+            clearErrors('index')
+            setRefreshMenu(!refreshMenu)
+          }
+        })
+        .catch(() => {
+          toast.error('Erro ao alterar sequência, tente novamente mais tarde')
+        })
+
+      return
     }
 
-    return handleAvaliableOutputPorts(deviceData.centralId)[Number(watch('boardIndex'))]?.sequence.map(
-      (sequence: any, index: number) => (
-        <MenuItem key={index} value={sequence.index} disabled={!sequence.avaliable}>
-          {checkSequenceIndex(sequence.index)}
-        </MenuItem>
-      )
-    )
+    setValue('index', value)
+    setError('index', { type: 'manual', message: 'Sequência obrigatória' })
   }
 
   const onSubmit = (formData: FormData) => {
@@ -127,6 +151,24 @@ const Module = ({ deviceData, refresh, setRefresh }: ModuleProps) => {
     if (deviceData) setDeviceId(deviceData?.deviceId)
   }, [deviceData, setDeviceId])
 
+  useEffect(() => {
+    const fetchData = async () => {
+      if (deviceData) {
+        const { portsOptions, sequencesOptions } = await handleCheckAvailablePortsAndSequences(deviceData?.centralId)
+
+        setPorts(portsOptions)
+        setSequences(sequencesOptions)
+
+        const deviceSequence = handleCheckDeviceSequence(deviceData?._id, deviceData?.centralId, 'outputPorts')
+
+        if (String(deviceSequence)) setValue('index', String(deviceSequence))
+      }
+    }
+
+    fetchData()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [deviceData, watch('boardIndex')])
+
   return (
     <Box>
       <CardHeader title={`Módulo: ${getValues('name')}`} />
@@ -150,7 +192,7 @@ const Module = ({ deviceData, refresh, setRefresh }: ModuleProps) => {
                     error={Boolean(errors.modelName)}
                     {...(errors.modelName && { helperText: errors.modelName.message })}
                   >
-                    <MenuItem value=''>
+                    <MenuItem value='' disabled>
                       <em>selecione</em>
                     </MenuItem>
                     {deviceData?.modelName && <MenuItem value={deviceData.modelName}>{deviceData.modelName}</MenuItem>}
@@ -195,10 +237,10 @@ const Module = ({ deviceData, refresh, setRefresh }: ModuleProps) => {
                     error={Boolean(errors.boardIndex)}
                     {...(errors.boardIndex && { helperText: errors.boardIndex.message })}
                   >
-                    <MenuItem value=''>
+                    <MenuItem value='' disabled>
                       <em>selecione</em>
                     </MenuItem>
-                    {deviceData && handleCheckDeviceTypeForAvailablePorts(deviceData?.moduleType)}
+                    {ports}
                   </CustomTextField>
                 )}
               />
@@ -208,7 +250,7 @@ const Module = ({ deviceData, refresh, setRefresh }: ModuleProps) => {
               <Controller
                 name='index'
                 control={control}
-                render={({ field: { value, onChange, onBlur } }) => (
+                render={({ field: { value, onBlur } }) => (
                   <CustomTextField
                     select
                     fullWidth
@@ -216,16 +258,14 @@ const Module = ({ deviceData, refresh, setRefresh }: ModuleProps) => {
                     required
                     value={value || ''}
                     onBlur={onBlur}
-                    onChange={onChange}
+                    onChange={e => handleChangeSequence(e, deviceData)}
                     error={Boolean(errors.index)}
                     {...(errors.index && { helperText: errors.index.message })}
                   >
-                    <MenuItem value=''>
+                    <MenuItem value='' disabled>
                       <em>selecione</em>
                     </MenuItem>
-                    {deviceData && watch('boardIndex')
-                      ? handleCheckDeviceTypeForAvailableSequence(deviceData?.moduleType)
-                      : null}
+                    {sequences}
                   </CustomTextField>
                 )}
               />
@@ -237,8 +277,7 @@ const Module = ({ deviceData, refresh, setRefresh }: ModuleProps) => {
                 </Button>
               </Box>
             </Grid>
-            <Grid item xs={12} justifyContent={'center'}>
-            </Grid>
+            <Grid item xs={12} justifyContent={'center'}></Grid>
           </Grid>
         </form>
       </CardContent>

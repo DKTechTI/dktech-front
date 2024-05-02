@@ -1,18 +1,9 @@
 import { SyntheticEvent, useState } from 'react'
 
-import {
-  Box,
-  Button,
-  Grid,
-  List,
-  ListItem,
-  ListItemButton,
-  ListItemText,
-  Typography,
-  useTheme
-} from '@mui/material'
+import { Box, Button, Grid, List, ListItem, ListItemButton, ListItemText, Typography, useTheme } from '@mui/material'
 
 import StatusKeys from './Status'
+import toast from 'react-hot-toast'
 
 import { useDeviceKeys } from 'src/hooks/useDeviceKeys'
 
@@ -32,7 +23,7 @@ interface KeysProps {
 const Keys = ({ keys }: KeysProps) => {
   const theme = useTheme()
 
-  const { setKeyId, refreshDeviceKeys, setRefreshDeviceKeys } = useDeviceKeys()
+  const { setKeyId, refreshDeviceKeys, setRefreshDeviceKeys, setEnvironmentId } = useDeviceKeys()
 
   const [selected, setSelected] = useState<string>('')
   const [showDialogStatusKeys, setShowDialogStatusKeys] = useState<boolean>(false)
@@ -42,8 +33,13 @@ const Keys = ({ keys }: KeysProps) => {
 
     if (!id) return setSelected('')
 
+    const key = keys.find(key => key._id === id)
+
+    if (key && key.status === 'INACTIVE') return toast.error('Tecla inativa, não é possível selecionar')
+
     setSelected(id)
     setKeyId(id)
+    setEnvironmentId(key.environmentId)
   }
 
   const handleShowKeys = (keys: any[]) => {

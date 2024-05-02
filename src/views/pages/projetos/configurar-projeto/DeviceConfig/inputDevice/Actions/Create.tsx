@@ -33,6 +33,7 @@ import { useDeviceKeys } from 'src/hooks/useDeviceKeys'
 import { api } from 'src/services/api'
 
 import { verifyObjectErrorsIsEmpty } from 'src/utils/verifyErrors'
+import { handleCheckOperationType } from 'src/utils/actions'
 
 const schema = yup.object().shape({
   outputs: yup
@@ -42,10 +43,10 @@ const schema = yup.object().shape({
         projectId: yup.string().required('Projeto obrigatório'),
         projectSceneId: yup.string().required('Cena obrigatória'),
         projectDeviceKeyId: yup.string().required('Chave obrigatória'),
-        actionProjectDeviceId: yup.string().required('Dispositivo obrigatório'),
+        actionProjectDeviceKeyId: yup.string().required('Dispositivo obrigatório'),
         boardId: yup.string().required('Placa obrigatória'),
         type: yup.string().required('Tipo obrigatório'),
-        actionValueReles: yup.boolean(),
+        actionValueReles: yup.string(),
         actionValueEngine: yup.string(),
         actionValueDimmer: yup.string()
       })
@@ -60,11 +61,12 @@ interface FormData {
     projectId: string
     projectSceneId: string
     projectDeviceKeyId: string
-    actionProjectDeviceId: string
+    actionProjectDeviceKeyId: string
+    name: string
     boardId: string
     type: string
-    actionValueReles?: boolean
-    actionValueEngine?: string | boolean
+    actionValueReles?: string
+    actionValueEngine?: string
     actionValueDimmer?: string
   }[]
 }
@@ -91,6 +93,7 @@ const Create = ({ open, handleClose }: CreateProps) => {
     control,
     handleSubmit,
     reset,
+    setError,
     formState: { errors }
   } = useForm({
     values: {
@@ -105,17 +108,7 @@ const Create = ({ open, handleClose }: CreateProps) => {
     name: 'outputs'
   })
 
-  const handleCheckOperationType = (value: string) => {
-    const rele = ['TRUE', 'FALSE']
-    const engine = ['OPEN', 'CLOSE', 'STOP', 'OPEN/STOP', 'CLOSE/STOP', 'OPEN/STOP/CLOSE/STOP']
-    const dimmer = ['0', '10', '20', '30', '40', '50', '60', '70', '80', '90', '100', 'INCREASE', 'DECREASE', 'DIM']
-
-    if (rele.includes(value)) return 'RELE'
-    if (engine.includes(value)) return 'ENGINE'
-    if (dimmer.includes(value)) return 'DIMMER'
-  }
-
-  const handleSelectOutput = (environmentId: string, deviceName: string) => {
+  const handleSelectOutput = (environmentId: string, deviceKeyName: string) => {
     if (!projectSceneId) {
       handleClose()
 
@@ -124,7 +117,9 @@ const Create = ({ open, handleClose }: CreateProps) => {
 
     const environmentSelected: any = environments.filter(environment => environment.environmentId === environmentId)
 
-    const outputSelected: any = environmentSelected[0].outputs.filter((output: any) => output.deviceName === deviceName)
+    const outputSelected: any = environmentSelected[0].outputs.filter(
+      (output: any) => output.deviceKeyName === deviceKeyName
+    )
 
     if (outputSelected.length > 0) {
       const output: any = outputSelected[0]
@@ -137,23 +132,23 @@ const Create = ({ open, handleClose }: CreateProps) => {
           const initialValue = data?.data.initialValue
           const operationType = handleCheckOperationType(initialValue)
 
-          if (initialValue && operationType) {
-            append({
-              projectId: id as string,
-              projectSceneId: projectSceneId,
-              projectDeviceKeyId: keyId,
-              actionProjectDeviceId: output.projectDeviceId,
-              boardId: output.deviceName,
-              type: 'EXTERNAL',
-              ...(operationType === 'RELE' && { actionValueReles: initialValue }),
-              ...(operationType === 'ENGINE' && { actionValueEngine: initialValue }),
-              ...(operationType === 'DIMMER' && { actionValueDimmer: initialValue })
-            })
-          }
+          if (!initialValue && !operationType)
+            return setError('outputs', { message: 'Erro ao buscar informações', type: 'manual' })
+
+          append({
+            projectId: id as string,
+            projectSceneId: projectSceneId,
+            projectDeviceKeyId: keyId,
+            actionProjectDeviceKeyId: output.projectDeviceKeyId,
+            boardId: output.boardId,
+            name: output.deviceKeyName,
+            type: 'EXTERNAL',
+            ...(operationType === 'RELE' && { actionValueReles: initialValue }),
+            ...(operationType === 'ENGINE' && { actionValueEngine: initialValue }),
+            ...(operationType === 'DIMMER' && { actionValueDimmer: initialValue })
+          })
         })
-        .catch(() => {
-          toast.error('Erro ao buscar informações do dispositivo, tente novamente mais tarde')
-        })
+        .catch(() => toast.error('Erro ao buscar informações do dispositivo, tente novamente mais tarde'))
     }
   }
 
@@ -241,13 +236,13 @@ const Create = ({ open, handleClose }: CreateProps) => {
                     )}
                     {environment.outputs.map((output: any) => (
                       <ListItemButton
-                        key={output.projectDeviceId}
-                        onClick={() => handleSelectOutput(environment.environmentId, output.deviceName)}
+                        key={output.projectDeviceKeyId}
+                        onClick={() => handleSelectOutput(environment.environmentId, output.deviceKeyName)}
                         sx={{
                           borderBottom: `1px solid ${theme.palette.divider}`
                         }}
                       >
-                        <ListItemText primary={output.deviceName} />
+                        <ListItemText primary={output.deviceKeyName} />
                       </ListItemButton>
                     ))}
                   </ul>
@@ -276,9 +271,7 @@ const Create = ({ open, handleClose }: CreateProps) => {
                 >
                   <ListItemText
                     primary={
-                      verifyObjectErrorsIsEmpty(errors)
-                        ? 'Nenhuma saída escolhida'
-                        : 'É preciso escolher ao menos uma saída!'
+                      verifyObjectErrorsIsEmpty(errors) ? 'Nenhuma saída escolhida' : errors.outputs?.message || ''
                     }
                     sx={{
                       '& .MuiListItemText-primary': {
@@ -295,7 +288,7 @@ const Create = ({ open, handleClose }: CreateProps) => {
                     borderBottom: `1px solid ${theme.palette.divider}`
                   }}
                 >
-                  <ListItemText primary={item.boardId} />
+                  <ListItemText primary={item.name} />
                   <IconifyIcon
                     fontSize='1.75rem'
                     icon='tabler:trash'

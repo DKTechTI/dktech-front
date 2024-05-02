@@ -66,10 +66,9 @@ const DeviceKeysProvider = ({ children }: Props) => {
   } = useGetDataApi<any>({
     url: `/projectDeviceKeys/by-project/${projectId}`,
     params: {
-      projectDeviceId: projectDeviceId,
-      environmentId: environmentId
+      projectDeviceId: projectDeviceId
     },
-    callInit: Boolean(projectId) && Boolean(projectDeviceId) && Boolean(environmentId)
+    callInit: Boolean(projectId) && Boolean(projectDeviceId)
   })
 
   return (

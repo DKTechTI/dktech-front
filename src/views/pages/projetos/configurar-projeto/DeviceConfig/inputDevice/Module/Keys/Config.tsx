@@ -1,20 +1,20 @@
 import { useRouter } from 'next/router'
 
-import { Box, Button, CardActions, CardContent, CardHeader, Grid, MenuItem, Typography } from '@mui/material'
+import { Box, CardContent, CardHeader, Grid, MenuItem, Typography } from '@mui/material'
 
 import CustomTextField from 'src/@core/components/mui/text-field'
-import toast from 'react-hot-toast'
 
 import * as yup from 'yup'
 import { useForm, Controller } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
 
 import useGetDataApi from 'src/hooks/useGetDataApi'
+import { useAutoSave } from 'src/hooks/useAutoSave'
 import { useDeviceKeys } from 'src/hooks/useDeviceKeys'
-import { useProjectMenu } from 'src/hooks/useProjectMenu'
 
-import { api } from 'src/services/api'
 import Scenes from '../../Scenes'
+
+import toast from 'react-hot-toast'
 
 const schemaKey = yup.object().shape({
   name: yup.string().required('Nome da tecla obrigatório'),
@@ -42,8 +42,8 @@ const Config = ({ keyData }: ConfigProps) => {
 
   const { id } = router.query
 
-  const { refreshMenu, setRefreshMenu } = useProjectMenu()
-  const { refreshDeviceKeys, setRefreshDeviceKeys, keyId } = useDeviceKeys()
+  const { keyId } = useDeviceKeys()
+  const { handleSaveOnStateChange } = useAutoSave()
 
   const { data: environments } = useGetDataApi<any>({
     url: `projectEnvironments/by-project/${id}`,
@@ -70,25 +70,26 @@ const Config = ({ keyData }: ConfigProps) => {
     resolver: yupResolver(schemaKey)
   })
 
-  const onSubmitKey = (formData: FormDataKey) => {
+  const onSubmitKey = async (formData: FormDataKey) => {
+    const responseTypeStatus: { [key: number]: string } = {
+      200: 'Dados salvos com sucesso',
+      404: 'Erro ao atualizar os dados, tente novamente mais tarde',
+      409: 'Erro ao atualizar os dados, tente novamente mais tarde',
+      500: 'Erro ao atualizar os dados, tente novamente mais tarde'
+    }
+
     const data = formData
 
     Object.assign(data, {
       keyOrder: Number(formData.keyOrder)
     })
 
-    api
-      .put(`/projectDeviceKeys/${keyId}`, data)
-      .then(response => {
-        if (response.status === 200) {
-          toast.success('Tecla atualizada com sucesso!')
-          setRefreshDeviceKeys(!refreshDeviceKeys)
-          setRefreshMenu(!refreshMenu)
-        }
-      })
-      .catch(() => {
-        toast.error('Erro ao atualizar tecla, tente novamente mais tarde')
-      })
+    const response = await handleSaveOnStateChange(`/projectDeviceKeys/${keyId}`, data, 'PUT', ['menu', 'deviceKeys'])
+
+    if (response) {
+      response.status === 200 && toast.success(responseTypeStatus[response.status])
+      response.status !== 200 && toast.error(responseTypeStatus[response.status])
+    }
   }
 
   return (
@@ -104,13 +105,13 @@ const Config = ({ keyData }: ConfigProps) => {
               <Controller
                 name='name'
                 control={controlKey}
-                render={({ field: { value, onChange, onBlur } }) => (
+                render={({ field: { value, onChange } }) => (
                   <CustomTextField
                     fullWidth
                     label='Nome da Tecla'
                     required
                     value={value || ''}
-                    onBlur={onBlur}
+                    onBlur={handleSubmitKey(onSubmitKey)}
                     onChange={onChange}
                     placeholder='Nome da Tecla'
                     error={Boolean(errorsKey.name)}
@@ -123,14 +124,14 @@ const Config = ({ keyData }: ConfigProps) => {
               <Controller
                 name='keyType'
                 control={controlKey}
-                render={({ field: { value, onChange, onBlur } }) => (
+                render={({ field: { value, onChange } }) => (
                   <CustomTextField
                     select
                     fullWidth
                     label='Tipo da Tecla'
                     required
                     value={value || ''}
-                    onBlur={onBlur}
+                    onBlur={handleSubmitKey(onSubmitKey)}
                     onChange={onChange}
                     error={Boolean(errorsKey.keyType)}
                     {...(errorsKey.keyType && { helperText: errorsKey.keyType.message })}
@@ -149,14 +150,14 @@ const Config = ({ keyData }: ConfigProps) => {
               <Controller
                 name='environmentId'
                 control={controlKey}
-                render={({ field: { value, onChange, onBlur } }) => (
+                render={({ field: { value, onChange } }) => (
                   <CustomTextField
                     select
                     fullWidth
                     label='Ambiente da Tecla'
                     required
                     value={value || ''}
-                    onBlur={onBlur}
+                    onBlur={handleSubmitKey(onSubmitKey)}
                     onChange={onChange}
                     error={Boolean(errorsKey.environmentId)}
                     {...(errorsKey.environmentId && { helperText: errorsKey.environmentId.message })}
@@ -176,17 +177,6 @@ const Config = ({ keyData }: ConfigProps) => {
             </Grid>
           </Grid>
         </CardContent>
-        <CardActions
-          sx={{
-            paddingBottom: '0px !important'
-          }}
-        >
-          <Box sx={{ width: '100%', display: 'flex', alignContent: 'center', justifyContent: 'end' }}>
-            <Button variant='contained' onClick={handleSubmitKey(onSubmitKey)}>
-              Salvar
-            </Button>
-          </Box>
-        </CardActions>
       </Box>
       <Scenes keyId={keyId} />
     </Box>

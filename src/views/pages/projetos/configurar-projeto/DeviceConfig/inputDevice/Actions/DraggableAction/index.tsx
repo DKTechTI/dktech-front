@@ -26,7 +26,7 @@ interface DraggableActionProps {
 
 const DraggableAction = ({ row, index }: DraggableActionProps) => {
   const { setActions, actions } = useActionsDnD()
-  const { setApiUrl, setStorageData, setHttpMethod } = useAutoSave()
+  const { handleSaveOnStateChange } = useAutoSave()
 
   const [actionId, setActionId] = useState('')
   const [type, setType] = useState<ValueType | null>(null)
@@ -107,9 +107,7 @@ const DraggableAction = ({ row, index }: DraggableActionProps) => {
   const onSubmit = (data: any): void => {
     if (isDirty) {
       const formattedData = handleFormData(data)
-      setApiUrl(`/projectSceneActions/${row._id}`)
-      setHttpMethod('PUT')
-      setStorageData(formattedData)
+      handleSaveOnStateChange(`/projectSceneActions/${row._id}`, formattedData, 'PUT')
       setIsDirty(false)
     }
   }
@@ -141,11 +139,11 @@ const DraggableAction = ({ row, index }: DraggableActionProps) => {
         handleConfirmDelete={() => handleConfirmDeleteAction(actionId)}
       />
 
-      <Draggable key={row._id} draggableId={row.boardId} index={index}>
+      <Draggable key={row._id} draggableId={row._id} index={index}>
         {provider => (
           <TableRow {...provider.draggableProps} ref={provider.innerRef}>
             <TableCell {...provider.dragHandleProps} sx={{ minWidth: '140px' }}>
-              <Typography>{row.boardId}</Typography>
+              <Typography>{row.name}</Typography>
             </TableCell>
             <TableCell align='right'>
               {type && (

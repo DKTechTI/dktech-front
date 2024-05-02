@@ -27,7 +27,7 @@ interface DevicesProps {
 
 const Devices = ({ devices }: DevicesProps) => {
   const { setProjectDeviceId } = useProject()
-  const { setKeyId } = useDeviceKeys()
+  const { setKeyId, setProjectDeviceId: setProjectDeviceIdOnDeviceKeys } = useDeviceKeys()
 
   const { refreshMenu, setRefreshMenu } = useProjectMenu()
 
@@ -276,6 +276,7 @@ const Devices = ({ devices }: DevicesProps) => {
                                       variant={'h6'}
                                       onClick={() => {
                                         setProjectDeviceId(output.projectDeviceId)
+                                        setProjectDeviceIdOnDeviceKeys(null)
                                         setKeyId(null)
                                       }}
                                     >
