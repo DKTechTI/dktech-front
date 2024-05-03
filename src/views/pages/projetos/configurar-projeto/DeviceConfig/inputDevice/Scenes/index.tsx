@@ -2,16 +2,7 @@ import { SyntheticEvent, useCallback, useEffect, useState } from 'react'
 
 import { useRouter } from 'next/router'
 
-import {
-  Box,
-  Card,
-  CardContent,
-  FormControlLabel,
-  Grid,
-  MenuItem,
-  Switch,
-  Typography
-} from '@mui/material'
+import { Box, Card, CardContent, FormControlLabel, Grid, MenuItem, Switch, Typography } from '@mui/material'
 
 import CustomTextField from 'src/@core/components/mui/text-field'
 
@@ -70,6 +61,8 @@ const Scenes = ({ keyId }: ScenesProps) => {
   const { handleSaveOnStateChange } = useAutoSave()
   const { deviceId, projectDeviceType } = useDeviceKeys()
   const { setProjectSceneId, setOrderActions } = useActionsDnD()
+
+  const [autoSaveEnabled, setAutoSaveEnabled] = useState(false)
 
   const {
     control: controlScene,
@@ -182,30 +175,34 @@ const Scenes = ({ keyId }: ScenesProps) => {
   }
 
   const onSubmitScene = (formData: FormDataScene) => {
-    handleEventValueForRequest(formData.eventValue).then(() => {
-      const responseMessage: { [key: number]: string } = {
-        201: 'Cena criada com sucesso!',
-        200: 'Cena atualizada com sucesso!',
-        404: 'Erro ao criar cena, tente novamente mais tarde',
-        409: 'Erro ao criar cena, tente novamente mais tarde',
-        500: 'Erro ao criar cena, tente novamente mais tarde'
-      }
-
-      const data = formatSceneObject(getValuesScene())
-
-      handleSaveOnStateChange(`/projectScenes`, data, 'PATCH').then(response => {
-        if (response) {
-          if (response.status >= 200) {
-            toast.success(responseMessage[response.status])
-            setProjectSceneId(response.data.data._id)
-
-            return
-          }
-
-          toast.error(responseMessage[response.status])
+    handleEventValueForRequest(formData.eventValue)
+      .then(() => {
+        const responseMessage: { [key: number]: string } = {
+          201: 'Cena criada com sucesso!',
+          200: 'Cena atualizada com sucesso!',
+          404: 'Erro ao criar cena, tente novamente mais tarde',
+          409: 'Erro ao criar cena, tente novamente mais tarde',
+          500: 'Erro ao criar cena, tente novamente mais tarde'
         }
+
+        const data = formatSceneObject(getValuesScene())
+
+        handleSaveOnStateChange(`/projectScenes`, data, 'PATCH')
+          .then(response => {
+            if (response) {
+              if (response.status <= 201) {
+                toast.success(responseMessage[response.status])
+                setProjectSceneId(response.data.data._id)
+
+                return
+              }
+
+              toast.error(responseMessage[response.status])
+            }
+          })
+          .catch(error => console.error(error))
       })
-    })
+      .catch(error => console.error(error))
   }
 
   const handleSwitchSceneType = useCallback(
@@ -218,7 +215,7 @@ const Scenes = ({ keyId }: ScenesProps) => {
             onOffScene: false
           })
           setValueScene('sceneType', 'LOAD')
-          if (handleCheckIsEmpty(errorsScene)) onSubmitScene(watchScene())
+          if (handleCheckIsEmpty(errorsScene) && autoSaveEnabled) onSubmitScene(watchScene())
 
           return
         case 'toggleScene':
@@ -228,7 +225,7 @@ const Scenes = ({ keyId }: ScenesProps) => {
             onOffScene: false
           })
           setValueScene('sceneType', 'TOGGLE')
-          if (handleCheckIsEmpty(errorsScene)) onSubmitScene(watchScene())
+          if (handleCheckIsEmpty(errorsScene) && autoSaveEnabled) onSubmitScene(watchScene())
 
           return
         case 'onOffScene':
@@ -238,7 +235,7 @@ const Scenes = ({ keyId }: ScenesProps) => {
             onOffScene: true
           })
           setValueScene('sceneType', 'ON/OFF')
-          if (handleCheckIsEmpty(errorsScene)) onSubmitScene(watchScene())
+          if (handleCheckIsEmpty(errorsScene) && autoSaveEnabled) onSubmitScene(watchScene())
 
           return
         default:
@@ -263,6 +260,7 @@ const Scenes = ({ keyId }: ScenesProps) => {
       setValueScene('eventType', sceneData.data?.eventType)
       setValueScene('sceneType', sceneData.data?.sceneType)
       setValueScene('isRepeatEvent', sceneData.data?.isRepeatEvent)
+      setValueScene('ledAction', sceneData.data?.ledAction)
       setValueScene(
         'eventValue',
         checkEventTypeValue(
@@ -275,8 +273,7 @@ const Scenes = ({ keyId }: ScenesProps) => {
       handleSwitchSceneType(sceneTypeValue)
       setProjectSceneId(sceneData.data?._id)
       sceneData.data.indexActions ? setOrderActions(sceneData.data.indexActions) : setOrderActions(null)
-
-      return
+      setAutoSaveEnabled(true)
     }
 
     // eslint-disable-next-line react-hooks/exhaustive-deps

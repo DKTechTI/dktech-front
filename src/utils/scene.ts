@@ -45,7 +45,8 @@ const formatSceneObject = (scene: any) => {
     name: scene.name,
     eventType: scene.eventType,
     sceneType: scene.sceneType,
-    isRepeatEvent: scene.isRepeatEvent
+    isRepeatEvent: scene.isRepeatEvent,
+    ledAction: scene.ledAction
   }
 
   if (scene.sceneId) {
