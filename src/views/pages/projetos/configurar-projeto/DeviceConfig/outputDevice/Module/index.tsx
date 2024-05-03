@@ -28,6 +28,7 @@ interface FormData {
   centralId: string
   name: string
   modelName: string
+  moduleType: string
   boardIndex: string
   index: string
   isCentral: boolean
@@ -42,7 +43,8 @@ interface ModuleProps {
 
 const Module = ({ deviceData, refresh, setRefresh }: ModuleProps) => {
   const { setDeviceId } = useDeviceKeys()
-  const { handleAvaliableOutputPorts, setRefreshMenu, refreshMenu, handleCheckDeviceSequence } = useProjectMenu()
+  const { handleAvaliableOutputPorts, setRefreshMenu, refreshMenu, handleCheckDeviceSequence, handleCheckDevicePort } =
+    useProjectMenu()
 
   const [ports, setPorts] = useState<any[] | null>(null)
   const [sequences, setSequences] = useState<any[] | null>(null)
@@ -62,8 +64,9 @@ const Module = ({ deviceData, refresh, setRefresh }: ModuleProps) => {
       centralId: deviceData?.centralId,
       name: deviceData?.name,
       modelName: deviceData?.modelName,
-      boardIndex: String(deviceData?.boardIndex),
-      index: String(deviceData?.index),
+      moduleType: deviceData?.moduleType,
+      boardIndex: '',
+      index: '',
       isCentral: deviceData?.isCentral,
       voiceActivation: deviceData?.voiceActivation
     } as FormData,
@@ -92,6 +95,37 @@ const Module = ({ deviceData, refresh, setRefresh }: ModuleProps) => {
       : null
 
     return { portsOptions, sequencesOptions }
+  }
+
+  const handleChangePort = (event: SyntheticEvent, data: any) => {
+    const { value } = event.target as HTMLInputElement
+
+    if (value) {
+      const previousSequence = getValues('index')
+
+      api
+        .put(`/projectDevices/update-menu-index/${data?.centralId}`, {
+          from: Number(previousSequence),
+          moduleType: data?.moduleType,
+          boardIndex: data?.boardIndex,
+          toPort: Number(value)
+        })
+        .then(response => {
+          if (response.status === 200) {
+            setValue('boardIndex', value)
+            clearErrors('boardIndex')
+            setRefreshMenu(!refreshMenu)
+          }
+        })
+        .catch(() => {
+          toast.error('Erro ao alterar porta, tente novamente mais tarde')
+        })
+
+      return
+    }
+
+    setValue('boardIndex', value)
+    setError('boardIndex', { type: 'manual', message: 'Porta obrigatória' })
   }
 
   const handleChangeSequence = (event: SyntheticEvent, data: any) => {
@@ -126,15 +160,11 @@ const Module = ({ deviceData, refresh, setRefresh }: ModuleProps) => {
   }
 
   const onSubmit = (formData: FormData) => {
-    const data = formData
-
-    Object.assign(data, {
-      boardIndex: Number(formData.boardIndex),
-      index: Number(formData.index)
-    })
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { index, boardIndex, ...formattedData } = formData
 
     api
-      .put(`/projectDevices/${deviceData?._id}`, data)
+      .put(`/projectDevices/${deviceData?._id}`, formattedData)
       .then(response => {
         if (response.status === 200) {
           toast.success('Dados alterados com sucesso!')
@@ -159,9 +189,11 @@ const Module = ({ deviceData, refresh, setRefresh }: ModuleProps) => {
         setPorts(portsOptions)
         setSequences(sequencesOptions)
 
+        const devicePort = handleCheckDevicePort(deviceData?._id, deviceData?.centralId, 'outputPorts')
         const deviceSequence = handleCheckDeviceSequence(deviceData?._id, deviceData?.centralId, 'outputPorts')
 
-        if (String(deviceSequence)) setValue('index', String(deviceSequence))
+        if (devicePort !== null && String(devicePort)) setValue('boardIndex', String(devicePort))
+        if (deviceSequence !== null && String(deviceSequence)) setValue('index', String(deviceSequence))
       }
     }
 
@@ -225,7 +257,7 @@ const Module = ({ deviceData, refresh, setRefresh }: ModuleProps) => {
               <Controller
                 name='boardIndex'
                 control={control}
-                render={({ field: { value, onChange, onBlur } }) => (
+                render={({ field: { value, onBlur } }) => (
                   <CustomTextField
                     select
                     fullWidth
@@ -233,7 +265,7 @@ const Module = ({ deviceData, refresh, setRefresh }: ModuleProps) => {
                     required
                     value={value || ''}
                     onBlur={onBlur}
-                    onChange={onChange}
+                    onChange={e => handleChangePort(e, watch())}
                     error={Boolean(errors.boardIndex)}
                     {...(errors.boardIndex && { helperText: errors.boardIndex.message })}
                   >
@@ -258,7 +290,7 @@ const Module = ({ deviceData, refresh, setRefresh }: ModuleProps) => {
                     required
                     value={value || ''}
                     onBlur={onBlur}
-                    onChange={e => handleChangeSequence(e, deviceData)}
+                    onChange={e => handleChangeSequence(e, watch())}
                     error={Boolean(errors.index)}
                     {...(errors.index && { helperText: errors.index.message })}
                   >

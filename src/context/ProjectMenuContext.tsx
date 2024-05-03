@@ -29,6 +29,7 @@ type projectMenuValuesType = {
   handleAvaliableInputPorts: (centralId: string) => Promise<any[]>
   handleAvaliableOutputPorts: (centralId: string) => Promise<any[]>
   handleCheckDeviceSequence: (deviceId: string, centralId: string, where: string) => number | null
+  handleCheckDevicePort: (deviceId: string, centralId: string, where: string) => number | null
 }
 
 const defaultProvider: projectMenuValuesType = {
@@ -38,7 +39,8 @@ const defaultProvider: projectMenuValuesType = {
   setRefreshMenu: () => Boolean,
   handleAvaliableInputPorts: () => Promise.resolve([]),
   handleAvaliableOutputPorts: () => Promise.resolve([]),
-  handleCheckDeviceSequence: () => null
+  handleCheckDeviceSequence: () => null,
+  handleCheckDevicePort: () => null
 }
 
 const ProjectMenuContext = createContext(defaultProvider)
@@ -210,6 +212,29 @@ const ProjectMenuProvider = ({ children }: Props) => {
         }
       }
     }
+
+    return null
+  }
+
+  const handleCheckDevicePort = (deviceId: string, centralId: string, where: string) => {
+    const central = menu.devices.find((central: any) => central.projectDeviceId === centralId)
+    if (central) {
+      const portQuantity = central[where].length
+
+      for (let i = 0; i < portQuantity; i++) {
+        const devices = central[where][i]
+
+        if (devices['inputs'].length > 0) {
+          const deviceFound = devices['inputs'].findIndex((device: any) => device.projectDeviceId === deviceId)
+
+          if (deviceFound >= 0) {
+            return i
+          }
+        }
+      }
+    }
+
+    return null
   }
 
   return (
@@ -221,7 +246,8 @@ const ProjectMenuProvider = ({ children }: Props) => {
         setRefreshMenu,
         handleAvaliableInputPorts,
         handleAvaliableOutputPorts,
-        handleCheckDeviceSequence
+        handleCheckDeviceSequence,
+        handleCheckDevicePort
       }}
     >
       {children}
