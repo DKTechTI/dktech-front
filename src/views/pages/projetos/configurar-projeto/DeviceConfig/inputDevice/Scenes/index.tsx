@@ -1,4 +1,4 @@
-import { SyntheticEvent, useCallback, useEffect, useState } from 'react'
+import { SyntheticEvent, useCallback, useEffect, useRef, useState } from 'react'
 
 import { useRouter } from 'next/router'
 
@@ -62,7 +62,8 @@ const Scenes = ({ keyId }: ScenesProps) => {
   const { deviceId, projectDeviceType } = useDeviceKeys()
   const { setProjectSceneId, setOrderActions } = useActionsDnD()
 
-  const [autoSaveEnabled, setAutoSaveEnabled] = useState(false)
+  const autoSaveEnabledRef = useRef(false)
+  const sceneDataRef = useRef<any>({})
 
   const {
     control: controlScene,
@@ -71,6 +72,7 @@ const Scenes = ({ keyId }: ScenesProps) => {
     setValue: setValueScene,
     reset: resetScene,
     watch: watchScene,
+    trigger: triggerScene,
     formState: { errors: errorsScene }
   } = useForm({
     defaultValues: {
@@ -175,6 +177,8 @@ const Scenes = ({ keyId }: ScenesProps) => {
   }
 
   const onSubmitScene = (formData: FormDataScene) => {
+    if (sceneDataRef.current && JSON.stringify(sceneDataRef.current) === JSON.stringify(watchScene())) return null
+
     handleEventValueForRequest(formData.eventValue)
       .then(() => {
         const responseMessage: { [key: number]: string } = {
@@ -215,7 +219,11 @@ const Scenes = ({ keyId }: ScenesProps) => {
             onOffScene: false
           })
           setValueScene('sceneType', 'LOAD')
-          if (handleCheckIsEmpty(errorsScene) && autoSaveEnabled) onSubmitScene(watchScene())
+          triggerScene().then(response => {
+            if (response) {
+              if (handleCheckIsEmpty(errorsScene) && autoSaveEnabledRef.current) onSubmitScene(watchScene())
+            }
+          })
 
           return
         case 'toggleScene':
@@ -225,7 +233,11 @@ const Scenes = ({ keyId }: ScenesProps) => {
             onOffScene: false
           })
           setValueScene('sceneType', 'TOGGLE')
-          if (handleCheckIsEmpty(errorsScene) && autoSaveEnabled) onSubmitScene(watchScene())
+          triggerScene().then(response => {
+            if (response) {
+              if (handleCheckIsEmpty(errorsScene) && autoSaveEnabledRef.current) onSubmitScene(watchScene())
+            }
+          })
 
           return
         case 'onOffScene':
@@ -235,7 +247,11 @@ const Scenes = ({ keyId }: ScenesProps) => {
             onOffScene: true
           })
           setValueScene('sceneType', 'ON/OFF')
-          if (handleCheckIsEmpty(errorsScene) && autoSaveEnabled) onSubmitScene(watchScene())
+          triggerScene().then(response => {
+            if (response) {
+              if (handleCheckIsEmpty(errorsScene) && autoSaveEnabledRef.current) onSubmitScene(watchScene())
+            }
+          })
 
           return
         default:
@@ -273,7 +289,8 @@ const Scenes = ({ keyId }: ScenesProps) => {
       handleSwitchSceneType(sceneTypeValue)
       setProjectSceneId(sceneData.data?._id)
       sceneData.data.indexActions ? setOrderActions(sceneData.data.indexActions) : setOrderActions(null)
-      setAutoSaveEnabled(true)
+      autoSaveEnabledRef.current = true
+      sceneDataRef.current = watchScene()
     }
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
