@@ -82,7 +82,8 @@ const Scenes = ({ keyId }: ScenesProps) => {
       sceneType: 'LOAD',
       eventType: 'PULSE',
       eventValue: 'onePulse',
-      isRepeatEvent: false
+      isRepeatEvent: false,
+      ledAction: 'NONE'
     } as FormDataScene,
     mode: 'onBlur',
     resolver: yupResolver(schemaScene)
