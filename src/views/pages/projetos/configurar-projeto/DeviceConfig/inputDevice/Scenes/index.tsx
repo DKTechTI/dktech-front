@@ -279,8 +279,6 @@ const Scenes = ({ keyId }: ScenesProps) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sceneData])
 
-  console.log(errorsScene)
-
   return (
     <Box>
       <Card>
