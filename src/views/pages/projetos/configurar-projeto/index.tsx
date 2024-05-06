@@ -38,8 +38,8 @@ export default function ProjectConfig() {
         <Grid
           item
           xs={12}
-          sm={6}
-          lg={5}
+          sm={projectDeviceModuleType === 'OUTPUT' ? 12 : 6}
+          lg={projectDeviceModuleType === 'OUTPUT' ? 9 : 5}
           sx={{
             minHeight: { xs: 'auto', md: '100vh' },
             border: '1px solid #D0D4F1'

@@ -1,8 +1,10 @@
-import { SyntheticEvent, useEffect, useState } from 'react'
+import { SyntheticEvent, useEffect, useRef, useState } from 'react'
 
-import { Box, Button, CardContent, CardHeader, Grid, MenuItem } from '@mui/material'
+import { Box, Button, CardContent, CardHeader, CircularProgress, Grid, MenuItem, Typography } from '@mui/material'
 
 import CustomTextField from 'src/@core/components/mui/text-field'
+
+import Keys from '../Keys'
 
 import { useDeviceKeys } from 'src/hooks/useDeviceKeys'
 import { useProjectMenu } from 'src/hooks/useProjectMenu'
@@ -42,9 +44,11 @@ interface ModuleProps {
 }
 
 const Module = ({ deviceData, refresh, setRefresh }: ModuleProps) => {
-  const { setDeviceId } = useDeviceKeys()
+  const { setDeviceId, setProjectDeviceId, deviceKeys, loadingDeviceKeys } = useDeviceKeys()
   const { handleAvaliableOutputPorts, setRefreshMenu, refreshMenu, handleCheckDeviceSequence, handleCheckDevicePort } =
     useProjectMenu()
+
+  const deviceKeysRef = useRef(deviceKeys)
 
   const [ports, setPorts] = useState<any[] | null>(null)
   const [sequences, setSequences] = useState<any[] | null>(null)
@@ -178,8 +182,11 @@ const Module = ({ deviceData, refresh, setRefresh }: ModuleProps) => {
   }
 
   useEffect(() => {
-    if (deviceData) setDeviceId(deviceData?.deviceId)
-  }, [deviceData, setDeviceId])
+    if (deviceData) {
+      setDeviceId(deviceData?.deviceId)
+      setProjectDeviceId(deviceData?._id)
+    }
+  }, [deviceData, setDeviceId, setProjectDeviceId])
 
   useEffect(() => {
     const fetchData = async () => {
@@ -309,7 +316,27 @@ const Module = ({ deviceData, refresh, setRefresh }: ModuleProps) => {
                 </Button>
               </Box>
             </Grid>
-            <Grid item xs={12} justifyContent={'center'}></Grid>
+            <Grid item xs={12} justifyContent={'center'}>
+              {false && (
+                <Box
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    height: '100%',
+                    padding: '8.75rem'
+                  }}
+                >
+                  <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
+                    <CircularProgress />
+                    <Typography variant='h4'>Carregando...</Typography>
+                  </Box>
+                </Box>
+              )}
+              {deviceData && deviceKeysRef.current !== deviceKeys && !loadingDeviceKeys && (
+                <Keys keys={deviceKeys.data} operationType='DIMMER'/>
+              )}
+            </Grid>
           </Grid>
         </form>
       </CardContent>
