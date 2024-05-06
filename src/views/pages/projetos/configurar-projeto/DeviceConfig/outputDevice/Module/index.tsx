@@ -4,7 +4,7 @@ import { Box, Button, CardContent, CardHeader, CircularProgress, Grid, MenuItem,
 
 import CustomTextField from 'src/@core/components/mui/text-field'
 
-import Keys from '../Keys'
+import Keys from './Keys'
 
 import { useDeviceKeys } from 'src/hooks/useDeviceKeys'
 import { useProjectMenu } from 'src/hooks/useProjectMenu'
@@ -334,7 +334,7 @@ const Module = ({ deviceData, refresh, setRefresh }: ModuleProps) => {
                 </Box>
               )}
               {deviceData && deviceKeysRef.current !== deviceKeys && !loadingDeviceKeys && (
-                <Keys keys={deviceKeys.data} operationType='DIMMER'/>
+                <Keys keys={deviceKeys.data} />
               )}
             </Grid>
           </Grid>

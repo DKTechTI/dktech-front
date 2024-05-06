@@ -137,7 +137,7 @@ const ActionsDnDProvider = ({ children }: Props) => {
         })
         .filter(Boolean)[0]
 
-      const response = await api.get(`/projectDevices/${draggedOutput.projectDeviceId}`)
+      const response = await api.get(`/projectDeviceKeys/${draggedOutput.projectDeviceKeyId}`)
       const data = response.data
 
       const initialValue = data?.data.initialValue
@@ -155,7 +155,7 @@ const ActionsDnDProvider = ({ children }: Props) => {
         order: action.destination.index,
         name: draggedOutput.deviceKeyName,
         type: 'EXTERNAL',
-        ...(operationType === 'RELE' && { actionValueReles: initialValue }),
+        ...(operationType === 'RELES' && { actionValueReles: initialValue }),
         ...(operationType === 'ENGINE' && { actionValueEngine: initialValue }),
         ...(operationType === 'DIMMER' && { actionValueDimmer: initialValue })
       }

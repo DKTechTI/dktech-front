@@ -1,16 +1,17 @@
 import { Box, Grid, List, ListItem, Typography } from '@mui/material'
 
 import TryKey from './TryKey'
+import { handleCheckOperationType } from 'src/utils/actions'
 
 interface KeysProps {
   keys: any[]
-  operationType: string
 }
 
-const Keys = ({ keys, operationType }: KeysProps) => {
-  const handleShowKeys = (keys: any[], operationType: string) => {
+const Keys = ({ keys }: KeysProps) => {
+  const handleShowKeys = (keys: any[]) => {
     return keys.map((key: any, index: number) => {
-      Object.assign(key, { order: String(index + 1), voiceActivation: 'true', operationType: operationType, initialValue: '0'})
+      const operationType = handleCheckOperationType(key.initialValue)
+      Object.assign(key, { order: String(index + 1) })
 
       return (
         <ListItem
@@ -21,7 +22,7 @@ const Keys = ({ keys, operationType }: KeysProps) => {
             margin: '0 auto'
           }}
         >
-          <TryKey keyData={key} operationType={operationType} />
+          <TryKey keyData={key} operationType={operationType || ''} />
         </ListItem>
       )
     })
@@ -50,7 +51,7 @@ const Keys = ({ keys, operationType }: KeysProps) => {
           gap: 3
         }}
       >
-        {keys && handleShowKeys(keys, operationType)}
+        {keys && handleShowKeys(keys)}
       </List>
     </Box>
   )

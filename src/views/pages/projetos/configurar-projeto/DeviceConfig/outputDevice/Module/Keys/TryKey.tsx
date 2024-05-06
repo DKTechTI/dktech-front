@@ -113,7 +113,7 @@ const TryKey = ({ keyData, operationType }: TryKeyProps) => {
               </MenuItem>
               {handleCheckInitialValue(operationType).map((initialValue: any, index: number) => {
                 return (
-                  <MenuItem key={index} value={initialValue?.value}>
+                  <MenuItem key={index} value={initialValue?.value || ''}>
                     {initialValue?.name}
                   </MenuItem>
                 )
