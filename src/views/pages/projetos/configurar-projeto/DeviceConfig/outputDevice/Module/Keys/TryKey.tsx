@@ -9,6 +9,8 @@ import * as yup from 'yup'
 import { useForm, Controller } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
 import { checkInitialValue } from 'src/utils/project'
+import { useAutoSave } from 'src/hooks/useAutoSave'
+import toast from 'react-hot-toast'
 
 const schema = yup.object().shape({
   name: yup.string().required('Nome é obrigatório'),
@@ -18,6 +20,7 @@ const schema = yup.object().shape({
 })
 
 interface FormData {
+  _id: string
   name: string
   order: string
   initialValue: string
@@ -32,13 +35,19 @@ interface TryKeyProps {
 const TryKey = ({ keyData, operationType }: TryKeyProps) => {
   const matches = useMediaQuery('(min-width:1534px)')
 
+  const { handleSaveOnStateChange } = useAutoSave()
+
   const {
     control,
     handleSubmit,
     setValue,
     formState: { errors }
   } = useForm({
-    values: keyData as FormData,
+    values: {
+      ...keyData,
+      voiceActivation: String(keyData.voiceActivation)
+    } as FormData,
+    mode: 'onBlur',
     resolver: yupResolver(schema)
   })
 
@@ -54,8 +63,46 @@ const TryKey = ({ keyData, operationType }: TryKeyProps) => {
     return deviceInitialValue
   }
 
-  const onSubmit = (data: FormData) => {
-    console.log(data)
+  const handleFromatRequest = async (data: any) => {
+    const voiceActivationValue: { [key: string]: boolean } = {
+      true: true,
+      false: false
+    }
+
+    if (data) {
+      return {
+        projectId: keyData.projectId,
+        projectDeviceId: keyData.projectDeviceId,
+        environmentId: keyData.environmentId,
+        moduleType: keyData.moduleType,
+        keyOrder: Number(data.order),
+        name: data.name,
+        initialValue: data.initialValue,
+        voiceActivation: voiceActivationValue[data.voiceActivation]
+      }
+    }
+
+    return null
+  }
+
+  const onSubmit = async (data: FormData) => {
+    const responseTypeStatus: { [key: number]: string } = {
+      200: 'Dados salvos com sucesso',
+      404: 'Erro ao atualizar os dados, tente novamente mais tarde',
+      409: 'Erro ao atualizar os dados, tente novamente mais tarde',
+      500: 'Erro ao atualizar os dados, tente novamente mais tarde'
+    }
+
+    const dataFormatted = await handleFromatRequest(data)
+
+    if (!dataFormatted) return toast.error('Erro ao formatar os dados, tente novamente mais tarde')
+
+    const response = await handleSaveOnStateChange(`/projectDeviceKeys/${data._id}`, dataFormatted, 'PUT')
+
+    if (response) {
+      response.status === 200 && toast.success(responseTypeStatus[response.status])
+      response.status !== 200 && toast.error(responseTypeStatus[response.status])
+    }
   }
 
   return (
@@ -64,12 +111,14 @@ const TryKey = ({ keyData, operationType }: TryKeyProps) => {
         <Controller
           name='name'
           control={control}
-          render={({ field }) => (
+          render={({ field: { value, onChange } }) => (
             <CustomTextField
-              {...field}
               fullWidth
               label='Nome'
               required
+              value={value || ''}
+              onBlur={handleSubmit(onSubmit)}
+              onChange={onChange}
               placeholder='Nome'
               error={Boolean(errors.name)}
               {...(errors.name && { helperText: errors.name.message })}
@@ -87,6 +136,7 @@ const TryKey = ({ keyData, operationType }: TryKeyProps) => {
               fullWidth
               label='Order'
               required
+              disabled
               placeholder='Order'
               error={Boolean(errors.order)}
               {...(errors.order && { helperText: errors.order.message })}
@@ -98,13 +148,15 @@ const TryKey = ({ keyData, operationType }: TryKeyProps) => {
         <Controller
           name='initialValue'
           control={control}
-          render={({ field }) => (
+          render={({ field: { value, onChange } }) => (
             <CustomTextField
-              {...field}
               select
               fullWidth
               label='Valor Inicial'
               required
+              value={value || ''}
+              onBlur={handleSubmit(onSubmit)}
+              onChange={onChange}
               error={Boolean(errors.initialValue)}
               {...(errors.initialValue && { helperText: errors.initialValue.message })}
             >
@@ -126,11 +178,11 @@ const TryKey = ({ keyData, operationType }: TryKeyProps) => {
         <Controller
           name='voiceActivation'
           control={control}
-          render={({ field: { value, onBlur } }) => (
+          render={({ field: { value } }) => (
             <FormControlLabel
               onChange={(e: SyntheticEvent) => handleSetVoiceActivation(e)}
               checked={value === 'true'}
-              onBlur={onBlur}
+              onBlur={handleSubmit(onSubmit)}
               control={<Checkbox />}
               label='Ativação por voz'
             />
@@ -145,7 +197,6 @@ const TryKey = ({ keyData, operationType }: TryKeyProps) => {
             color='primary'
             sx={{ minWidth: '138px' }}
             startIcon={<IconifyIcon icon='tabler:wifi' />}
-            onClick={handleSubmit(onSubmit)}
           >
             Testar
           </Button>
