@@ -59,7 +59,6 @@ interface FormData {
 interface AddOutputDeviceProps {
   environmentId: string
   environmentName: string
-
   open: boolean
   handleClose: () => void
   refresh: boolean
