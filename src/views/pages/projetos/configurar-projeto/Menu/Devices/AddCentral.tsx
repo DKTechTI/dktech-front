@@ -192,9 +192,6 @@ const AddCentral = ({ handleClose, open, refresh, setRefresh }: AddCentralProps)
               <Button variant='contained' color='primary' startIcon={<IconifyIcon icon='tabler:wifi' />}>
                 Testar Conexão
               </Button>
-              <Button variant='contained' color='error' startIcon={<IconifyIcon icon='tabler:trash' />}>
-                Deletar
-              </Button>
             </Box>
           </Grid>
         </Grid>

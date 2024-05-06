@@ -1,4 +1,4 @@
-import { SyntheticEvent, useEffect } from 'react'
+import { SyntheticEvent, useEffect, useState } from 'react'
 
 import { useRouter } from 'next/router'
 
@@ -6,6 +6,7 @@ import { Dialog, DialogTitle, DialogContent, Grid, DialogActions, Button, MenuIt
 
 import IconifyIcon from 'src/@core/components/icon'
 import CustomTextField from 'src/@core/components/mui/text-field'
+import DeleteDevice from './Delete'
 
 import useGetDataApi from 'src/hooks/useGetDataApi'
 
@@ -70,6 +71,8 @@ const EditCentral = ({ handleClose, open, refresh, setRefresh, projectDeviceId }
     url: `/projectDevices/${projectDeviceId}`,
     callInit: router.isReady && open
   })
+
+  const [deleteDialogOpen, setDeletedDialogOpen] = useState<boolean>(false)
 
   const {
     control,
@@ -174,224 +177,240 @@ const EditCentral = ({ handleClose, open, refresh, setRefresh, projectDeviceId }
   }
 
   return (
-    <Dialog
-      open={open}
-      aria-labelledby='user-view-edit'
-      aria-describedby='user-view-edit-description'
-      sx={{ '& .MuiPaper-root': { width: '100%', maxWidth: 1000 } }}
-    >
-      <DialogTitle
-        id='user-view-edit'
-        sx={{
-          textAlign: 'center',
-          fontSize: '1.5rem !important',
-          px: theme => [`${theme.spacing(5)} !important`, `${theme.spacing(15)} !important`],
-          pt: theme => [`${theme.spacing(8)} !important`, `${theme.spacing(12.5)} !important`]
-        }}
+    <>
+      <DeleteDevice
+        id={projectDeviceId}
+        question='Deseja deletar esta central?'
+        description='Os dispositivos ou teclas vinculados serão deletados, deseja continuar? Esta ação não poderá ser desfeita!'
+        open={deleteDialogOpen}
+        setOpen={setDeletedDialogOpen}
+        handleClose={handleClose}
+      />
+
+      <Dialog
+        open={open}
+        aria-labelledby='user-view-edit'
+        aria-describedby='user-view-edit-description'
+        sx={{ '& .MuiPaper-root': { width: '100%', maxWidth: 1000 } }}
       >
-        Editar Central
-      </DialogTitle>
-      <DialogContent
-        sx={{
-          pb: theme => `${theme.spacing(8)} !important`,
-          px: theme => [`${theme.spacing(5)} !important`, `${theme.spacing(15)} !important`]
-        }}
-      >
-        <Grid container spacing={6} justifyContent={'space-between'} pb={6}>
-          <Grid item xs={12} sm={6}>
-            <Button variant='contained' color='success'>
-              Online
-            </Button>
-          </Grid>
-          <Grid item xs={12} sm={6} gap={10}>
-            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'end', gap: 2 }}>
-              <Button variant='contained' color='primary' startIcon={<IconifyIcon icon='tabler:wifi' />}>
-                Testar Conexão
-              </Button>
-              <Button variant='contained' color='error' startIcon={<IconifyIcon icon='tabler:trash' />}>
-                Deletar
-              </Button>
-            </Box>
-          </Grid>
-        </Grid>
-        <form noValidate autoComplete='off'>
-          <Grid container spacing={6}>
+        <DialogTitle
+          id='user-view-edit'
+          sx={{
+            textAlign: 'center',
+            fontSize: '1.5rem !important',
+            px: theme => [`${theme.spacing(5)} !important`, `${theme.spacing(15)} !important`],
+            pt: theme => [`${theme.spacing(8)} !important`, `${theme.spacing(12.5)} !important`]
+          }}
+        >
+          Editar Central
+        </DialogTitle>
+        <DialogContent
+          sx={{
+            pb: theme => `${theme.spacing(8)} !important`,
+            px: theme => [`${theme.spacing(5)} !important`, `${theme.spacing(15)} !important`]
+          }}
+        >
+          <Grid container spacing={6} justifyContent={'space-between'} pb={6}>
             <Grid item xs={12} sm={6}>
-              <Controller
-                name='name'
-                control={control}
-                render={({ field: { value, onChange, onBlur } }) => (
-                  <CustomTextField
-                    fullWidth
-                    label='Nome'
-                    required
-                    value={value || ''}
-                    onBlur={onBlur}
-                    onChange={onChange}
-                    error={Boolean(errors.name)}
-                    {...(errors.name && { helperText: errors.name.message })}
-                  />
-                )}
-              />
+              <Button variant='contained' color='success'>
+                Online
+              </Button>
             </Grid>
-
-            <Grid item xs={12} sm={3}>
-              <Controller
-                name='connection'
-                control={control}
-                render={({ field: { value, onBlur } }) => (
-                  <CustomTextField
-                    select
-                    fullWidth
-                    label='Conexão'
-                    required
-                    value={value || ''}
-                    onBlur={onBlur}
-                    onChange={e => handleChangeConnectionType(e)}
-                    error={Boolean(errors.connection)}
-                    {...(errors.connection && { helperText: errors.connection.message })}
-                  >
-                    <MenuItem value=''>
-                      <em>selecione</em>
-                    </MenuItem>
-                    <MenuItem value='DHCP'>DHCP</MenuItem>
-                    <MenuItem value='STATIC_IP'>IP Estático</MenuItem>
-                  </CustomTextField>
-                )}
-              />
-            </Grid>
-
-            <Grid item xs={12} sm={3}>
-              <Controller
-                name='port'
-                control={control}
-                render={({ field: { value, onChange, onBlur } }) => (
-                  <CustomTextField
-                    fullWidth
-                    label='Porta'
-                    required
-                    value={value || ''}
-                    onBlur={onBlur}
-                    onChange={onChange}
-                    error={Boolean(errors.port)}
-                    {...(errors.port && { helperText: errors.port.message })}
-                  />
-                )}
-              />
-            </Grid>
-
-            <Grid item xs={12} sm={3}>
-              <Controller
-                name='ip'
-                control={control}
-                render={({ field: { value, onChange, onBlur } }) => (
-                  <CustomTextField
-                    fullWidth
-                    label='IP'
-                    disabled={handleCheckConnectionType(watch('connection') as string)}
-                    value={value || ''}
-                    onBlur={onBlur}
-                    onChange={onChange}
-                    error={Boolean(errors.ip)}
-                    {...(errors.ip && { helperText: errors.ip.message })}
-                  />
-                )}
-              />
-            </Grid>
-
-            <Grid item xs={12} sm={3}>
-              <Controller
-                name='gateway'
-                control={control}
-                render={({ field: { value, onChange, onBlur } }) => (
-                  <CustomTextField
-                    fullWidth
-                    label='Gateway'
-                    disabled={handleCheckConnectionType(watch('connection') as string)}
-                    value={value || ''}
-                    onBlur={onBlur}
-                    onChange={onChange}
-                    error={Boolean(errors.gateway)}
-                    {...(errors.gateway && { helperText: errors.gateway.message })}
-                  />
-                )}
-              />
-            </Grid>
-
-            <Grid item xs={12} sm={3}>
-              <Controller
-                name='subnet'
-                control={control}
-                render={({ field: { value, onChange, onBlur } }) => (
-                  <CustomTextField
-                    fullWidth
-                    label='Subnet'
-                    disabled={handleCheckConnectionType(watch('connection') as string)}
-                    value={value || ''}
-                    onBlur={onBlur}
-                    onChange={onChange}
-                    error={Boolean(errors.subnet)}
-                    {...(errors.subnet && { helperText: errors.subnet.message })}
-                  />
-                )}
-              />
-            </Grid>
-
-            <Grid item xs={12} sm={3}>
-              <Controller
-                name='dns'
-                control={control}
-                render={({ field: { value, onChange, onBlur } }) => (
-                  <CustomTextField
-                    fullWidth
-                    label='DNS'
-                    disabled={handleCheckConnectionType(watch('connection') as string)}
-                    value={value || ''}
-                    onBlur={onBlur}
-                    onChange={onChange}
-                    error={Boolean(errors.dns)}
-                    {...(errors.dns && { helperText: errors.dns.message })}
-                  />
-                )}
-              />
-            </Grid>
-
-            <Grid item xs={12} sm={3}>
-              <Controller
-                name='tcp'
-                control={control}
-                render={({ field: { value, onChange, onBlur } }) => (
-                  <CustomTextField
-                    fullWidth
-                    label='TCP'
-                    disabled={handleCheckConnectionType(watch('connection') as string)}
-                    value={value || ''}
-                    onBlur={onBlur}
-                    onChange={onChange}
-                    error={Boolean(errors.tcp)}
-                    {...(errors.tcp && { helperText: errors.tcp.message })}
-                  />
-                )}
-              />
+            <Grid item xs={12} sm={6} gap={10}>
+              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'end', gap: 2 }}>
+                <Button variant='contained' color='primary' startIcon={<IconifyIcon icon='tabler:wifi' />}>
+                  Testar Conexão
+                </Button>
+                <Button
+                  variant='contained'
+                  color='error'
+                  startIcon={<IconifyIcon icon='tabler:trash' />}
+                  onClick={() => setDeletedDialogOpen(true)}
+                >
+                  Deletar
+                </Button>
+              </Box>
             </Grid>
           </Grid>
-        </form>
-      </DialogContent>
-      <DialogActions
-        sx={{
-          justifyContent: 'center',
-          px: theme => [`${theme.spacing(5)} !important`, `${theme.spacing(15)} !important`],
-          pb: theme => [`${theme.spacing(8)} !important`, `${theme.spacing(12.5)} !important`]
-        }}
-      >
-        <Button variant='tonal' color='secondary' onClick={handleClose}>
-          Cancelar
-        </Button>
-        <Button variant='contained' sx={{ mr: 2 }} onClick={handleSubmit(onSubmit)}>
-          Salvar
-        </Button>
-      </DialogActions>
-    </Dialog>
+          <form noValidate autoComplete='off'>
+            <Grid container spacing={6}>
+              <Grid item xs={12} sm={6}>
+                <Controller
+                  name='name'
+                  control={control}
+                  render={({ field: { value, onChange, onBlur } }) => (
+                    <CustomTextField
+                      fullWidth
+                      label='Nome'
+                      required
+                      value={value || ''}
+                      onBlur={onBlur}
+                      onChange={onChange}
+                      error={Boolean(errors.name)}
+                      {...(errors.name && { helperText: errors.name.message })}
+                    />
+                  )}
+                />
+              </Grid>
+
+              <Grid item xs={12} sm={3}>
+                <Controller
+                  name='connection'
+                  control={control}
+                  render={({ field: { value, onBlur } }) => (
+                    <CustomTextField
+                      select
+                      fullWidth
+                      label='Conexão'
+                      required
+                      value={value || ''}
+                      onBlur={onBlur}
+                      onChange={e => handleChangeConnectionType(e)}
+                      error={Boolean(errors.connection)}
+                      {...(errors.connection && { helperText: errors.connection.message })}
+                    >
+                      <MenuItem value=''>
+                        <em>selecione</em>
+                      </MenuItem>
+                      <MenuItem value='DHCP'>DHCP</MenuItem>
+                      <MenuItem value='STATIC_IP'>IP Estático</MenuItem>
+                    </CustomTextField>
+                  )}
+                />
+              </Grid>
+
+              <Grid item xs={12} sm={3}>
+                <Controller
+                  name='port'
+                  control={control}
+                  render={({ field: { value, onChange, onBlur } }) => (
+                    <CustomTextField
+                      fullWidth
+                      label='Porta'
+                      required
+                      value={value || ''}
+                      onBlur={onBlur}
+                      onChange={onChange}
+                      error={Boolean(errors.port)}
+                      {...(errors.port && { helperText: errors.port.message })}
+                    />
+                  )}
+                />
+              </Grid>
+
+              <Grid item xs={12} sm={3}>
+                <Controller
+                  name='ip'
+                  control={control}
+                  render={({ field: { value, onChange, onBlur } }) => (
+                    <CustomTextField
+                      fullWidth
+                      label='IP'
+                      disabled={handleCheckConnectionType(watch('connection') as string)}
+                      value={value || ''}
+                      onBlur={onBlur}
+                      onChange={onChange}
+                      error={Boolean(errors.ip)}
+                      {...(errors.ip && { helperText: errors.ip.message })}
+                    />
+                  )}
+                />
+              </Grid>
+
+              <Grid item xs={12} sm={3}>
+                <Controller
+                  name='gateway'
+                  control={control}
+                  render={({ field: { value, onChange, onBlur } }) => (
+                    <CustomTextField
+                      fullWidth
+                      label='Gateway'
+                      disabled={handleCheckConnectionType(watch('connection') as string)}
+                      value={value || ''}
+                      onBlur={onBlur}
+                      onChange={onChange}
+                      error={Boolean(errors.gateway)}
+                      {...(errors.gateway && { helperText: errors.gateway.message })}
+                    />
+                  )}
+                />
+              </Grid>
+
+              <Grid item xs={12} sm={3}>
+                <Controller
+                  name='subnet'
+                  control={control}
+                  render={({ field: { value, onChange, onBlur } }) => (
+                    <CustomTextField
+                      fullWidth
+                      label='Subnet'
+                      disabled={handleCheckConnectionType(watch('connection') as string)}
+                      value={value || ''}
+                      onBlur={onBlur}
+                      onChange={onChange}
+                      error={Boolean(errors.subnet)}
+                      {...(errors.subnet && { helperText: errors.subnet.message })}
+                    />
+                  )}
+                />
+              </Grid>
+
+              <Grid item xs={12} sm={3}>
+                <Controller
+                  name='dns'
+                  control={control}
+                  render={({ field: { value, onChange, onBlur } }) => (
+                    <CustomTextField
+                      fullWidth
+                      label='DNS'
+                      disabled={handleCheckConnectionType(watch('connection') as string)}
+                      value={value || ''}
+                      onBlur={onBlur}
+                      onChange={onChange}
+                      error={Boolean(errors.dns)}
+                      {...(errors.dns && { helperText: errors.dns.message })}
+                    />
+                  )}
+                />
+              </Grid>
+
+              <Grid item xs={12} sm={3}>
+                <Controller
+                  name='tcp'
+                  control={control}
+                  render={({ field: { value, onChange, onBlur } }) => (
+                    <CustomTextField
+                      fullWidth
+                      label='TCP'
+                      disabled={handleCheckConnectionType(watch('connection') as string)}
+                      value={value || ''}
+                      onBlur={onBlur}
+                      onChange={onChange}
+                      error={Boolean(errors.tcp)}
+                      {...(errors.tcp && { helperText: errors.tcp.message })}
+                    />
+                  )}
+                />
+              </Grid>
+            </Grid>
+          </form>
+        </DialogContent>
+        <DialogActions
+          sx={{
+            justifyContent: 'center',
+            px: theme => [`${theme.spacing(5)} !important`, `${theme.spacing(15)} !important`],
+            pb: theme => [`${theme.spacing(8)} !important`, `${theme.spacing(12.5)} !important`]
+          }}
+        >
+          <Button variant='tonal' color='secondary' onClick={handleClose}>
+            Cancelar
+          </Button>
+          <Button variant='contained' sx={{ mr: 2 }} onClick={handleSubmit(onSubmit)}>
+            Salvar
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </>
   )
 }
 

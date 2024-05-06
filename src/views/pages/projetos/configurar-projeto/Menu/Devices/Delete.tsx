@@ -19,9 +19,10 @@ interface DeleteDeviceProps {
   description?: string
   open: boolean
   setOpen: Dispatch<SetStateAction<boolean>>
+  handleClose?: () => void
 }
 
-const DeleteDevice = ({ id, open, question, setOpen, description }: DeleteDeviceProps) => {
+const DeleteDevice = ({ id, open, question, setOpen, description, handleClose }: DeleteDeviceProps) => {
   const { setRefreshMenu, refreshMenu } = useProjectMenu()
 
   const handleConfirmDelete = (deviceId: string) => {
@@ -30,10 +31,12 @@ const DeleteDevice = ({ id, open, question, setOpen, description }: DeleteDevice
       .then(response => {
         if (response.status === 200) {
           setRefreshMenu(!refreshMenu)
+          handleClose?.()
           toast.success('Dispositivo deletado com sucesso!')
         }
       })
       .catch(() => {
+        handleClose?.()
         toast.error('Erro ao deletar dispositivo!')
       })
   }
