@@ -108,7 +108,7 @@ const Create = ({ open, handleClose }: CreateProps) => {
     name: 'outputs'
   })
 
-  const handleSelectOutput = (environmentId: string, deviceKeyName: string) => {
+  const handleSelectOutput = (environmentId: string, projectDeviceKeyId: string) => {
     if (!projectSceneId) {
       handleClose()
 
@@ -118,14 +118,14 @@ const Create = ({ open, handleClose }: CreateProps) => {
     const environmentSelected: any = environments.filter(environment => environment.environmentId === environmentId)
 
     const outputSelected: any = environmentSelected[0].outputs.filter(
-      (output: any) => output.deviceKeyName === deviceKeyName
+      (output: any) => output.projectDeviceKeyId === projectDeviceKeyId
     )
 
     if (outputSelected.length > 0) {
       const output: any = outputSelected[0]
 
       api
-        .get(`/projectDevices/${output.projectDeviceId}`)
+        .get(`/projectDeviceKeys/${projectDeviceKeyId}`)
         .then(response => {
           const { data } = response
 
@@ -143,7 +143,7 @@ const Create = ({ open, handleClose }: CreateProps) => {
             boardId: output.boardId,
             name: output.deviceKeyName,
             type: 'EXTERNAL',
-            ...(operationType === 'RELE' && { actionValueReles: initialValue }),
+            ...(operationType === 'RELES' && { actionValueReles: initialValue }),
             ...(operationType === 'ENGINE' && { actionValueEngine: initialValue }),
             ...(operationType === 'DIMMER' && { actionValueDimmer: initialValue })
           })
@@ -237,7 +237,7 @@ const Create = ({ open, handleClose }: CreateProps) => {
                     {environment.outputs.map((output: any) => (
                       <ListItemButton
                         key={output.projectDeviceKeyId}
-                        onClick={() => handleSelectOutput(environment.environmentId, output.deviceKeyName)}
+                        onClick={() => handleSelectOutput(environment.environmentId, output.projectDeviceKeyId)}
                         sx={{
                           borderBottom: `1px solid ${theme.palette.divider}`
                         }}
