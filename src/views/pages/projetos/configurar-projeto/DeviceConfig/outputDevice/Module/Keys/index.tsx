@@ -2,12 +2,26 @@ import { Box, Grid, List, ListItem, Typography } from '@mui/material'
 
 import TryKey from './TryKey'
 import { handleCheckOperationType } from 'src/utils/actions'
+import { useEffect } from 'react'
 
 interface KeysProps {
   keys: any[]
+  orderKeys: any
 }
 
-const Keys = ({ keys }: KeysProps) => {
+const Keys = ({ keys, orderKeys }: KeysProps) => {
+  useEffect(() => {
+    if (keys && orderKeys) {
+      const idToIndexMap: { [key: string]: number } = {}
+
+      Object.entries(orderKeys).forEach(([index, id]) => {
+        idToIndexMap[id as string] = parseInt(index as string)
+      })
+
+      keys.sort((a: any, b: any) => idToIndexMap[a._id] - idToIndexMap[b._id])
+    }
+  }, [keys, orderKeys])
+
   const handleShowKeys = (keys: any[]) => {
     return keys.map((key: any, index: number) => {
       const operationType = handleCheckOperationType(key.initialValue)
