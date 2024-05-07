@@ -2,7 +2,7 @@ import { Box, Grid, List, ListItem, Typography } from '@mui/material'
 
 import TryKey from './TryKey'
 import { handleCheckOperationType } from 'src/utils/actions'
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 
 interface KeysProps {
   keys: any[]
@@ -10,6 +10,8 @@ interface KeysProps {
 }
 
 const Keys = ({ keys, orderKeys }: KeysProps) => {
+  const keysRef = useRef<any>(null)
+
   useEffect(() => {
     if (keys && orderKeys) {
       const idToIndexMap: { [key: string]: number } = {}
@@ -19,6 +21,8 @@ const Keys = ({ keys, orderKeys }: KeysProps) => {
       })
 
       keys.sort((a: any, b: any) => idToIndexMap[a._id] - idToIndexMap[b._id])
+
+      keysRef.current = keys
     }
   }, [keys, orderKeys])
 
@@ -65,7 +69,7 @@ const Keys = ({ keys, orderKeys }: KeysProps) => {
           gap: 3
         }}
       >
-        {keys && handleShowKeys(keys)}
+        {keys && keysRef.current && handleShowKeys(keysRef.current)}
       </List>
     </Box>
   )
