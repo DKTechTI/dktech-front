@@ -1,25 +1,47 @@
-import { useEffect } from 'react'
+import { FormEvent, useEffect, useState } from 'react'
 
 import { useRouter } from 'next/router'
 
-import { Dialog, DialogTitle, DialogContent, DialogContentText, Grid, DialogActions, Button } from '@mui/material'
+import {
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
+  Grid,
+  DialogActions,
+  Button,
+  ListItem,
+  ListItemText,
+  List,
+  ListSubheader,
+  useTheme
+} from '@mui/material'
 
 import toast from 'react-hot-toast'
 import CustomTextField from 'src/@core/components/mui/text-field'
 
 import * as yup from 'yup'
-import { useForm, Controller } from 'react-hook-form'
+import { useForm, useFieldArray } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
 
 import { api } from 'src/services/api'
+import IconifyIcon from 'src/@core/components/icon'
+import { verifyObjectErrorsIsEmpty } from 'src/utils/verifyErrors'
 
 const schema = yup.object().shape({
-  name: yup.string().required('Nome do ambiente obrigatório')
+  environments: yup
+    .array()
+    .of(yup.object().shape({ name: yup.string().required('Nome do ambiente obrigatório') }))
+    .min(1, 'Adicione pelo menos um ambiente')
 })
 
-interface FormData {
+interface EnvironmentProps {
   projectId: string
   name: string
+}
+
+interface FormData {
+  environments: EnvironmentProps[]
 }
 
 interface EditProfileProps {
@@ -30,37 +52,64 @@ interface EditProfileProps {
 }
 
 const CreateEnvironment = ({ open, handleClose, refresh, setRefresh }: EditProfileProps) => {
+  const theme = useTheme()
   const router = useRouter()
 
-  const { id } = router.query
+  const { id: projectId } = router.query
+
+  const [environmentName, setEnvironmentName] = useState('')
 
   const {
     control,
     handleSubmit,
     reset,
+    setError,
+    clearErrors,
     formState: { errors }
   } = useForm({
-    defaultValues: {
-      projectId: id ? id : '',
-      name: ''
-    } as FormData,
     mode: 'onBlur',
-    resolver: yupResolver(schema)
+    resolver: yupResolver(schema),
+    defaultValues: {
+      environments: [] as FormData['environments']
+    }
   })
 
+  const { fields, append, remove } = useFieldArray({
+    control,
+    name: 'environments'
+  })
+
+  const handleSetName = (value: string) => {
+    setEnvironmentName(value)
+    if (errors.environments) clearErrors('environments')
+  }
+
+  const handlePressEnter = (event: FormEvent, environmentName: string, projectId: string, length: number) => {
+    event.preventDefault()
+
+    if (environmentName.trim() === '')
+      return setError(`environments.${length}.name`, { type: 'manual', message: 'Nome do ambiente obrigatório' })
+
+    append({ projectId: projectId, name: environmentName })
+    setEnvironmentName('')
+  }
+
   const onSubmit = (formData: FormData) => {
-    api
-      .post('/projectEnvironments', formData)
-      .then(response => {
-        if (response.status === 201) {
-          handleClose()
-          toast.success('Ambiente adicionado com sucesso!')
-          setRefresh(!refresh)
-        }
+    const createEnvironment = async (data: any) => {
+      return api.post('/projectEnvironments', data)
+    }
+
+    const promises = formData.environments.map(environment => createEnvironment(environment))
+
+    Promise.all(promises)
+      .then(() => {
+        handleClose()
+        toast.success('Ambientes adicionados com sucesso!')
+        setRefresh(!refresh)
       })
       .catch(() => {
         handleClose()
-        toast.error('Erro ao adicionar ambiente, tente novamente mais tarde')
+        toast.error('Erro ao adicionar ambientes, tente novamente mais tarde')
       })
   }
 
@@ -96,27 +145,78 @@ const CreateEnvironment = ({ open, handleClose, refresh, setRefresh }: EditProfi
         <DialogContentText variant='body2' id='user-view-edit-description' sx={{ textAlign: 'center', mb: 7 }}>
           Digite o Nome do Ambiente
         </DialogContentText>
-        <form noValidate autoComplete='off'>
+        <form
+          noValidate
+          autoComplete='off'
+          onSubmit={e => handlePressEnter(e, environmentName, projectId as string, fields.length)}
+        >
           <Grid container spacing={6}>
             <Grid item xs={12} sm={4} md>
-              <Controller
-                name='name'
-                control={control}
-                rules={{ required: true }}
-                render={({ field: { value, onChange, onBlur } }) => (
-                  <CustomTextField
-                    fullWidth
-                    autoFocus
-                    label='Nome'
-                    value={value}
-                    onBlur={onBlur}
-                    onChange={onChange}
-                    placeholder='Nome do Ambiente'
-                    error={Boolean(errors.name)}
-                    {...(errors.name && { helperText: errors.name.message })}
-                  />
-                )}
+              <CustomTextField
+                fullWidth
+                autoFocus
+                label='Nome'
+                value={environmentName}
+                onChange={e => handleSetName(e.target.value)}
+                placeholder='Nome do Ambiente'
+                error={Boolean(errors.environments && errors.environments[fields.length]?.name)}
+                helperText={errors.environments && errors.environments[fields.length]?.name?.message}
               />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <List
+                sx={{
+                  bgcolor: 'background.paper',
+                  position: 'relative',
+                  overflow: 'auto',
+                  maxHeight: 300
+                }}
+                subheader={<li />}
+              >
+                <ListSubheader>Ambientes</ListSubheader>
+                {(!fields || fields.length === 0) && (
+                  <ListItem
+                    sx={{
+                      borderBottom: `1px solid ${
+                        verifyObjectErrorsIsEmpty(errors)
+                          ? theme.palette.divider
+                          : errors.environments?.message
+                          ? theme.palette.error.main
+                          : theme.palette.divider
+                      }`
+                    }}
+                  >
+                    <ListItemText
+                      primary={
+                        verifyObjectErrorsIsEmpty(errors) ? 'Nenhum Ambiente' : errors.environments?.message || ''
+                      }
+                      sx={{
+                        '& .MuiListItemText-primary': {
+                          color: verifyObjectErrorsIsEmpty(errors) ? theme.palette.primary : theme.palette.error.main
+                        } as unknown as string
+                      }}
+                    />
+                  </ListItem>
+                )}
+                {fields.map((item, index) => (
+                  <ListItem
+                    key={item.id}
+                    sx={{
+                      borderBottom: `1px solid ${theme.palette.divider}`
+                    }}
+                  >
+                    <ListItemText primary={item.name} />
+                    <IconifyIcon
+                      fontSize='1.75rem'
+                      icon='tabler:trash'
+                      onClick={() => remove(index)}
+                      style={{
+                        cursor: 'pointer'
+                      }}
+                    />
+                  </ListItem>
+                ))}
+              </List>
             </Grid>
           </Grid>
         </form>

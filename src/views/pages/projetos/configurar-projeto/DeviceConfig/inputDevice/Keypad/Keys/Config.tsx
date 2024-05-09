@@ -83,7 +83,7 @@ const Config = ({ keyData }: ConfigProps) => {
       keyOrder: Number(formData.keyOrder)
     })
 
-    const response = await handleSaveOnStateChange(`/projectDeviceKesys/${keyId}`, data, 'PUT', ['menu', 'deviceKeys'])
+    const response = await handleSaveOnStateChange(`/projectDeviceKeys/${keyId}`, data, 'PUT', ['menu', 'deviceKeys'])
 
     if (response) {
       response.status === 200 && toast.success(responseTypeStatus[response.status])

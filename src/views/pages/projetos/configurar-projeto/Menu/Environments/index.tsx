@@ -168,7 +168,7 @@ const Environments = ({ environments }: EnvironmentsProps) => {
                       nodeId={input.projectDeviceId + input.projectDeviceKeyId}
                       label={
                         <Typography component={'span'} variant={'h6'}>
-                          [{index + 1}] {input.deviceKeyName} {input.deviceName}
+                          [{index + 1}] {input.deviceName} - {input.deviceKeyName}
                         </Typography>
                       }
                     ></TreeItem>
@@ -213,7 +213,7 @@ const Environments = ({ environments }: EnvironmentsProps) => {
                                 nodeId={output.projectDeviceId + output.projectDeviceKeyId}
                                 label={
                                   <Typography component={'span'} variant={'h6'}>
-                                    [{index + 1}] {output.deviceKeyName} {output.deviceName}
+                                    [{index + 1}] {output.deviceName} - {output.deviceKeyName}
                                   </Typography>
                                 }
                               />

@@ -20,7 +20,7 @@ export default function Menu() {
     : []
 
   return (
-    <Box sx={{ flexGrow: 1, width: '100%' }}>
+    <Box sx={{ flexGrow: 1, width: '100%', padding: '0 0 1rem 0' }}>
       {menu ? (
         <TreeView
           aria-label='rich object'

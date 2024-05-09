@@ -204,7 +204,9 @@ const AddOutputDevice = ({
     if (!open) {
       reset()
     }
-  }, [open, reset])
+
+    setValue('environmentId', environmentId)
+  }, [environmentId, open, reset, setValue])
 
   return (
     <Dialog

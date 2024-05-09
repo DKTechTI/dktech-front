@@ -157,9 +157,9 @@ const Create = ({ open, handleClose }: CreateProps) => {
       return api.post('/projectSceneActions', data)
     }
 
-    const promisses = formData.outputs.map(output => createActions(output))
+    const promises = formData.outputs.map(output => createActions(output))
 
-    Promise.all(promisses)
+    Promise.all(promises)
       .then(() => {
         handleClose()
         toast.success('Ações adicionadas com sucesso!')

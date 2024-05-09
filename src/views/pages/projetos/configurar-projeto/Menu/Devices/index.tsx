@@ -195,7 +195,7 @@ const Devices = ({ devices }: DevicesProps) => {
                                         setKeyId(null)
                                       }}
                                     >
-                                      {verifyDeviceType(input.deviceType)} {input.deviceName}
+                                      {verifyDeviceType(input.deviceType)} - {input.deviceName}
                                     </Typography>
                                     <Typography
                                       component={'span'}
@@ -280,7 +280,7 @@ const Devices = ({ devices }: DevicesProps) => {
                                         setKeyId(null)
                                       }}
                                     >
-                                      {verifyDeviceType(output.deviceType)} {output.deviceName}
+                                      {verifyDeviceType(output.deviceType)} - {output.deviceName}
                                     </Typography>
                                     <Typography
                                       component={'span'}
