@@ -202,6 +202,7 @@ const EditResaleAccount = ({ openEdit, handleEditClose, data, refresh, setRefres
                     fullWidth
                     autoFocus
                     label='E-mail'
+                    type='email'
                     value={value}
                     onBlur={onBlur}
                     onChange={onChange}

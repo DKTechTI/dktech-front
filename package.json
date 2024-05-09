@@ -36,6 +36,7 @@
     "@mui/x-tree-view": "^6.17.0",
     "@popperjs/core": "2.11.7",
     "@reduxjs/toolkit": "1.9.5",
+    "@types/socket.io-client": "^3.0.0",
     "apexcharts-clevision": "3.28.5",
     "axios": "1.4.0",
     "axios-mock-adapter": "1.21.4",
@@ -74,6 +75,7 @@
     "react-popper": "2.3.0",
     "react-redux": "8.0.5",
     "recharts": "2.5.0",
+    "socket.io-client": "^4.7.5",
     "stylis": "4.1.4",
     "stylis-plugin-rtl": "2.1.1",
     "yup": "1.1.1"

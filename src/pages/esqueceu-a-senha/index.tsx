@@ -134,6 +134,7 @@ const ForgotPassword = () => {
                     <CustomTextField
                       fullWidth
                       autoFocus
+                      type='email'
                       label='Email'
                       value={value}
                       onBlur={onBlur}
