@@ -1,7 +1,8 @@
-import { ActionsDnDProvider } from 'src/context/ActionsDnDContext'
-import { AutoSaveProvider } from 'src/context/AutoSaveContext'
-import { DeviceKeysProvider } from 'src/context/DeviceKeysContext'
 import { ProjectProvider } from 'src/context/ProjectContext'
+import { SocketIOProvider } from 'src/context/SocketIOContext'
+import { AutoSaveProvider } from 'src/context/AutoSaveContext'
+import { ActionsDnDProvider } from 'src/context/ActionsDnDContext'
+import { DeviceKeysProvider } from 'src/context/DeviceKeysContext'
 import { ProjectMenuProvider } from 'src/context/ProjectMenuContext'
 import ProjectConfigContent from 'src/views/pages/projetos/configurar-projeto'
 
@@ -12,7 +13,9 @@ const ProjectConfig = () => {
         <DeviceKeysProvider>
           <ActionsDnDProvider>
             <AutoSaveProvider>
-              <ProjectConfigContent />
+              <SocketIOProvider>
+                <ProjectConfigContent />
+              </SocketIOProvider>
             </AutoSaveProvider>
           </ActionsDnDProvider>
         </DeviceKeysProvider>

@@ -122,6 +122,8 @@ const ActionsDnDProvider = ({ children }: Props) => {
 
   const handleCreateAction = async (action: any) => {
     try {
+      if (!projectSceneId) return toast.error('Selecione uma cena antes de adicionar uma ação')
+
       const draggedOutputId = action.draggableId
 
       const draggedOutput = menu.environments

@@ -198,7 +198,8 @@ const EditAccount = ({ openEdit, handleEditClose, data, refresh, setRefresh }: E
                   <CustomTextField
                     fullWidth
                     autoFocus
-                    label='Email'
+                    label='E-mail'
+                    type='email'
                     value={value}
                     onBlur={onBlur}
                     onChange={onChange}

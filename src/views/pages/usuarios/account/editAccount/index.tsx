@@ -132,6 +132,7 @@ const EditAccount = ({ openEdit, handleEditClose, data, refresh, setRefresh }: E
                     fullWidth
                     autoFocus
                     label='E-mail'
+                    type='email'
                     value={value}
                     onBlur={onBlur}
                     onChange={onChange}
