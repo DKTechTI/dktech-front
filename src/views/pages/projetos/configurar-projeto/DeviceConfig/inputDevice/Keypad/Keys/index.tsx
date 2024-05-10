@@ -1,4 +1,4 @@
-import { SyntheticEvent, useState } from 'react'
+import { SyntheticEvent, useEffect, useRef, useState } from 'react'
 
 import { Box, Button, Grid, List, ListItem, ListItemButton, ListItemText, Typography, useTheme } from '@mui/material'
 
@@ -18,10 +18,13 @@ const keyStatusObj: KeyStatusProps = {
 
 interface KeysProps {
   keys: any[]
+  orderKeys: any
 }
 
-const Keys = ({ keys }: KeysProps) => {
+const Keys = ({ keys, orderKeys }: KeysProps) => {
   const theme = useTheme()
+
+  const keysRef = useRef(keys)
 
   const { setKeyId, refreshDeviceKeys, setRefreshDeviceKeys, setEnvironmentId } = useDeviceKeys()
 
@@ -71,6 +74,20 @@ const Keys = ({ keys }: KeysProps) => {
     })
   }
 
+  useEffect(() => {
+    if (keys && orderKeys) {
+      const idToIndexMap: { [key: string]: number } = {}
+
+      Object.entries(orderKeys).forEach(([index, id]) => {
+        idToIndexMap[id as string] = parseInt(index as string)
+      })
+
+      keys.sort((a: any, b: any) => idToIndexMap[a._id] - idToIndexMap[b._id])
+
+      keysRef.current = keys
+    }
+  }, [orderKeys, keys])
+
   return (
     <>
       <StatusKeys
@@ -110,7 +127,7 @@ const Keys = ({ keys }: KeysProps) => {
           }}
           onClick={e => handleSelectKeyHighlight(e, '')}
         >
-          {keys && handleShowKeys(keys)}
+          {keys && handleShowKeys(keysRef.current)}
         </List>
       </Box>
     </>
