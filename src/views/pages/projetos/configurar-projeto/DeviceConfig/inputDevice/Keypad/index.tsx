@@ -208,6 +208,20 @@ const Keypad = ({ deviceData, refresh, setRefresh }: KeypadProps) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [deviceData, watch('boardIndex')])
 
+  useEffect(() => {
+    const orderKeys = deviceData.indexDeviceKeys
+
+    if (deviceKeys && orderKeys) {
+      const idToIndexMap: { [key: string]: number } = {}
+
+      Object.entries(orderKeys).forEach(([index, id]) => {
+        idToIndexMap[id as string] = parseInt(index as string)
+      })
+
+      deviceKeys.data.sort((a: any, b: any) => idToIndexMap[a._id] - idToIndexMap[b._id])
+    }
+  }, [deviceData.indexDeviceKeys, deviceKeys])
+
   return (
     <Box>
       <CardHeader title={`Keypad: ${getValues('name')}`} />
