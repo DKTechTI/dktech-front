@@ -9,6 +9,7 @@ import EditNoteIcon from '@mui/icons-material/EditNote'
 
 import ExitToAppIcon from '@mui/icons-material/ExitToApp'
 
+import { useProject } from 'src/hooks/useProject'
 import { useProjectMenu } from 'src/hooks/useProjectMenu'
 
 import CreateEnvironment from './Create'
@@ -18,13 +19,16 @@ import AddInputDevice from './AddInputDevice'
 import AddOutputDevice from './AddOutputDevice'
 import EditEnvironment from './Edit'
 import { Draggable, Droppable } from 'react-beautiful-dnd'
+import { useDeviceKeys } from 'src/hooks/useDeviceKeys'
 
 interface EnvironmentsProps {
   environments: any
 }
 
 const Environments = ({ environments }: EnvironmentsProps) => {
+  const { setProjectDeviceId } = useProject()
   const { refreshMenu, setRefreshMenu } = useProjectMenu()
+  const { setKeyId } = useDeviceKeys()
 
   const [showDialog, setShowDialog] = useState<boolean>(false)
   const [showEditDialog, setShowEditDialog] = useState<boolean>(false)
@@ -171,6 +175,10 @@ const Environments = ({ environments }: EnvironmentsProps) => {
                           [{index + 1}] {input.deviceName} - {input.deviceKeyName}
                         </Typography>
                       }
+                      onClick={() => {
+                        setProjectDeviceId(input.projectDeviceId)
+                        setKeyId(input.projectDeviceKeyId)
+                      }}
                     ></TreeItem>
                   )
                 })}
@@ -216,6 +224,9 @@ const Environments = ({ environments }: EnvironmentsProps) => {
                                     [{index + 1}] {output.deviceName} - {output.deviceKeyName}
                                   </Typography>
                                 }
+                                onClick={() => {
+                                  setProjectDeviceId(output.projectDeviceId)
+                                }}
                               />
                             </Box>
                           )}
