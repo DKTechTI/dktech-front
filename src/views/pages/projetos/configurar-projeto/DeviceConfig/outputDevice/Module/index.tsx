@@ -317,7 +317,7 @@ const Module = ({ deviceData, refresh, setRefresh }: ModuleProps) => {
               </Box>
             </Grid>
             <Grid item xs={12} justifyContent={'center'}>
-              {false && (
+              {loadingDeviceKeys && (
                 <Box
                   sx={{
                     display: 'flex',
@@ -334,7 +334,7 @@ const Module = ({ deviceData, refresh, setRefresh }: ModuleProps) => {
                 </Box>
               )}
               {deviceData && deviceKeysRef.current !== deviceKeys && !loadingDeviceKeys && (
-                <Keys keys={deviceKeys.data} orderKeys={deviceData.indexDeviceKeys} />
+                <Keys keys={deviceKeys} />
               )}
             </Grid>
           </Grid>
