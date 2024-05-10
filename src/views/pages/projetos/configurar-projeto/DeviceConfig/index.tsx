@@ -17,7 +17,7 @@ interface DeviceConfigProps {
 const DeviceConfig = ({ projectDeviceId }: DeviceConfigProps) => {
   const router = useRouter()
 
-  const { setProjectDeviceType, setProjectDeviceModuleType } = useDeviceKeys()
+  const { setProjectDeviceType, setProjectDeviceModuleType, setOrderKeys } = useDeviceKeys()
 
   const { data, loading, refresh, setRefresh } = useGetDataApi<any>({
     url: `/projectDevices/${projectDeviceId}`,
@@ -28,8 +28,9 @@ const DeviceConfig = ({ projectDeviceId }: DeviceConfigProps) => {
     if (data?.data) {
       setProjectDeviceType(data.data.type)
       setProjectDeviceModuleType(data.data.moduleType)
+      setOrderKeys(data.data.indexDeviceKeys)
     }
-  }, [data, setProjectDeviceModuleType, setProjectDeviceType])
+  }, [data, setOrderKeys, setProjectDeviceModuleType, setProjectDeviceType])
 
   if (loading) {
     return (
