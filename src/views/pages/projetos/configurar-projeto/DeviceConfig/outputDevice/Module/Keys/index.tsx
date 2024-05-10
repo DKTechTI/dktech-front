@@ -1,4 +1,3 @@
-import { useRef } from 'react'
 import { Box, Grid, List, ListItem, Typography } from '@mui/material'
 import TryKey from './TryKey'
 import { handleCheckOperationType } from 'src/utils/actions'
@@ -8,8 +7,6 @@ interface KeysProps {
 }
 
 const Keys = ({ keys }: KeysProps) => {
-  const keysRef = useRef<any>(keys)
-
   const handleShowKeys = (keys: any[]) => {
     return keys.map((key: any, index: number) => {
       const operationType = handleCheckOperationType(key.initialValue)
@@ -53,7 +50,7 @@ const Keys = ({ keys }: KeysProps) => {
           gap: 3
         }}
       >
-        {keys && keysRef.current && handleShowKeys(keysRef.current)}
+        {keys && handleShowKeys(keys)}
       </List>
     </Box>
   )

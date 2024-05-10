@@ -76,8 +76,6 @@ const DeviceKeysProvider = ({ children }: Props) => {
   })
 
   useEffect(() => {
-    if (!projectDeviceId) return setDeviceKeys([])
-
     if (data?.data && data.data.length > 0) {
       const arrayActions = data.data
 
