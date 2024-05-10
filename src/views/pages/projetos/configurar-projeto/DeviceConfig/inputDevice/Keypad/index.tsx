@@ -332,8 +332,8 @@ const Keypad = ({ deviceData, refresh, setRefresh }: KeypadProps) => {
                   </Box>
                 </Box>
               )}
-              {deviceData && deviceKeys && deviceKeysRef.current !== deviceKeys.data && !loadingDeviceKeys && (
-                <Keys keys={deviceKeys.data} orderKeys={deviceData.indexDeviceKeys} />
+              {deviceData && deviceKeys && deviceKeysRef.current !== deviceKeys && !loadingDeviceKeys && (
+                <Keys keys={deviceKeys} />
               )}
             </Grid>
           </Grid>
