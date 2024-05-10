@@ -334,7 +334,7 @@ const Module = ({ deviceData, refresh, setRefresh }: ModuleProps) => {
                 </Box>
               )}
               {deviceData && deviceKeysRef.current !== deviceKeys && !loadingDeviceKeys && (
-                <Keys keys={deviceKeys.data} />
+                <Keys keys={deviceKeys} />
               )}
             </Grid>
           </Grid>

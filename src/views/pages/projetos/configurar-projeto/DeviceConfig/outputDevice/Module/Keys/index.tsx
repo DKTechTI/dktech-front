@@ -1,30 +1,14 @@
+import { useRef } from 'react'
 import { Box, Grid, List, ListItem, Typography } from '@mui/material'
-
 import TryKey from './TryKey'
 import { handleCheckOperationType } from 'src/utils/actions'
-import { useEffect, useRef } from 'react'
 
 interface KeysProps {
   keys: any[]
-  orderKeys: any
 }
 
-const Keys = ({ keys, orderKeys }: KeysProps) => {
-  const keysRef = useRef<any>(null)
-
-  useEffect(() => {
-    if (keys && orderKeys) {
-      const idToIndexMap: { [key: string]: number } = {}
-
-      Object.entries(orderKeys).forEach(([index, id]) => {
-        idToIndexMap[id as string] = parseInt(index as string)
-      })
-
-      keys.sort((a: any, b: any) => idToIndexMap[a._id] - idToIndexMap[b._id])
-
-      keysRef.current = keys
-    }
-  }, [keys, orderKeys])
+const Keys = ({ keys }: KeysProps) => {
+  const keysRef = useRef<any>(keys)
 
   const handleShowKeys = (keys: any[]) => {
     return keys.map((key: any, index: number) => {
