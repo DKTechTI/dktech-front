@@ -28,7 +28,7 @@ import toast from 'react-hot-toast'
 import { useAutoSave } from 'src/hooks/useAutoSave'
 
 const schemaScene = yup.object().shape({
-  name: yup.string().required('Nome da cena obrigatório'),
+  name: yup.string().required('Nome da cena obrigatório').min(3, 'Nome da cena deve ter no mínimo 3 caracteres'),
   eventValue: yup.string().required('Tipo de evento obrigatório'),
   ledAction: yup.string().required('Led de ação obrigatório'),
   sceneType: yup.string().required('Tipo da cena obrigatório')
@@ -185,6 +185,7 @@ const Scenes = ({ keyId }: ScenesProps) => {
         const responseMessage: { [key: number]: string } = {
           201: 'Cena criada com sucesso!',
           200: 'Cena atualizada com sucesso!',
+          400: 'Erro ao criar cena, tente novamente mais tarde',
           404: 'Erro ao criar cena, tente novamente mais tarde',
           409: 'Erro ao criar cena, tente novamente mais tarde',
           500: 'Erro ao criar cena, tente novamente mais tarde'
