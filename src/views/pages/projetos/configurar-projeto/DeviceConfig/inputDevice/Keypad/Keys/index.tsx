@@ -1,4 +1,4 @@
-import { SyntheticEvent, useState } from 'react'
+import { SyntheticEvent, useEffect, useState } from 'react'
 
 import { Box, Button, Grid, List, ListItem, ListItemButton, ListItemText, Typography, useTheme } from '@mui/material'
 
@@ -23,7 +23,7 @@ interface KeysProps {
 const Keys = ({ keys }: KeysProps) => {
   const theme = useTheme()
 
-  const { setKeyId, refreshDeviceKeys, setRefreshDeviceKeys, setEnvironmentId } = useDeviceKeys()
+  const { keyId, setKeyId, refreshDeviceKeys, setRefreshDeviceKeys, setEnvironmentId } = useDeviceKeys()
 
   const [selected, setSelected] = useState<string>('')
   const [showDialogStatusKeys, setShowDialogStatusKeys] = useState<boolean>(false)
@@ -41,6 +41,10 @@ const Keys = ({ keys }: KeysProps) => {
     setKeyId(id)
     setEnvironmentId(key.environmentId)
   }
+
+  useEffect(() => {
+    if (keyId) setSelected(keyId)
+  }, [keyId])
 
   const handleShowKeys = (keys: any[]) => {
     return keys.map(key => {
