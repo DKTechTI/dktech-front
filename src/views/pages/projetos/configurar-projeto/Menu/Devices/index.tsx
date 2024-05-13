@@ -1,25 +1,25 @@
 import { useState } from 'react'
 
 import { Typography, Box } from '@mui/material'
+import CloseIcon from '@mui/icons-material/Close'
 import { TreeItem } from '@mui/x-tree-view/TreeItem'
+import EditNoteIcon from '@mui/icons-material/EditNote'
+import AddCircleIcon from '@mui/icons-material/AddCircle'
+import HighlightOffIcon from '@mui/icons-material/HighlightOff'
+import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline'
 
-import { useProjectMenu } from 'src/hooks/useProjectMenu'
 import { useProject } from 'src/hooks/useProject'
+import { useDeviceKeys } from 'src/hooks/useDeviceKeys'
+import { useProjectMenu } from 'src/hooks/useProjectMenu'
+
+import IconifyIcon from 'src/@core/components/icon'
 
 import { checkPortName } from 'src/utils/project'
 import { verifyDeviceType } from 'src/utils/verifyDevice'
 
-import AddCircleIcon from '@mui/icons-material/AddCircle'
-import EditNoteIcon from '@mui/icons-material/EditNote'
-import CloseIcon from '@mui/icons-material/Close'
-import HighlightOffIcon from '@mui/icons-material/HighlightOff'
-import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline'
-import ExitToAppIcon from '@mui/icons-material/ExitToApp'
-
+import DeleteDevice from './Delete'
 import AddCentral from './AddCentral'
 import EditCentral from './EditCentral'
-import DeleteDevice from './Delete'
-import { useDeviceKeys } from 'src/hooks/useDeviceKeys'
 
 interface DevicesProps {
   devices: any
@@ -135,13 +135,7 @@ const Devices = ({ devices }: DevicesProps) => {
                 <TreeItem
                   key={`entradas${index}`}
                   nodeId={`entradas${index}`}
-                  icon={
-                    <ExitToAppIcon
-                      sx={{
-                        transform: 'rotate(180deg)'
-                      }}
-                    />
-                  }
+                  icon={<IconifyIcon icon='material-symbols:input-rounded' width='1.2em' height='1.2em' />}
                   label={
                     <Box sx={{ display: 'flex', alignItems: 'end', gap: 2 }}>
                       <Typography component={'span'} variant={'h6'}>
@@ -225,7 +219,7 @@ const Devices = ({ devices }: DevicesProps) => {
                 <TreeItem
                   key={`saidas${index}`}
                   nodeId={`saidas${index}`}
-                  icon={<ExitToAppIcon />}
+                  icon={<IconifyIcon icon='material-symbols:output-rounded' width='1.2rem' height='1.2rem' />}
                   label={
                     <Box sx={{ display: 'flex', alignItems: 'end', gap: 2 }}>
                       <Typography component={'span'} variant={'h6'}>

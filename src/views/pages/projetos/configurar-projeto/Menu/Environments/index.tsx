@@ -1,25 +1,24 @@
 import { useState } from 'react'
 
 import { Box, Typography } from '@mui/material'
-import { TreeItem } from '@mui/x-tree-view/TreeItem'
-
 import CloseIcon from '@mui/icons-material/Close'
-import AddCircleIcon from '@mui/icons-material/AddCircle'
+import { TreeItem } from '@mui/x-tree-view/TreeItem'
 import EditNoteIcon from '@mui/icons-material/EditNote'
+import AddCircleIcon from '@mui/icons-material/AddCircle'
 
-import ExitToAppIcon from '@mui/icons-material/ExitToApp'
+import IconifyIcon from 'src/@core/components/icon'
 
 import { useProject } from 'src/hooks/useProject'
+import { useDeviceKeys } from 'src/hooks/useDeviceKeys'
 import { useProjectMenu } from 'src/hooks/useProjectMenu'
 
-import CreateEnvironment from './Create'
-import DeleteEnvironment from './Delete'
-import AddInputDevice from './AddInputDevice'
-
-import AddOutputDevice from './AddOutputDevice'
 import EditEnvironment from './Edit'
+import DeleteEnvironment from './Delete'
+import CreateEnvironment from './Create'
+import AddInputDevice from './AddInputDevice'
+import AddOutputDevice from './AddOutputDevice'
+
 import { Draggable, Droppable } from 'react-beautiful-dnd'
-import { useDeviceKeys } from 'src/hooks/useDeviceKeys'
 
 interface EnvironmentsProps {
   environments: any
@@ -139,13 +138,7 @@ const Environments = ({ environments }: EnvironmentsProps) => {
               <TreeItem
                 key={environment.environmentId + 'entradas'}
                 nodeId={environment.environmentId + 'entradas'}
-                icon={
-                  <ExitToAppIcon
-                    sx={{
-                      transform: 'rotate(180deg)'
-                    }}
-                  />
-                }
+                icon={<IconifyIcon icon='material-symbols:input-rounded' width='1.2em' height='1.2em' />}
                 label={
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                     <Typography component={'span'} variant={'h6'}>
@@ -186,7 +179,7 @@ const Environments = ({ environments }: EnvironmentsProps) => {
               <TreeItem
                 key={environment.environmentId + 'saidas'}
                 nodeId={environment.environmentId + 'saidas'}
-                icon={<ExitToAppIcon />}
+                icon={<IconifyIcon icon='material-symbols:output-rounded' width='1.2rem' height='1.2rem' />}
                 label={
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                     <Typography component={'span'} variant={'h6'}>
