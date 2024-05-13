@@ -1,4 +1,4 @@
-import { Box, Typography } from '@mui/material'
+import { Box, Button, Chip, Typography } from '@mui/material'
 
 interface HeaderProjectProps {
   projectName: string
@@ -18,12 +18,30 @@ const HeaderProject = ({ clientName, projectName }: HeaderProjectProps) => {
         gap: 1
       }}
     >
-      <Typography variant='h4' component='h1' sx={{ width: 'fit-content', fontWeight: 700 }}>
-        Projeto: {projectName}
-      </Typography>
       <Typography variant='h5' component='h2' sx={{ width: 'fit-content', fontWeight: 700 }}>
-        Cliente: {clientName}
+        {clientName}
       </Typography>
+      <Chip
+        label={projectName}
+        sx={{
+          width: '8rem',
+          height: '2rem',
+          fontSize: 'medium'
+        }}
+      />
+      <Button
+        variant='contained'
+        size='medium'
+        sx={{
+          width: {
+            xs: '100%',
+            sm: '100%',
+            md: 'auto'
+          }
+        }}
+      >
+        Configurar Projeto
+      </Button>
     </Box>
   )
 }

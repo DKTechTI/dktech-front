@@ -258,13 +258,9 @@ const EditCentral = ({ handleClose, open, refresh, setRefresh, projectDeviceId }
                   <Typography variant='h4' sx={{ color: 'text.primaty' }}>
                     # {watch('boardId')}
                   </Typography>
-                  <IconButton>
-                    <IconifyIcon
-                      icon='tabler:copy'
-                      color={centralStatusObj['online']}
-                      onClick={() => copyToClipboard(watch('boardId'))}
-                      style={{ cursor: 'pointer' }}
-                    />
+
+                  <IconButton onClick={() => copyToClipboard(watch('boardId'))}>
+                    <IconifyIcon icon='tabler:copy' color={centralStatusObj['online']} />
                   </IconButton>
                 </Box>
               </Box>
