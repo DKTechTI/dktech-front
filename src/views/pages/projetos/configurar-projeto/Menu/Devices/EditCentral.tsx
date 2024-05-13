@@ -2,12 +2,25 @@ import { SyntheticEvent, useEffect, useState } from 'react'
 
 import { useRouter } from 'next/router'
 
-import { Dialog, DialogTitle, DialogContent, Grid, DialogActions, Button, MenuItem, Box } from '@mui/material'
+import {
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  Grid,
+  DialogActions,
+  Button,
+  MenuItem,
+  Box,
+  Typography,
+  Chip,
+  IconButton
+} from '@mui/material'
 
 import IconifyIcon from 'src/@core/components/icon'
 import CustomTextField from 'src/@core/components/mui/text-field'
 import DeleteDevice from './Delete'
 
+import useClipboard from 'src/hooks/useClipboard'
 import useGetDataApi from 'src/hooks/useGetDataApi'
 
 import toast from 'react-hot-toast'
@@ -56,6 +69,15 @@ interface FormData {
   tcp: string
 }
 
+interface CentralStatusType {
+  [key: string]: string
+}
+
+const centralStatusObj: CentralStatusType = {
+  online: '#28C76F',
+  offline: '#EA5455'
+}
+
 interface EditCentralProps {
   projectDeviceId: string
   open: boolean
@@ -66,6 +88,7 @@ interface EditCentralProps {
 
 const EditCentral = ({ handleClose, open, refresh, setRefresh, projectDeviceId }: EditCentralProps) => {
   const router = useRouter()
+  const { copyToClipboard } = useClipboard()
 
   const { data: projectDevice } = useGetDataApi<any>({
     url: `/projectDevices/${projectDeviceId}`,
@@ -191,7 +214,7 @@ const EditCentral = ({ handleClose, open, refresh, setRefresh, projectDeviceId }
         open={open}
         aria-labelledby='user-view-edit'
         aria-describedby='user-view-edit-description'
-        sx={{ '& .MuiPaper-root': { width: '100%', maxWidth: 1000 } }}
+        sx={{ '& .MuiPaper-root': { width: '100%', maxWidth: 750 } }}
       >
         <DialogTitle
           id='user-view-edit'
@@ -212,15 +235,42 @@ const EditCentral = ({ handleClose, open, refresh, setRefresh, projectDeviceId }
         >
           <Grid container spacing={6} justifyContent={'space-between'} pb={6}>
             <Grid item xs={12} sm={6}>
-              <Button variant='contained' color='success'>
-                Online
-              </Button>
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                <Chip
+                  icon={<IconifyIcon icon='tabler:circle-filled' color={centralStatusObj['online']} />}
+                  label={'Online'}
+                  variant='outlined'
+                  deleteIcon={<IconifyIcon icon='tabler:refresh' />}
+                  onDelete={() => console.log('refresh')}
+                  sx={{
+                    width: 'fit-content',
+                    color: '#d0d4f1c7',
+                    '& .MuiChip-deleteIcon': {
+                      color: '#d0d4f1c7',
+                      ':hover': {
+                        opacity: 0.9,
+                        transition: '0.1s'
+                      }
+                    }
+                  }}
+                />
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                  <Typography variant='h4' sx={{ color: 'text.primaty' }}>
+                    # {watch('boardId')}
+                  </Typography>
+                  <IconButton>
+                    <IconifyIcon
+                      icon='tabler:copy'
+                      color={centralStatusObj['online']}
+                      onClick={() => copyToClipboard(watch('boardId'))}
+                      style={{ cursor: 'pointer' }}
+                    />
+                  </IconButton>
+                </Box>
+              </Box>
             </Grid>
             <Grid item xs={12} sm={6} gap={10}>
               <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'end', gap: 2 }}>
-                <Button variant='contained' color='primary' startIcon={<IconifyIcon icon='tabler:wifi' />}>
-                  Testar Conexão
-                </Button>
                 <Button
                   variant='contained'
                   color='error'
@@ -253,7 +303,7 @@ const EditCentral = ({ handleClose, open, refresh, setRefresh, projectDeviceId }
                 />
               </Grid>
 
-              <Grid item xs={12} sm={3}>
+              <Grid item xs={12} sm={6}>
                 <Controller
                   name='connection'
                   control={control}
@@ -278,27 +328,7 @@ const EditCentral = ({ handleClose, open, refresh, setRefresh, projectDeviceId }
                   )}
                 />
               </Grid>
-
-              <Grid item xs={12} sm={3}>
-                <Controller
-                  name='port'
-                  control={control}
-                  render={({ field: { value, onChange, onBlur } }) => (
-                    <CustomTextField
-                      fullWidth
-                      label='Porta'
-                      required
-                      value={value || ''}
-                      onBlur={onBlur}
-                      onChange={onChange}
-                      error={Boolean(errors.port)}
-                      {...(errors.port && { helperText: errors.port.message })}
-                    />
-                  )}
-                />
-              </Grid>
-
-              <Grid item xs={12} sm={3}>
+              <Grid item xs={12} sm={6}>
                 <Controller
                   name='ip'
                   control={control}
@@ -316,27 +346,25 @@ const EditCentral = ({ handleClose, open, refresh, setRefresh, projectDeviceId }
                   )}
                 />
               </Grid>
-
-              <Grid item xs={12} sm={3}>
+              <Grid item xs={12} sm={6}>
                 <Controller
-                  name='gateway'
+                  name='port'
                   control={control}
                   render={({ field: { value, onChange, onBlur } }) => (
                     <CustomTextField
                       fullWidth
-                      label='Gateway'
-                      disabled={handleCheckConnectionType(watch('connection') as string)}
+                      label='Porta'
+                      required
                       value={value || ''}
                       onBlur={onBlur}
                       onChange={onChange}
-                      error={Boolean(errors.gateway)}
-                      {...(errors.gateway && { helperText: errors.gateway.message })}
+                      error={Boolean(errors.port)}
+                      {...(errors.port && { helperText: errors.port.message })}
                     />
                   )}
                 />
               </Grid>
-
-              <Grid item xs={12} sm={3}>
+              <Grid item xs={12} sm={6}>
                 <Controller
                   name='subnet'
                   control={control}
@@ -354,8 +382,7 @@ const EditCentral = ({ handleClose, open, refresh, setRefresh, projectDeviceId }
                   )}
                 />
               </Grid>
-
-              <Grid item xs={12} sm={3}>
+              <Grid item xs={12} sm={6}>
                 <Controller
                   name='dns'
                   control={control}
@@ -373,8 +400,7 @@ const EditCentral = ({ handleClose, open, refresh, setRefresh, projectDeviceId }
                   )}
                 />
               </Grid>
-
-              <Grid item xs={12} sm={3}>
+              <Grid item xs={12} sm={6}>
                 <Controller
                   name='tcp'
                   control={control}
@@ -388,6 +414,24 @@ const EditCentral = ({ handleClose, open, refresh, setRefresh, projectDeviceId }
                       onChange={onChange}
                       error={Boolean(errors.tcp)}
                       {...(errors.tcp && { helperText: errors.tcp.message })}
+                    />
+                  )}
+                />
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <Controller
+                  name='gateway'
+                  control={control}
+                  render={({ field: { value, onChange, onBlur } }) => (
+                    <CustomTextField
+                      fullWidth
+                      label='Gateway'
+                      disabled={handleCheckConnectionType(watch('connection') as string)}
+                      value={value || ''}
+                      onBlur={onBlur}
+                      onChange={onChange}
+                      error={Boolean(errors.gateway)}
+                      {...(errors.gateway && { helperText: errors.gateway.message })}
                     />
                   )}
                 />

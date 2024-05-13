@@ -2,7 +2,7 @@ import { SyntheticEvent, useEffect } from 'react'
 
 import { useRouter } from 'next/router'
 
-import { Dialog, DialogTitle, DialogContent, Grid, DialogActions, Button, MenuItem, Box } from '@mui/material'
+import { Dialog, DialogTitle, DialogContent, Grid, DialogActions, Button, MenuItem, Box, Chip } from '@mui/material'
 
 import IconifyIcon from 'src/@core/components/icon'
 import CustomTextField from 'src/@core/components/mui/text-field'
@@ -57,6 +57,15 @@ interface FormData {
   tcp: string
 }
 
+interface CentralStatusType {
+  [key: string]: string
+}
+
+const centralStatusObj: CentralStatusType = {
+  online: '#28C76F',
+  offline: '#EA5455'
+}
+
 interface AddCentralProps {
   open: boolean
   handleClose: () => void
@@ -66,7 +75,6 @@ interface AddCentralProps {
 
 const AddCentral = ({ handleClose, open, refresh, setRefresh }: AddCentralProps) => {
   const router = useRouter()
-
   const { id } = router.query
 
   const { data: devices } = useGetDataApi<any>({ url: '/devices', callInit: router.isReady && open })
@@ -183,15 +191,13 @@ const AddCentral = ({ handleClose, open, refresh, setRefresh }: AddCentralProps)
       >
         <Grid container spacing={6} justifyContent={'space-between'} pb={6}>
           <Grid item xs={12} sm={6}>
-            <Button variant='contained' color='success'>
-              Online
-            </Button>
-          </Grid>
-          <Grid item xs={12} sm={6} gap={10}>
-            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'end', gap: 2 }}>
-              <Button variant='contained' color='primary' startIcon={<IconifyIcon icon='tabler:wifi' />}>
-                Testar Conexão
-              </Button>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              <Chip
+                icon={<IconifyIcon icon='tabler:circle-filled' color={centralStatusObj['offline']} />}
+                label={'Offline'}
+                variant='outlined'
+                sx={{ width: 'fit-content', color: '#d0d4f1c7' }}
+              />
             </Box>
           </Grid>
         </Grid>
@@ -247,7 +253,6 @@ const AddCentral = ({ handleClose, open, refresh, setRefresh }: AddCentralProps)
                 )}
               />
             </Grid>
-
             <Grid item xs={12} sm={3}>
               <Controller
                 name='boardId'
@@ -266,7 +271,6 @@ const AddCentral = ({ handleClose, open, refresh, setRefresh }: AddCentralProps)
                 )}
               />
             </Grid>
-
             <Grid item xs={12} sm={3}>
               <Controller
                 name='connection'
@@ -292,26 +296,6 @@ const AddCentral = ({ handleClose, open, refresh, setRefresh }: AddCentralProps)
                 )}
               />
             </Grid>
-
-            <Grid item xs={12} sm={3}>
-              <Controller
-                name='port'
-                control={control}
-                render={({ field: { value, onChange, onBlur } }) => (
-                  <CustomTextField
-                    fullWidth
-                    label='Porta'
-                    required
-                    value={value || ''}
-                    onBlur={onBlur}
-                    onChange={onChange}
-                    error={Boolean(errors.port)}
-                    {...(errors.port && { helperText: errors.port.message })}
-                  />
-                )}
-              />
-            </Grid>
-
             <Grid item xs={12} sm={3}>
               <Controller
                 name='ip'
@@ -330,26 +314,24 @@ const AddCentral = ({ handleClose, open, refresh, setRefresh }: AddCentralProps)
                 )}
               />
             </Grid>
-
             <Grid item xs={12} sm={3}>
               <Controller
-                name='gateway'
+                name='port'
                 control={control}
                 render={({ field: { value, onChange, onBlur } }) => (
                   <CustomTextField
                     fullWidth
-                    label='Gateway'
-                    disabled={handleCheckConnectionType(watch('connection') as string)}
+                    label='Porta'
+                    required
                     value={value || ''}
                     onBlur={onBlur}
                     onChange={onChange}
-                    error={Boolean(errors.gateway)}
-                    {...(errors.gateway && { helperText: errors.gateway.message })}
+                    error={Boolean(errors.port)}
+                    {...(errors.port && { helperText: errors.port.message })}
                   />
                 )}
               />
             </Grid>
-
             <Grid item xs={12} sm={3}>
               <Controller
                 name='subnet'
@@ -368,7 +350,6 @@ const AddCentral = ({ handleClose, open, refresh, setRefresh }: AddCentralProps)
                 )}
               />
             </Grid>
-
             <Grid item xs={12} sm={3}>
               <Controller
                 name='dns'
@@ -387,7 +368,6 @@ const AddCentral = ({ handleClose, open, refresh, setRefresh }: AddCentralProps)
                 )}
               />
             </Grid>
-
             <Grid item xs={12} sm={3}>
               <Controller
                 name='tcp'
@@ -402,6 +382,24 @@ const AddCentral = ({ handleClose, open, refresh, setRefresh }: AddCentralProps)
                     onChange={onChange}
                     error={Boolean(errors.tcp)}
                     {...(errors.tcp && { helperText: errors.tcp.message })}
+                  />
+                )}
+              />
+            </Grid>
+            <Grid item xs={12} sm={3}>
+              <Controller
+                name='gateway'
+                control={control}
+                render={({ field: { value, onChange, onBlur } }) => (
+                  <CustomTextField
+                    fullWidth
+                    label='Gateway'
+                    disabled={handleCheckConnectionType(watch('connection') as string)}
+                    value={value || ''}
+                    onBlur={onBlur}
+                    onChange={onChange}
+                    error={Boolean(errors.gateway)}
+                    {...(errors.gateway && { helperText: errors.gateway.message })}
                   />
                 )}
               />
