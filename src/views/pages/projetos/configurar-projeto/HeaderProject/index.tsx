@@ -1,4 +1,4 @@
-import { Box, Button, Chip, Typography, useMediaQuery } from '@mui/material'
+import { Box, Button, Chip, Typography } from '@mui/material'
 
 interface HeaderProjectProps {
   projectName: string
