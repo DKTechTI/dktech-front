@@ -123,6 +123,7 @@ const Create = ({ open, handleClose }: CreateProps) => {
 
     if (outputSelected.length > 0) {
       const output: any = outputSelected[0]
+      console.log('🚀 ~ handleSelectOutput ~ output:', output)
 
       api
         .get(`/projectDeviceKeys/${projectDeviceKeyId}`)
@@ -242,7 +243,7 @@ const Create = ({ open, handleClose }: CreateProps) => {
                           borderBottom: `1px solid ${theme.palette.divider}`
                         }}
                       >
-                        <ListItemText primary={output.deviceKeyName} />
+                        <ListItemText primary={`${output.deviceName} - ${output.deviceKeyName}`} />
                       </ListItemButton>
                     ))}
                   </ul>
