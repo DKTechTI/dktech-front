@@ -63,13 +63,13 @@ const EditEnvironment = ({ open, handleClose, refresh, setRefresh, environmentId
       .then(response => {
         if (response.status === 200) {
           handleClose()
-          toast.success('Ambiente adicionado com sucesso!')
+          toast.success('Ambiente atualizado com sucesso!')
           setRefresh(!refresh)
         }
       })
       .catch(() => {
         handleClose()
-        toast.error('Erro ao adicionar ambiente, tente novamente mais tarde')
+        toast.error('Erro ao atualizado ambiente, tente novamente mais tarde')
       })
   }
 
@@ -98,16 +98,16 @@ const EditEnvironment = ({ open, handleClose, refresh, setRefresh, environmentId
       >
         Editar Ambiente
       </DialogTitle>
-      <DialogContent
-        sx={{
-          pb: theme => `${theme.spacing(8)} !important`,
-          px: theme => [`${theme.spacing(5)} !important`, `${theme.spacing(15)} !important`]
-        }}
-      >
-        <DialogContentText variant='body2' id='user-view-edit-description' sx={{ textAlign: 'center', mb: 7 }}>
-          Digite o nome atualizado do ambiente
-        </DialogContentText>
-        <form noValidate autoComplete='off'>
+      <form noValidate autoComplete='off'>
+        <DialogContent
+          sx={{
+            pb: theme => `${theme.spacing(8)} !important`,
+            px: theme => [`${theme.spacing(5)} !important`, `${theme.spacing(15)} !important`]
+          }}
+        >
+          <DialogContentText variant='body2' id='user-view-edit-description' sx={{ textAlign: 'center', mb: 7 }}>
+            Digite o nome atualizado do ambiente
+          </DialogContentText>
           <Grid container spacing={6}>
             <Grid item xs={12} sm={4} md>
               <Controller
@@ -130,22 +130,22 @@ const EditEnvironment = ({ open, handleClose, refresh, setRefresh, environmentId
               />
             </Grid>
           </Grid>
-        </form>
-      </DialogContent>
-      <DialogActions
-        sx={{
-          justifyContent: 'center',
-          px: theme => [`${theme.spacing(5)} !important`, `${theme.spacing(15)} !important`],
-          pb: theme => [`${theme.spacing(8)} !important`, `${theme.spacing(12.5)} !important`]
-        }}
-      >
-        <Button variant='tonal' color='secondary' onClick={handleClose}>
-          Cancelar
-        </Button>
-        <Button variant='contained' sx={{ mr: 2 }} onClick={handleSubmit(onSubmit)}>
-          Adicionar
-        </Button>
-      </DialogActions>
+        </DialogContent>
+        <DialogActions
+          sx={{
+            justifyContent: 'center',
+            px: theme => [`${theme.spacing(5)} !important`, `${theme.spacing(15)} !important`],
+            pb: theme => [`${theme.spacing(8)} !important`, `${theme.spacing(12.5)} !important`]
+          }}
+        >
+          <Button variant='tonal' color='secondary' onClick={handleClose}>
+            Cancelar
+          </Button>
+          <Button type='submit' variant='contained' sx={{ mr: 2 }} onClick={handleSubmit(onSubmit)}>
+            Salvar
+          </Button>
+        </DialogActions>
+      </form>
     </Dialog>
   )
 }
