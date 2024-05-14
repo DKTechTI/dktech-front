@@ -20,7 +20,10 @@ import CustomTextField from 'src/@core/components/mui/text-field'
 import { Box } from '@mui/system'
 import { api } from 'src/services/api'
 import toast from 'react-hot-toast'
-import { verifyChangePasswordErrors } from 'src/utils/verifyErrors'
+
+import { isAxiosError } from 'axios'
+import authErrors from 'src/errors/authErrors'
+import useErrorHandling from 'src/hooks/useErrorHandling'
 
 const schema = yup.object().shape({
   newPassword: yup.string().min(8, 'minino de 8 caracteres').required('Senha obrigatória'),
@@ -40,6 +43,8 @@ interface ResaleChangePasswordAccountProps {
 }
 
 const ResaleChangePasswordAccount = ({ id }: ResaleChangePasswordAccountProps) => {
+  const { handleErrorResponse } = useErrorHandling()
+
   const [showNewPassword, setShowNewPassword] = useState<boolean>(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState<boolean>(false)
 
@@ -67,7 +72,15 @@ const ResaleChangePasswordAccount = ({ id }: ResaleChangePasswordAccountProps) =
         }
       })
       .catch(error => {
-        verifyChangePasswordErrors(error.response.status, error.response.data.message)
+        if (!isAxiosError(error)) toast.error('Erro ao redefinir senha, tente novamente.')
+        if (error.response) {
+          const message = handleErrorResponse({
+            error: error.response.status,
+            message: error.response.data.message,
+            referenceError: authErrors
+          })
+          message ? toast.error(message) : toast.error('Erro ao redefinir senha, tente novamente.')
+        }
       })
   }
 

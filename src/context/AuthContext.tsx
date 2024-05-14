@@ -11,6 +11,9 @@ import { formatAuthUser } from 'src/utils/formatAuthUser'
 import toast from 'react-hot-toast'
 
 import { AuthValuesType, LoginParams, ErrCallbackType, UserDataType } from './types'
+import useErrorHandling from 'src/hooks/useErrorHandling'
+import { isAxiosError } from 'axios'
+import authErrors from 'src/errors/authErrors'
 
 // ** Defaults
 const defaultProvider: AuthValuesType = {
@@ -33,6 +36,7 @@ const AuthProvider = ({ children }: Props) => {
   const [loading, setLoading] = useState<boolean>(defaultProvider.loading)
 
   const router = useRouter()
+  const { handleErrorResponse } = useErrorHandling()
 
   useEffect(() => {
     const initAuth = async (): Promise<void> => {
@@ -46,7 +50,7 @@ const AuthProvider = ({ children }: Props) => {
 
         api
           .get(`${authConfig.meEndpoint}/${userId}`)
-          .then(async response => {
+          .then(response => {
             setLoading(false)
             setUser(formatAuthUser(response.data.data))
           })
@@ -57,6 +61,7 @@ const AuthProvider = ({ children }: Props) => {
           })
       } else {
         setLoading(false)
+        router.pathname !== '/redefinir-senha' && handleLogout()
       }
     }
 
@@ -86,7 +91,19 @@ const AuthProvider = ({ children }: Props) => {
 
       router.replace(redirectURL as string)
     } catch (error) {
-      if (errorCallback) errorCallback(error as any)
+      if (errorCallback) return errorCallback(error as any)
+
+      if (!isAxiosError(error)) return toast.error('Ocorreu um erro, tente novamente.')
+
+      if (error.response) {
+        const message = handleErrorResponse({
+          error: error.response.status,
+          message: error.response.data.message,
+          referenceError: authErrors
+        })
+
+        message ? toast.error(message) : toast.error('Ocorreu um erro, tente novamente.')
+      }
     }
   }
 

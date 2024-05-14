@@ -28,6 +28,10 @@ import { api } from 'src/services/api'
 
 import themeConfig from 'src/configs/themeConfig'
 
+import { isAxiosError } from 'axios'
+import authErrors from 'src/errors/authErrors'
+import useErrorHandling from 'src/hooks/useErrorHandling'
+
 const Card = styled(MuiCard)<CardProps>(({ theme }) => ({
   [theme.breakpoints.up('sm')]: { width: '25rem' }
 }))
@@ -55,6 +59,7 @@ interface FormData {
 
 const FirstAccess = () => {
   const router = useRouter()
+  const { handleErrorResponse } = useErrorHandling()
 
   const [showNewPassword, setShowNewPassword] = useState<boolean>(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState<boolean>(false)
@@ -88,12 +93,21 @@ const FirstAccess = () => {
         }
       })
       .catch(error => {
-        if (error.response.status === 401) {
-          toast.error('Token inválido, solicite uma nova redefinição de senha')
+        if (!isAxiosError(error)) {
+          toast.error('Erro ao redefinir senha, tente novamente.')
 
-          return router.push('/esqueceu-a-senha')
+          return router.push('/login')
         }
-        toast.error('Erro ao redefinir senha')
+        if (error.response) {
+          const message = handleErrorResponse({
+            error: error.response.status,
+            message: error.response.data.message,
+            referenceError: authErrors
+          })
+          message ? toast.error(message) : toast.error('Erro ao redefinir senha, tente novamente.')
+
+          return router.push('/login')
+        }
       })
   }
 
