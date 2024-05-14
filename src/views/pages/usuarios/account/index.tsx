@@ -1,19 +1,27 @@
-import { Grid, Card, CardContent, Typography, Divider, CardActions, Button } from '@mui/material'
-import { Box } from '@mui/system'
 import { useState } from 'react'
+import { useRouter } from 'next/router'
+
+import { Grid, Card, CardContent, Typography, Divider, CardActions, Button, Box } from '@mui/material'
+
 import DialogAlert from 'src/@core/components/dialogs/dialog-alert'
 import Avatar from 'src/@core/components/mui/avatar'
 import Chip from 'src/@core/components/mui/chip'
-import { ThemeColor } from 'src/@core/layouts/types'
-import { getInitials } from 'src/@core/utils/get-initials'
-import { UserProps } from 'src/types/users'
+
 import EditProfile from './editAccount'
 
-import { verifyUserStatus } from 'src/@core/utils/user'
-import { api } from 'src/services/api'
-import toast from 'react-hot-toast'
 import { delay } from 'src/utils/delay'
-import { useRouter } from 'next/router'
+import { verifyUserStatus } from 'src/@core/utils/user'
+import { getInitials } from 'src/@core/utils/get-initials'
+
+import { UserProps } from 'src/types/users'
+import { ThemeColor } from 'src/@core/layouts/types'
+
+import { api } from 'src/services/api'
+
+import toast from 'react-hot-toast'
+import { isAxiosError } from 'axios'
+import authErrors from 'src/errors/authErrors'
+import useErrorHandling from 'src/hooks/useErrorHandling'
 
 interface ColorsType {
   [key: string]: ThemeColor
@@ -38,6 +46,7 @@ interface UserProfileProps {
 
 const UserProfile = ({ data, refresh, setRefresh }: UserProfileProps) => {
   const router = useRouter()
+  const { handleErrorResponse } = useErrorHandling()
 
   const [openEdit, setOpenEdit] = useState<boolean>(false)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState<boolean>(false)
@@ -57,9 +66,17 @@ const UserProfile = ({ data, refresh, setRefresh }: UserProfileProps) => {
           })
         }
       })
-      .catch(() => {
+      .catch(error => {
         setDeleteDialogOpen(false)
-        toast.error('Erro ao deletar usuário, tente novamente mais tarde')
+        if (!isAxiosError(error)) return toast.error('Erro ao deletar usuário, tente novamente mais tarde.')
+        if (error.response) {
+          const message = handleErrorResponse({
+            error: error.response.status,
+            message: error.response.data.message,
+            referenceError: authErrors
+          })
+          message ? toast.error(message) : toast.error('Erro ao deletar usuário, tente novamente mais tarde.')
+        }
       })
   }
 

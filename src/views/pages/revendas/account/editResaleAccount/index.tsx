@@ -23,6 +23,9 @@ import { formatDocumentNumber } from 'src/utils/formatDocumentNumber'
 import { api } from 'src/services/api'
 
 import { ResaleProps } from 'src/types/resales'
+import { isAxiosError } from 'axios'
+import authErrors from 'src/errors/authErrors'
+import useErrorHandling from 'src/hooks/useErrorHandling'
 
 const schema = yup.object().shape({
   name: yup.string().required('Nome obrigatório'),
@@ -91,6 +94,8 @@ interface EditProfileProps {
 }
 
 const EditResaleAccount = ({ openEdit, handleEditClose, data, refresh, setRefresh }: EditProfileProps) => {
+  const { handleErrorResponse } = useErrorHandling()
+
   const {
     control,
     handleSubmit,
@@ -115,9 +120,17 @@ const EditResaleAccount = ({ openEdit, handleEditClose, data, refresh, setRefres
           setRefresh(!refresh)
         }
       })
-      .catch(() => {
+      .catch(error => {
         handleEditClose()
-        toast.error('Erro ao atualizar revenda, tente novamente mais tarde')
+        if (!isAxiosError(error)) return toast.error('Erro ao atualizar revenda, tente novamente mais tarde.')
+        if (error.response) {
+          const message = handleErrorResponse({
+            error: error.response.status,
+            message: error.response.data.message,
+            referenceError: authErrors
+          })
+          message ? toast.error(message) : toast.error('Erro ao atualizar revenda, tente novamente mais tarde.')
+        }
       })
   }
 

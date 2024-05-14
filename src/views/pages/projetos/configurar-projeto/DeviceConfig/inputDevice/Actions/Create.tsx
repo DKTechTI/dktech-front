@@ -123,7 +123,6 @@ const Create = ({ open, handleClose }: CreateProps) => {
 
     if (outputSelected.length > 0) {
       const output: any = outputSelected[0]
-      console.log('🚀 ~ handleSelectOutput ~ output:', output)
 
       api
         .get(`/projectDeviceKeys/${projectDeviceKeyId}`)

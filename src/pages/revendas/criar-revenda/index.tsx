@@ -1,13 +1,21 @@
+import { useRouter } from 'next/router'
+
 import { Box, Button, Card, CardContent, CardHeader, Grid, InputAdornment, MenuItem } from '@mui/material'
 import CustomTextField from 'src/@core/components/mui/text-field'
 
 import * as yup from 'yup'
 import { useForm, Controller } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
-import { api } from 'src/services/api'
+
 import toast from 'react-hot-toast'
-import { useRouter } from 'next/router'
+
 import { delay } from 'src/utils/delay'
+
+import { api } from 'src/services/api'
+
+import { isAxiosError } from 'axios'
+import authErrors from 'src/errors/authErrors'
+import useErrorHandling from 'src/hooks/useErrorHandling'
 
 const schema = yup.object().shape({
   name: yup.string().required('Nome obrigatório'),
@@ -71,6 +79,7 @@ interface FormData {
 
 const CreateResale = () => {
   const router = useRouter()
+  const { handleErrorResponse } = useErrorHandling()
 
   const {
     control,
@@ -116,12 +125,19 @@ const CreateResale = () => {
         }
       })
       .catch(error => {
-        if (error.response.status === 409) {
-          setError('email', { type: 'manual', message: 'E-mail já cadastrado' })
+        if (!isAxiosError(error)) return toast.error('Erro ao criar revenda, tente novamente mais tarde')
+        if (error.response) {
+          const message = handleErrorResponse({
+            error: error.response.status,
+            message: error.response.data.message,
+            referenceError: authErrors
+          })
+          message ? toast.error(message) : toast.error('Erro ao criar revenda, tente novamente mais tarde')
 
-          return toast.error('E-mail já cadastrado')
+          error.response.status === 409 &&
+            error.response.data.message === 'User Already Exists' &&
+            setError('email', { type: 'manual', message: 'E-mail já cadastrado' })
         }
-        toast.error('Erro ao criar revenda, tente novamente mais tarde')
       })
   }
 

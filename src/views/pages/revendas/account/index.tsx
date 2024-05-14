@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useRouter } from 'next/router'
 import { Grid, Card, CardContent, Typography, Divider, CardActions, Button, Box } from '@mui/material'
 
 import DialogAlert from 'src/@core/components/dialogs/dialog-alert'
@@ -18,7 +19,10 @@ import { ResaleProps } from 'src/types/resales'
 import { api } from 'src/services/api'
 import toast from 'react-hot-toast'
 import { delay } from 'src/utils/delay'
-import { useRouter } from 'next/router'
+
+import { isAxiosError } from 'axios'
+import authErrors from 'src/errors/authErrors'
+import useErrorHandling from 'src/hooks/useErrorHandling'
 
 interface ColorsType {
   [key: string]: ThemeColor
@@ -44,6 +48,7 @@ interface UserResaleProps {
 
 const UserResale = ({ data, refresh, setRefresh }: UserResaleProps) => {
   const router = useRouter()
+  const { handleErrorResponse } = useErrorHandling()
 
   const [openEdit, setOpenEdit] = useState<boolean>(false)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState<boolean>(false)
@@ -63,9 +68,17 @@ const UserResale = ({ data, refresh, setRefresh }: UserResaleProps) => {
           })
         }
       })
-      .catch(() => {
+      .catch(error => {
         setDeleteDialogOpen(false)
-        toast.error('Erro ao deletar revenda, tente novamente mais tarde')
+        if (!isAxiosError(error)) return toast.error('Erro ao deletar revenda, tente novamente mais tarde.')
+        if (error.response) {
+          const message = handleErrorResponse({
+            error: error.response.status,
+            message: error.response.data.message,
+            referenceError: authErrors
+          })
+          message ? toast.error(message) : toast.error('Erro ao deletar revenda, tente novamente mais tarde.')
+        }
       })
   }
 
