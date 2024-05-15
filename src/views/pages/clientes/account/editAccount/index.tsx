@@ -20,6 +20,10 @@ import { ClientProps } from 'src/types/clients'
 import { api } from 'src/services/api'
 import toast from 'react-hot-toast'
 
+import { isAxiosError } from 'axios'
+import authErrors from 'src/errors/authErrors'
+import useErrorHandling from 'src/hooks/useErrorHandling'
+
 const schema = yup.object().shape({
   name: yup.string().required('Nome obrigatório'),
   status: yup.string().required('Status obrigatório'),
@@ -60,6 +64,8 @@ interface EditProfileProps {
 }
 
 const EditAccount = ({ openEdit, handleEditClose, data, refresh, setRefresh }: EditProfileProps) => {
+  const { handleErrorResponse } = useErrorHandling()
+
   const {
     control,
     handleSubmit,
@@ -80,9 +86,17 @@ const EditAccount = ({ openEdit, handleEditClose, data, refresh, setRefresh }: E
           setRefresh(!refresh)
         }
       })
-      .catch(() => {
+      .catch(error => {
         handleEditClose()
-        toast.error('Erro ao atualizar cliente, tente novamente mais tarde')
+        if (!isAxiosError(error)) return toast.error('Erro ao atualizar cliente, tente novamente mais tarde.')
+        if (error.response) {
+          const message = handleErrorResponse({
+            error: error.response.status,
+            message: error.response.data.message,
+            referenceError: authErrors
+          })
+          message ? toast.error(message) : toast.error('Erro ao atualizar cliente, tente novamente mais tarde.')
+        }
       })
   }
 

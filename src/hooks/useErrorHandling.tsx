@@ -6,9 +6,7 @@ interface HandleErrorResponseProps {
 
 const useErrorHandling = () => {
   const handleErrorResponse = ({ error, message, referenceError }: HandleErrorResponseProps) => {
-    if (error && message) {
-      if (referenceError) return referenceError[error][message]
-    }
+    if (referenceError && referenceError[error] && referenceError[error][message]) return referenceError[error][message]
 
     return null
   }

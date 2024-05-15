@@ -17,8 +17,13 @@ import { removeRowFromList } from 'src/utils/dataGrid'
 import { ClientDataProps, ClientProps } from 'src/types/clients'
 import { Columns } from './Columns'
 
+import { isAxiosError } from 'axios'
+import authErrors from 'src/errors/authErrors'
+import useErrorHandling from 'src/hooks/useErrorHandling'
+
 const ClientsList = () => {
   const { user } = useAuth()
+  const { handleErrorResponse } = useErrorHandling()
 
   const [paginationModel, setPaginationModel] = useState({ page: 0, pageSize: 10 })
   const [clients, setClients] = useState<ClientProps[]>([])
@@ -43,8 +48,16 @@ const ClientsList = () => {
           toast.success('Cliente deletado com sucesso!')
         }
       })
-      .catch(() => {
-        toast.error('Erro ao deletar cliente, tente novamente mais tarde')
+      .catch(error => {
+        if (!isAxiosError(error)) return toast.error('Erro ao deletar cliente, tente novamente mais tarde.')
+        if (error.response) {
+          const message = handleErrorResponse({
+            error: error.response.status,
+            message: error.response.data.message,
+            referenceError: authErrors
+          })
+          message ? toast.error(message) : toast.error('Erro ao deletar cliente, tente novamente mais tarde.')
+        }
       })
   }
 
