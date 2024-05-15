@@ -1,4 +1,5 @@
 import { Fragment, useCallback, useEffect, useState } from 'react'
+import { useRouter } from 'next/router'
 
 import * as yup from 'yup'
 import { useForm, Controller } from 'react-hook-form'
@@ -19,7 +20,9 @@ import { ClientDataProps } from 'src/types/clients'
 
 import { api } from 'src/services/api'
 import toast from 'react-hot-toast'
-import { useRouter } from 'next/router'
+
+import useErrorHandling from 'src/hooks/useErrorHandling'
+import projectErrors from 'src/errors/projectErrors'
 
 interface CreateProjectProps {
   open: boolean
@@ -43,8 +46,8 @@ interface FormData {
 
 const CreateProject = ({ handleClickClose, handleToggleOpen, open, setRefresh, refresh }: CreateProjectProps) => {
   const router = useRouter()
-
   const { user } = useAuth()
+  const { handleErrorResponse } = useErrorHandling()
 
   const { data } = useGetDataApi<ClientDataProps>({ url: `/clients/by-reseller/${user?.id}`, callInit: open })
 
@@ -75,9 +78,13 @@ const CreateProject = ({ handleClickClose, handleToggleOpen, open, setRefresh, r
           setCreatedProject(true)
         }
       })
-      .catch(() => {
+      .catch(error => {
         handleToggleOpen()
-        toast.error('Erro ao criar projeto')
+        handleErrorResponse({
+          error: error,
+          errorReference: projectErrors,
+          defaultErrorMessage: 'Erro ao criar projeto, tente novamente mais tarde.'
+        })
       })
   }
 
