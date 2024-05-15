@@ -17,8 +17,7 @@ import { removeRowFromList } from 'src/utils/dataGrid'
 import { ClientDataProps, ClientProps } from 'src/types/clients'
 import { Columns } from './Columns'
 
-import { isAxiosError } from 'axios'
-import authErrors from 'src/errors/authErrors'
+import clientsErrors from 'src/errors/clientsErrors'
 import useErrorHandling from 'src/hooks/useErrorHandling'
 
 const ClientsList = () => {
@@ -49,15 +48,11 @@ const ClientsList = () => {
         }
       })
       .catch(error => {
-        if (!isAxiosError(error)) return toast.error('Erro ao deletar cliente, tente novamente mais tarde.')
-        if (error.response) {
-          const message = handleErrorResponse({
-            error: error.response.status,
-            message: error.response.data.message,
-            referenceError: authErrors
-          })
-          message ? toast.error(message) : toast.error('Erro ao deletar cliente, tente novamente mais tarde.')
-        }
+        handleErrorResponse({
+          error: error,
+          errorReference: clientsErrors,
+          defaultErrorMessage: 'Erro ao deletar cliente, tente novamente mais tarde.'
+        })
       })
   }
 

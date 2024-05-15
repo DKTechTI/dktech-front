@@ -13,9 +13,8 @@ import { api } from 'src/services/api'
 
 import { delay } from 'src/utils/delay'
 
-import { isAxiosError } from 'axios'
+import clientsErrors from 'src/errors/clientsErrors'
 import useErrorHandling from 'src/hooks/useErrorHandling'
-import authErrors from 'src/errors/authErrors'
 
 const schema = yup.object().shape({
   name: yup.string().required('Nome obrigatório'),
@@ -85,15 +84,11 @@ const CreateClient = () => {
         }
       })
       .catch(error => {
-        if (!isAxiosError(error)) return toast.error('Erro ao criar cliente, tente novamente mais tarde.')
-        if (error.response) {
-          const message = handleErrorResponse({
-            error: error.response.status,
-            message: error.response.data.message,
-            referenceError: authErrors
-          })
-          message ? toast.error(message) : toast.error('Erro ao criar cliente, tente novamente mais tarde.')
-        }
+        handleErrorResponse({
+          error: error,
+          errorReference: clientsErrors,
+          defaultErrorMessage: 'Erro ao criar cliente, tente novamente mais tarde.'
+        })
       })
   }
 

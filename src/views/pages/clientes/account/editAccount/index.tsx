@@ -20,8 +20,7 @@ import { ClientProps } from 'src/types/clients'
 import { api } from 'src/services/api'
 import toast from 'react-hot-toast'
 
-import { isAxiosError } from 'axios'
-import authErrors from 'src/errors/authErrors'
+import clientsErrors from 'src/errors/clientsErrors'
 import useErrorHandling from 'src/hooks/useErrorHandling'
 
 const schema = yup.object().shape({
@@ -88,15 +87,11 @@ const EditAccount = ({ openEdit, handleEditClose, data, refresh, setRefresh }: E
       })
       .catch(error => {
         handleEditClose()
-        if (!isAxiosError(error)) return toast.error('Erro ao atualizar cliente, tente novamente mais tarde.')
-        if (error.response) {
-          const message = handleErrorResponse({
-            error: error.response.status,
-            message: error.response.data.message,
-            referenceError: authErrors
-          })
-          message ? toast.error(message) : toast.error('Erro ao atualizar cliente, tente novamente mais tarde.')
-        }
+        handleErrorResponse({
+          error: error,
+          errorReference: clientsErrors,
+          defaultErrorMessage: 'Erro ao atualizar cliente, tente novamente mais tarde.'
+        })
       })
   }
 
