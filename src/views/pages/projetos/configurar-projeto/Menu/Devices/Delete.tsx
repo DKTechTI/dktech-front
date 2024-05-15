@@ -12,6 +12,8 @@ import toast from 'react-hot-toast'
 import { api } from 'src/services/api'
 
 import { useProjectMenu } from 'src/hooks/useProjectMenu'
+import useErrorHandling from 'src/hooks/useErrorHandling'
+import projectDevicesErrors from 'src/errors/projectDevicesErrors'
 
 interface DeleteDeviceProps {
   id: string
@@ -23,6 +25,7 @@ interface DeleteDeviceProps {
 }
 
 const DeleteDevice = ({ id, open, question, setOpen, description, handleClose }: DeleteDeviceProps) => {
+  const { handleErrorResponse } = useErrorHandling()
   const { setRefreshMenu, refreshMenu } = useProjectMenu()
 
   const handleConfirmDelete = (deviceId: string) => {
@@ -35,9 +38,13 @@ const DeleteDevice = ({ id, open, question, setOpen, description, handleClose }:
           toast.success('Dispositivo deletado com sucesso!')
         }
       })
-      .catch(() => {
+      .catch(error => {
         handleClose?.()
-        toast.error('Erro ao deletar dispositivo!')
+        handleErrorResponse({
+          error: error,
+          errorReference: projectDevicesErrors,
+          defaultErrorMessage: 'Erro ao deletar dispositivo.'
+        })
       })
   }
 

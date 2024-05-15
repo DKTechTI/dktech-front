@@ -29,6 +29,8 @@ import { useForm, Controller } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
 
 import { api } from 'src/services/api'
+import projectDevicesErrors from 'src/errors/projectDevicesErrors'
+import useErrorHandling from 'src/hooks/useErrorHandling'
 
 const schema = yup.object().shape({
   name: yup.string().required('Nome obrigatório'),
@@ -77,6 +79,7 @@ const AddOutputDevice = ({
 
   const { id } = router.query
 
+  const { handleErrorResponse } = useErrorHandling()
   const { handleAvaliableOutputPorts } = useProjectMenu()
 
   const [ports, setPorts] = useState<any[]>([])
@@ -194,9 +197,13 @@ const AddOutputDevice = ({
           setRefresh(!refresh)
         }
       })
-      .catch(() => {
+      .catch(error => {
         handleClose()
-        toast.error('Erro ao adicionar dispositivo de saída, tente novamente mais tarde')
+        handleErrorResponse({
+          error: error,
+          errorReference: projectDevicesErrors,
+          defaultErrorMessage: 'Erro ao adicionar dispositivo de saída, tente novamente mais tarde.'
+        })
       })
   }
 
