@@ -24,7 +24,6 @@ import toast from 'react-hot-toast'
 import { delay } from 'src/utils/delay'
 import { useAuth } from 'src/hooks/useAuth'
 
-import { isAxiosError } from 'axios'
 import authErrors from 'src/errors/authErrors'
 import useErrorHandling from 'src/hooks/useErrorHandling'
 
@@ -82,15 +81,11 @@ const ChangePassword = () => {
         }
       })
       .catch(error => {
-        if (!isAxiosError(error)) toast.error('Erro ao redefinir senha, tente novamente.')
-        if (error.response) {
-          const message = handleErrorResponse({
-            error: error.response.status,
-            message: error.response.data.message,
-            referenceError: authErrors
-          })
-          message ? toast.error(message) : toast.error('Erro ao redefinir senha, tente novamente.')
-        }
+        handleErrorResponse({
+          error: error,
+          errorReference: authErrors,
+          defaultErrorMessage: 'Erro ao redefinir senha, tente novamente mais tarde.'
+        })
       })
   }
 

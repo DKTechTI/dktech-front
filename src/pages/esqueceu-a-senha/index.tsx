@@ -26,7 +26,6 @@ import toast from 'react-hot-toast'
 
 import { api } from 'src/services/api'
 
-import { isAxiosError } from 'axios'
 import authErrors from 'src/errors/authErrors'
 import useErrorHandling from 'src/hooks/useErrorHandling'
 
@@ -78,15 +77,11 @@ const ForgotPassword = () => {
         }
       })
       .catch(error => {
-        if (!isAxiosError(error)) return toast.error('Ocorreu um erro, tente novamente.')
-        if (error.response) {
-          const message = handleErrorResponse({
-            error: error.response.status,
-            message: error.response.data.message,
-            referenceError: authErrors
-          })
-          message ? toast.error(message) : toast.error('Erro ao enviar e-mail de redefinição de senha.')
-        }
+        handleErrorResponse({
+          error: error,
+          errorReference: authErrors,
+          defaultErrorMessage: 'Erro ao enviar e-mail de redefinição de senha.'
+        })
       })
   }
 

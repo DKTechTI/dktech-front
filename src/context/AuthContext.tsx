@@ -11,9 +11,9 @@ import { formatAuthUser } from 'src/utils/formatAuthUser'
 import toast from 'react-hot-toast'
 
 import { AuthValuesType, LoginParams, ErrCallbackType, UserDataType } from './types'
-import useErrorHandling from 'src/hooks/useErrorHandling'
-import { isAxiosError } from 'axios'
+
 import authErrors from 'src/errors/authErrors'
+import useErrorHandling from 'src/hooks/useErrorHandling'
 
 // ** Defaults
 const defaultProvider: AuthValuesType = {
@@ -93,17 +93,11 @@ const AuthProvider = ({ children }: Props) => {
     } catch (error) {
       if (errorCallback) return errorCallback(error as any)
 
-      if (!isAxiosError(error)) return toast.error('Ocorreu um erro, tente novamente.')
-
-      if (error.response) {
-        const message = handleErrorResponse({
-          error: error.response.status,
-          message: error.response.data.message,
-          referenceError: authErrors
-        })
-
-        message ? toast.error(message) : toast.error('Ocorreu um erro, tente novamente.')
-      }
+      handleErrorResponse({
+        error: error as any,
+        errorReference: authErrors,
+        defaultErrorMessage: 'Ocorreu um erro, tente novamente.'
+      })
     }
   }
 

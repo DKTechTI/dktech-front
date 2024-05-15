@@ -28,7 +28,6 @@ import { api } from 'src/services/api'
 
 import themeConfig from 'src/configs/themeConfig'
 
-import { isAxiosError } from 'axios'
 import authErrors from 'src/errors/authErrors'
 import useErrorHandling from 'src/hooks/useErrorHandling'
 
@@ -93,21 +92,13 @@ const FirstAccess = () => {
         }
       })
       .catch(error => {
-        if (!isAxiosError(error)) {
-          toast.error('Erro ao redefinir senha, tente novamente.')
+        handleErrorResponse({
+          error: error,
+          errorReference: authErrors,
+          defaultErrorMessage: 'Erro ao redefinir senha, tente novamente mais tarde.'
+        })
 
-          return router.push('/login')
-        }
-        if (error.response) {
-          const message = handleErrorResponse({
-            error: error.response.status,
-            message: error.response.data.message,
-            referenceError: authErrors
-          })
-          message ? toast.error(message) : toast.error('Erro ao redefinir senha, tente novamente.')
-
-          return router.push('/login')
-        }
+        router.push('/login')
       })
   }
 
