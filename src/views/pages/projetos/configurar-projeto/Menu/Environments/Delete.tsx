@@ -13,6 +13,9 @@ import toast from 'react-hot-toast'
 
 import { api } from 'src/services/api'
 
+import useErrorHandling from 'src/hooks/useErrorHandling'
+import projectEnvironmentsErrors from 'src/errors/projectEnvironmentsErrors'
+
 interface DeleteEnvironmentProps {
   id: string
   question: string
@@ -22,6 +25,7 @@ interface DeleteEnvironmentProps {
 }
 
 const DeleteEnvironment = ({ id, open, setOpen, description, question }: DeleteEnvironmentProps) => {
+  const { handleErrorResponse } = useErrorHandling()
   const { setRefreshMenu, refreshMenu } = useProjectMenu()
 
   const handleConfirmDelete = (environmentId: string) => {
@@ -33,8 +37,12 @@ const DeleteEnvironment = ({ id, open, setOpen, description, question }: DeleteE
           toast.success('Ambiente deletado com sucesso!')
         }
       })
-      .catch(() => {
-        toast.error('Erro ao deletar ambiente!')
+      .catch(error => {
+        handleErrorResponse({
+          error: error,
+          errorReference: projectEnvironmentsErrors,
+          defaultErrorMessage: 'Erro ao deletar ambiente, tente novamente mais tarde.'
+        })
       })
   }
 
