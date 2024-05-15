@@ -18,6 +18,9 @@ import toast from 'react-hot-toast'
 import { delay } from 'src/utils/delay'
 import { useRouter } from 'next/router'
 
+import devicesErrors from 'src/errors/devicesErrors'
+import useErrorHandling from 'src/hooks/useErrorHandling'
+
 const schema = yup.object().shape({
   modelName: yup.string().required('Nome é obrigatório'),
   type: yup.string().required('Tipo é obrigatório'),
@@ -60,6 +63,7 @@ interface FormData {
 
 const CreateDevice = () => {
   const router = useRouter()
+  const { handleErrorResponse } = useErrorHandling()
 
   const [tabValue, setTabValue] = useState<string>('CENTRAL')
   const [moduleTypeInput, setModuleTypeInput] = useState<boolean>(true)
@@ -134,9 +138,11 @@ const CreateDevice = () => {
         }
       })
       .catch(error => {
-        return error.response.status === 409
-          ? toast.error('Erro ao criar dispositivo, verifique os campos e tente novamente')
-          : toast.error('Erro ao criar dispositivo, tente novamente mais tarde')
+        handleErrorResponse({
+          error: error,
+          errorReference: devicesErrors,
+          defaultErrorMessage: 'Erro ao criar dispositivo, tente novamente mais tarde.'
+        })
       })
   }
 
