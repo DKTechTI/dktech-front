@@ -12,8 +12,7 @@ import { Columns } from './Columns'
 import useGetDataApi from 'src/hooks/useGetDataApi'
 import { removeRowFromList } from 'src/utils/dataGrid'
 
-import { isAxiosError } from 'axios'
-import authErrors from 'src/errors/authErrors'
+import usersErrors from 'src/errors/usersErrors'
 import useErrorHandling from 'src/hooks/useErrorHandling'
 
 const ResaleUsersList = () => {
@@ -43,15 +42,11 @@ const ResaleUsersList = () => {
         }
       })
       .catch(error => {
-        if (!isAxiosError(error)) return toast.error('Erro ao deletar revenda, tente novamente mais tarde.')
-        if (error.response) {
-          const message = handleErrorResponse({
-            error: error.response.status,
-            message: error.response.data.message,
-            referenceError: authErrors
-          })
-          message ? toast.error(message) : toast.error('Erro ao deletar revenda, tente novamente mais tarde.')
-        }
+        handleErrorResponse({
+          error: error,
+          errorReference: usersErrors,
+          defaultErrorMessage: 'Erro ao deletar revenda, tente novamente mais tarde.'
+        })
       })
   }
 

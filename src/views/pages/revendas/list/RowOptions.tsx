@@ -11,9 +11,7 @@ import { api } from 'src/services/api'
 
 import useClipBoard from 'src/hooks/useClipboard'
 
-import toast from 'react-hot-toast'
-import { isAxiosError } from 'axios'
-import authErrors from 'src/errors/authErrors'
+import usersErrors from 'src/errors/usersErrors'
 import useErrorHandling from 'src/hooks/useErrorHandling'
 
 const RowOptions = ({ id, handleConfirmDelete }: { id: string; handleConfirmDelete: (id: string) => void }) => {
@@ -50,18 +48,11 @@ const RowOptions = ({ id, handleConfirmDelete }: { id: string; handleConfirmDele
         }
       })
       .catch(error => {
-        if (!isAxiosError(error))
-          return toast.error('Erro ao gerar link de primeiro acesso, tente novamente mais tarde.')
-        if (error.response) {
-          const message = handleErrorResponse({
-            error: error.response.status,
-            message: error.response.data.message,
-            referenceError: authErrors
-          })
-          message
-            ? toast.error(message)
-            : toast.error('Erro ao gerar link de primeiro acesso, tente novamente mais tarde. ')
-        }
+        handleErrorResponse({
+          error: error,
+          errorReference: usersErrors,
+          defaultErrorMessage: 'Erro ao gerar link de primeiro acesso, tente novamente mais tarde.'
+        })
       })
   }
 

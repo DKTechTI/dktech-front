@@ -19,8 +19,8 @@ import { ThemeColor } from 'src/@core/layouts/types'
 import { api } from 'src/services/api'
 
 import toast from 'react-hot-toast'
-import { isAxiosError } from 'axios'
-import authErrors from 'src/errors/authErrors'
+
+import usersErrors from 'src/errors/usersErrors'
 import useErrorHandling from 'src/hooks/useErrorHandling'
 
 interface ColorsType {
@@ -68,15 +68,11 @@ const UserProfile = ({ data, refresh, setRefresh }: UserProfileProps) => {
       })
       .catch(error => {
         setDeleteDialogOpen(false)
-        if (!isAxiosError(error)) return toast.error('Erro ao deletar usuário, tente novamente mais tarde.')
-        if (error.response) {
-          const message = handleErrorResponse({
-            error: error.response.status,
-            message: error.response.data.message,
-            referenceError: authErrors
-          })
-          message ? toast.error(message) : toast.error('Erro ao deletar usuário, tente novamente mais tarde.')
-        }
+        handleErrorResponse({
+          error: error,
+          errorReference: usersErrors,
+          defaultErrorMessage: 'Erro ao deletar usuário, tente novamente mais tarde.'
+        })
       })
   }
 

@@ -16,8 +16,7 @@ import { UserDataProps, UserProps } from 'src/types/users'
 
 import { api } from 'src/services/api'
 
-import { isAxiosError } from 'axios'
-import authErrors from 'src/errors/authErrors'
+import usersErrors from 'src/errors/usersErrors'
 import useErrorHandling from 'src/hooks/useErrorHandling'
 
 const UsersList = () => {
@@ -47,15 +46,11 @@ const UsersList = () => {
         }
       })
       .catch(error => {
-        if (!isAxiosError(error)) return toast.error('Erro ao deletar usuário, tente novamente mais tarde.')
-        if (error.response) {
-          const message = handleErrorResponse({
-            error: error.response.status,
-            message: error.response.data.message,
-            referenceError: authErrors
-          })
-          message ? toast.error(message) : toast.error('Erro ao deletar usuário, tente novamente mais tarde.')
-        }
+        handleErrorResponse({
+          error: error,
+          errorReference: usersErrors,
+          defaultErrorMessage: 'Erro ao deletar usuário, tente novamente mais tarde.'
+        })
       })
   }
 
