@@ -25,6 +25,9 @@ import { delay } from 'src/utils/delay'
 
 import { DeviceProps } from 'src/types/devices'
 
+import devicesErrors from 'src/errors/devicesErrors'
+import useErrorHandling from 'src/hooks/useErrorHandling'
+
 const schema = yup.object().shape({
   modelName: yup.string().required('Nome é obrigatório'),
   type: yup.string().required('Tipo é obrigatório'),
@@ -73,6 +76,7 @@ interface DeviceInfoProps {
 
 const DeviceInfo = ({ data, refresh, setRefresh }: DeviceInfoProps) => {
   const router = useRouter()
+  const { handleErrorResponse } = useErrorHandling()
 
   const [tabValue, setTabValue] = useState<string>(data.type)
   const [disableEdit, setDisableEdit] = useState<boolean>(true)
@@ -133,9 +137,13 @@ const DeviceInfo = ({ data, refresh, setRefresh }: DeviceInfoProps) => {
           })
         }
       })
-      .catch(() => {
+      .catch(error => {
         setDeleteDialogOpen(false)
-        toast.error('Erro ao deletar dispositivo, tente novamente mais tarde')
+        handleErrorResponse({
+          error: error,
+          errorReference: devicesErrors,
+          defaultErrorMessage: 'Erro ao deletar dispositivo, tente novamente mais tarde.'
+        })
       })
   }
 
@@ -150,9 +158,11 @@ const DeviceInfo = ({ data, refresh, setRefresh }: DeviceInfoProps) => {
         }
       })
       .catch(error => {
-        return error.response.status === 409
-          ? toast.error('Erro ao atualizar dispositivo, verifique os campos e tente novamente')
-          : toast.error('Erro ao atualizar dispositivo, tente novamente mais tarde')
+        handleErrorResponse({
+          error: error,
+          errorReference: devicesErrors,
+          defaultErrorMessage: 'Erro ao atualizar dispositivo, tente novamente mais tarde.'
+        })
       })
   }
 

@@ -16,7 +16,12 @@ import { UserDataProps, UserProps } from 'src/types/users'
 
 import { api } from 'src/services/api'
 
+import usersErrors from 'src/errors/usersErrors'
+import useErrorHandling from 'src/hooks/useErrorHandling'
+
 const UsersList = () => {
+  const { handleErrorResponse } = useErrorHandling()
+
   const [paginationModel, setPaginationModel] = useState({ page: 0, pageSize: 10 })
   const [users, setUsers] = useState<UserProps[]>([])
   const [value, setValue] = useState<string>('')
@@ -40,8 +45,12 @@ const UsersList = () => {
           toast.success('Usuário deletado com sucesso!')
         }
       })
-      .catch(() => {
-        toast.error('Erro ao deletar usuário, tente novamente mais tarde')
+      .catch(error => {
+        handleErrorResponse({
+          error: error,
+          errorReference: usersErrors,
+          defaultErrorMessage: 'Erro ao deletar usuário, tente novamente mais tarde.'
+        })
       })
   }
 

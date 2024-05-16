@@ -18,6 +18,9 @@ import { delay } from 'src/utils/delay'
 import { useRouter } from 'next/router'
 import { verifyClientStatus } from 'src/utils/client'
 
+import clientsErrors from 'src/errors/clientsErrors'
+import useErrorHandling from 'src/hooks/useErrorHandling'
+
 interface ColorsType {
   [key: string]: ThemeColor
 }
@@ -35,6 +38,7 @@ interface ClientProfileProps {
 
 const ClientProfile = ({ data, refresh, setRefresh }: ClientProfileProps) => {
   const router = useRouter()
+  const { handleErrorResponse } = useErrorHandling()
 
   const [openEdit, setOpenEdit] = useState<boolean>(false)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState<boolean>(false)
@@ -54,9 +58,13 @@ const ClientProfile = ({ data, refresh, setRefresh }: ClientProfileProps) => {
           })
         }
       })
-      .catch(() => {
+      .catch(error => {
         setDeleteDialogOpen(false)
-        toast.error('Erro ao deletar cliente, tente novamente mais tarde')
+        handleErrorResponse({
+          error: error,
+          errorReference: clientsErrors,
+          defaultErrorMessage: 'Erro ao deletar cliente, tente novamente mais tarde.'
+        })
       })
   }
 

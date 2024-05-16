@@ -17,6 +17,9 @@ import { yupResolver } from '@hookform/resolvers/yup'
 
 import { api } from 'src/services/api'
 
+import useErrorHandling from 'src/hooks/useErrorHandling'
+import projectDevicesErrors from 'src/errors/projectDevicesErrors'
+
 const schema = yup.object().shape({
   deviceId: yup.string().required('Dispositivo obrigatório'),
   name: yup.string().required('Nome obrigatório'),
@@ -76,6 +79,7 @@ interface AddCentralProps {
 const AddCentral = ({ handleClose, open, refresh, setRefresh }: AddCentralProps) => {
   const router = useRouter()
   const { id } = router.query
+  const { handleErrorResponse } = useErrorHandling()
 
   const { data: devices } = useGetDataApi<any>({ url: '/devices', callInit: router.isReady && open })
 
@@ -153,9 +157,13 @@ const AddCentral = ({ handleClose, open, refresh, setRefresh }: AddCentralProps)
           setRefresh(!refresh)
         }
       })
-      .catch(() => {
+      .catch(error => {
         handleClose()
-        toast.error('Erro ao adicionar central, tente novamente mais tarde')
+        handleErrorResponse({
+          error: error,
+          errorReference: projectDevicesErrors,
+          defaultErrorMessage: 'Erro ao adicionar central, tente novamente mais tarde.'
+        })
       })
   }
 

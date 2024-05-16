@@ -1,25 +1,31 @@
 import { useState } from 'react'
+import { useRouter } from 'next/router'
 import { Grid, Card, CardContent, Typography, Divider, CardActions, Button, Box } from '@mui/material'
 
-import DialogAlert from 'src/@core/components/dialogs/dialog-alert'
-import Avatar from 'src/@core/components/mui/avatar'
 import Chip from 'src/@core/components/mui/chip'
+import Avatar from 'src/@core/components/mui/avatar'
+import DialogAlert from 'src/@core/components/dialogs/dialog-alert'
+
+import { delay } from 'src/utils/delay'
+import verifyDataValue from 'src/utils/verifyDataValue'
+import { getInitials } from 'src/@core/utils/get-initials'
+import { formatDocumentNumber } from 'src/utils/formatDocumentNumber'
+import { verifyUserStatus, verifyUserType } from 'src/@core/utils/user'
+
+import { ThemeColor } from 'src/@core/layouts/types'
 
 import EditProfile from './editAccount'
 import EditAdminAccount from './editAdminAccount'
 
-import { formatDocumentNumber } from 'src/utils/formatDocumentNumber'
-import { getInitials } from 'src/@core/utils/get-initials'
-
-import { ThemeColor } from 'src/@core/layouts/types'
-import { ResaleProps } from 'src/types/resales'
 import { UserProps } from 'src/types/users'
-import { verifyUserStatus, verifyUserType } from 'src/@core/utils/user'
+import { ResaleProps } from 'src/types/resales'
+
 import { api } from 'src/services/api'
+
 import toast from 'react-hot-toast'
-import { delay } from 'src/utils/delay'
-import { useRouter } from 'next/router'
-import verifyDataValue from 'src/utils/verifyDataValue'
+
+import usersErrors from 'src/errors/usersErrors'
+import useErrorHandling from 'src/hooks/useErrorHandling'
 
 interface ColorsType {
   [key: string]: ThemeColor
@@ -45,6 +51,7 @@ interface UserProfileProps {
 
 const MyAccount = ({ data, refresh, setRefresh }: UserProfileProps) => {
   const router = useRouter()
+  const { handleErrorResponse } = useErrorHandling()
 
   const [openEdit, setOpenEdit] = useState<boolean>(false)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState<boolean>(false)
@@ -64,9 +71,13 @@ const MyAccount = ({ data, refresh, setRefresh }: UserProfileProps) => {
           })
         }
       })
-      .catch(() => {
+      .catch(error => {
         setDeleteDialogOpen(false)
-        toast.error('Erro ao deletar sua conta, tente novamente mais tarde')
+        handleErrorResponse({
+          error: error,
+          errorReference: usersErrors,
+          defaultErrorMessage: 'Erro ao deletar sua conta, tente novamente mais tarde.'
+        })
       })
   }
 

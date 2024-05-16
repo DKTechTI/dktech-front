@@ -19,8 +19,10 @@ import Icon from 'src/@core/components/icon'
 import CustomTextField from 'src/@core/components/mui/text-field'
 import { Box } from '@mui/system'
 import { api } from 'src/services/api'
+
 import toast from 'react-hot-toast'
-import { verifyChangePasswordErrors } from 'src/utils/verifyErrors'
+import authErrors from 'src/errors/authErrors'
+import useErrorHandling from 'src/hooks/useErrorHandling'
 
 const schema = yup.object().shape({
   newPassword: yup.string().min(8, 'minino de 8 caracteres').required('Senha obrigatória'),
@@ -40,6 +42,8 @@ interface ResaleChangePasswordAccountProps {
 }
 
 const ResaleChangePasswordAccount = ({ id }: ResaleChangePasswordAccountProps) => {
+  const { handleErrorResponse } = useErrorHandling()
+
   const [showNewPassword, setShowNewPassword] = useState<boolean>(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState<boolean>(false)
 
@@ -67,7 +71,11 @@ const ResaleChangePasswordAccount = ({ id }: ResaleChangePasswordAccountProps) =
         }
       })
       .catch(error => {
-        verifyChangePasswordErrors(error.response.status, error.response.data.message)
+        handleErrorResponse({
+          error: error,
+          errorReference: authErrors,
+          defaultErrorMessage: 'Erro ao redefinir senha, tente novamente.'
+        })
       })
   }
 

@@ -20,6 +20,9 @@ import { UserProps } from 'src/types/users'
 import { api } from 'src/services/api'
 import toast from 'react-hot-toast'
 
+import usersErrors from 'src/errors/usersErrors'
+import useErrorHandling from 'src/hooks/useErrorHandling'
+
 const schema = yup.object().shape({
   name: yup.string().required('Nome obrigatório'),
   email: yup.string().email('E-mail inválido'),
@@ -41,6 +44,8 @@ interface EditProfileProps {
 }
 
 const EditAccount = ({ openEdit, handleEditClose, data, refresh, setRefresh }: EditProfileProps) => {
+  const { handleErrorResponse } = useErrorHandling()
+
   const {
     control,
     handleSubmit,
@@ -65,9 +70,13 @@ const EditAccount = ({ openEdit, handleEditClose, data, refresh, setRefresh }: E
           setRefresh(!refresh)
         }
       })
-      .catch(() => {
+      .catch(error => {
         handleEditClose()
-        toast.error('Erro ao atualizar usuário, tente novamente mais tarde')
+        handleErrorResponse({
+          error: error,
+          errorReference: usersErrors,
+          defaultErrorMessage: 'Erro ao atualizar usuário, tente novamente mais tarde.'
+        })
       })
   }
 

@@ -17,8 +17,12 @@ import { removeRowFromList } from 'src/utils/dataGrid'
 import { ClientDataProps, ClientProps } from 'src/types/clients'
 import { Columns } from './Columns'
 
+import clientsErrors from 'src/errors/clientsErrors'
+import useErrorHandling from 'src/hooks/useErrorHandling'
+
 const ClientsList = () => {
   const { user } = useAuth()
+  const { handleErrorResponse } = useErrorHandling()
 
   const [paginationModel, setPaginationModel] = useState({ page: 0, pageSize: 10 })
   const [clients, setClients] = useState<ClientProps[]>([])
@@ -43,8 +47,12 @@ const ClientsList = () => {
           toast.success('Cliente deletado com sucesso!')
         }
       })
-      .catch(() => {
-        toast.error('Erro ao deletar cliente, tente novamente mais tarde')
+      .catch(error => {
+        handleErrorResponse({
+          error: error,
+          errorReference: clientsErrors,
+          defaultErrorMessage: 'Erro ao deletar cliente, tente novamente mais tarde.'
+        })
       })
   }
 

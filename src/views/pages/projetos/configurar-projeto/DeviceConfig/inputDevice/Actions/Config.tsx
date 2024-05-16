@@ -20,6 +20,8 @@ import { useForm, Controller } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
 
 import toast from 'react-hot-toast'
+import useErrorHandling from 'src/hooks/useErrorHandling'
+import projectSceneActionsErrors from 'src/errors/projectSceneActionsErrors'
 
 const schema = yup.object().shape({
   actionValueDelay: yup
@@ -44,6 +46,7 @@ const Config = () => {
   const { id: projectId } = router.query
 
   const { keyId } = useDeviceKeys()
+  const { handleErrorResponse } = useErrorHandling()
   const { actions, projectSceneId, setActions } = useActionsDnD()
 
   const [addDialogOpen, setAddDialogOpen] = useState<boolean>(false)
@@ -88,7 +91,13 @@ const Config = () => {
           setActions((prevState: any) => [...prevState, newData])
         }
       })
-      .catch(() => toast.error('Erro ao adicionar ação, tente novamente mais tarde!'))
+      .catch(error => {
+        handleErrorResponse({
+          error: error,
+          errorReference: projectSceneActionsErrors,
+          defaultErrorMessage: 'Erro ao adicionar ação, tente novamente mais tarde.'
+        })
+      })
   }
 
   return (

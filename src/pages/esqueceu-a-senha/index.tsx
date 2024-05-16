@@ -26,6 +26,9 @@ import toast from 'react-hot-toast'
 
 import { api } from 'src/services/api'
 
+import authErrors from 'src/errors/authErrors'
+import useErrorHandling from 'src/hooks/useErrorHandling'
+
 const Card = styled(MuiCard)<CardProps>(({ theme }) => ({
   [theme.breakpoints.up('sm')]: { width: '25rem' }
 }))
@@ -48,8 +51,9 @@ interface FormData {
 }
 
 const ForgotPassword = () => {
-  const router = useRouter()
   const theme = useTheme()
+  const router = useRouter()
+  const { handleErrorResponse } = useErrorHandling()
 
   const {
     control,
@@ -73,8 +77,11 @@ const ForgotPassword = () => {
         }
       })
       .catch(error => {
-        if (error.response.status === 409) return toast.error('Usuário não encontrado, verifique o email informado')
-        toast.error('Erro ao enviar email de redefinição de senha')
+        handleErrorResponse({
+          error: error,
+          errorReference: authErrors,
+          defaultErrorMessage: 'Erro ao enviar e-mail de redefinição de senha.'
+        })
       })
   }
 

@@ -27,8 +27,6 @@ import { useAuth } from 'src/hooks/useAuth'
 
 import AuthIllustrationV1Wrapper from 'src/views/pages/auth/AuthIllustrationV1Wrapper'
 
-import toast from 'react-hot-toast'
-
 const schema = yup.object().shape({
   email: yup.string().email('E-mail inválido').required('E-mail obrigatório'),
   password: yup.string().required('Senha obrigatória')
@@ -72,9 +70,7 @@ const LoginPage = () => {
   const onSubmit = (data: FormData) => {
     const { email, password } = data
 
-    auth.login({ email, password }, () => {
-      toast.error('E-mail ou Senha inválidos')
-    })
+    auth.login({ email, password })
   }
 
   return (

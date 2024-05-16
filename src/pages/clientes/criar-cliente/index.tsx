@@ -13,6 +13,9 @@ import { api } from 'src/services/api'
 
 import { delay } from 'src/utils/delay'
 
+import clientsErrors from 'src/errors/clientsErrors'
+import useErrorHandling from 'src/hooks/useErrorHandling'
+
 const schema = yup.object().shape({
   name: yup.string().required('Nome obrigatório'),
   status: yup.string().required('Status obrigatório'),
@@ -46,6 +49,7 @@ interface FormData {
 
 const CreateClient = () => {
   const router = useRouter()
+  const { handleErrorResponse } = useErrorHandling()
 
   const {
     control,
@@ -80,9 +84,11 @@ const CreateClient = () => {
         }
       })
       .catch(error => {
-        return error.response.status === 400 && error.response.data.message === 'body/number must be number'
-          ? toast.error('Número do endereço deve conter apenas números')
-          : toast.error('Erro ao criar cliente, tente novamente mais tarde')
+        handleErrorResponse({
+          error: error,
+          errorReference: clientsErrors,
+          defaultErrorMessage: 'Erro ao criar cliente, tente novamente mais tarde.'
+        })
       })
   }
 

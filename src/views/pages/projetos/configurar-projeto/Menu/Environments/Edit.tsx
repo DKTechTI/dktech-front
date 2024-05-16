@@ -15,6 +15,9 @@ import useGetDataApi from 'src/hooks/useGetDataApi'
 
 import { api } from 'src/services/api'
 
+import useErrorHandling from 'src/hooks/useErrorHandling'
+import projectEnvironmentsErrors from 'src/errors/projectEnvironmentsErrors'
+
 const schema = yup.object().shape({
   name: yup.string().required('Nome do ambiente obrigatório')
 })
@@ -34,8 +37,9 @@ interface EditEnvironmentProps {
 
 const EditEnvironment = ({ open, handleClose, refresh, setRefresh, environmentId }: EditEnvironmentProps) => {
   const router = useRouter()
-
   const { id } = router.query
+
+  const { handleErrorResponse } = useErrorHandling()
 
   const { data: environment } = useGetDataApi<any>({
     url: `/projectEnvironments/${environmentId}`,
@@ -67,9 +71,13 @@ const EditEnvironment = ({ open, handleClose, refresh, setRefresh, environmentId
           setRefresh(!refresh)
         }
       })
-      .catch(() => {
+      .catch(error => {
         handleClose()
-        toast.error('Erro ao atualizado ambiente, tente novamente mais tarde')
+        handleErrorResponse({
+          error: error,
+          errorReference: projectEnvironmentsErrors,
+          defaultErrorMessage: 'Erro ao atualizar ambiente, tente novamente mais tarde.'
+        })
       })
   }
 

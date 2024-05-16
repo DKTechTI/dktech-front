@@ -18,6 +18,7 @@ import {
 } from '@mui/material'
 
 import toast from 'react-hot-toast'
+import IconifyIcon from 'src/@core/components/icon'
 import CustomTextField from 'src/@core/components/mui/text-field'
 
 import * as yup from 'yup'
@@ -25,8 +26,10 @@ import { useForm, useFieldArray } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
 
 import { api } from 'src/services/api'
-import IconifyIcon from 'src/@core/components/icon'
+
+import useErrorHandling from 'src/hooks/useErrorHandling'
 import { verifyObjectErrorsIsEmpty } from 'src/utils/verifyErrors'
+import projectEnvironmentsErrors from 'src/errors/projectEnvironmentsErrors'
 
 const schema = yup.object().shape({
   environments: yup
@@ -54,6 +57,7 @@ interface EditProfileProps {
 const CreateEnvironment = ({ open, handleClose, refresh, setRefresh }: EditProfileProps) => {
   const theme = useTheme()
   const router = useRouter()
+  const { handleErrorResponse } = useErrorHandling()
 
   const { id: projectId } = router.query
 
@@ -90,6 +94,9 @@ const CreateEnvironment = ({ open, handleClose, refresh, setRefresh }: EditProfi
     if (environmentName.trim() === '')
       return setError(`environments.${length}.name`, { type: 'manual', message: 'Nome do ambiente obrigatório' })
 
+    if (fields.some(field => field.name === environmentName))
+      return setError(`environments.${length}.name`, { type: 'manual', message: 'Ambiente já adicionado' })
+
     append({ projectId: projectId, name: environmentName })
     setEnvironmentName('')
   }
@@ -101,16 +108,32 @@ const CreateEnvironment = ({ open, handleClose, refresh, setRefresh }: EditProfi
 
     const promises = formData.environments.map(environment => createEnvironment(environment))
 
-    Promise.all(promises)
-      .then(() => {
-        handleClose()
+    Promise.allSettled(promises).then(results => {
+      const hasSuccess = results.some(result => result.status === 'fulfilled')
+
+      if (hasSuccess) {
         toast.success('Ambientes adicionados com sucesso!')
         setRefresh(!refresh)
-      })
-      .catch(() => {
-        handleClose()
-        toast.error('Erro ao adicionar ambientes, tente novamente mais tarde')
-      })
+      }
+
+      const hasError = results.some(result => result.status === 'rejected')
+
+      if (hasError) {
+        const errors = results.filter(result => result.status === 'rejected')
+
+        errors.map((result: any) => {
+          if (result.reason) {
+            handleErrorResponse({
+              error: result.reason,
+              errorReference: projectEnvironmentsErrors,
+              defaultErrorMessage: 'Erro ao adicionar ambientes, tente novamente mais tarde.'
+            })
+          }
+        })
+      }
+
+      handleClose()
+    })
   }
 
   useEffect(() => {

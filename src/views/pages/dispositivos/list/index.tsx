@@ -15,7 +15,12 @@ import { api } from 'src/services/api'
 import { Columns } from './Columns'
 import { removeRowFromList } from 'src/utils/dataGrid'
 
+import devicesErrors from 'src/errors/devicesErrors'
+import useErrorHandling from 'src/hooks/useErrorHandling'
+
 const DevicesList = () => {
+  const { handleErrorResponse } = useErrorHandling()
+
   const [paginationModel, setPaginationModel] = useState({ page: 0, pageSize: 10 })
   const [devices, setDevices] = useState<DeviceProps[]>([])
   const [value, setValue] = useState<string>('')
@@ -39,8 +44,12 @@ const DevicesList = () => {
           toast.success('Dispositivo deletado com sucesso!')
         }
       })
-      .catch(() => {
-        toast.error('Erro ao deletar dispositivo, tente novamente mais tarde')
+      .catch(error => {
+        handleErrorResponse({
+          error: error,
+          errorReference: devicesErrors,
+          defaultErrorMessage: 'Erro ao deletar dispositivo, tente novamente mais tarde.'
+        })
       })
   }
 

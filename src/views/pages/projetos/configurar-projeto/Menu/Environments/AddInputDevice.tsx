@@ -28,6 +28,9 @@ import { yupResolver } from '@hookform/resolvers/yup'
 
 import { api } from 'src/services/api'
 
+import useErrorHandling from 'src/hooks/useErrorHandling'
+import projectDevicesErrors from 'src/errors/projectDevicesErrors'
+
 const schema = yup.object().shape({
   name: yup.string().required('Nome obrigatório'),
   boardIndex: yup.string().required('Porta obrigatória'),
@@ -71,6 +74,7 @@ const AddInputDevice = ({
 
   const { id } = router.query
 
+  const { handleErrorResponse } = useErrorHandling()
   const { handleAvaliableInputPorts } = useProjectMenu()
 
   const [ports, setPorts] = useState<any[]>([])
@@ -196,9 +200,13 @@ const AddInputDevice = ({
           setRefresh(!refresh)
         }
       })
-      .catch(() => {
+      .catch(error => {
         handleClose()
-        toast.error('Erro ao adicionar dispositivo de entrada, tente novamente mais tarde')
+        handleErrorResponse({
+          error: error,
+          errorReference: projectDevicesErrors,
+          defaultErrorMessage: 'Erro ao adicionar dispositivo de entrada, tente novamente mais tarde.'
+        })
       })
   }
 

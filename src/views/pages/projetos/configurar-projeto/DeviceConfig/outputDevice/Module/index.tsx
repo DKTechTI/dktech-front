@@ -19,6 +19,9 @@ import toast from 'react-hot-toast'
 
 import { api } from 'src/services/api'
 
+import useErrorHandling from 'src/hooks/useErrorHandling'
+import projectDevicesErrors from 'src/errors/projectDevicesErrors'
+
 const schema = yup.object().shape({
   name: yup.string().required('Nome obrigatório'),
   boardIndex: yup.string().required('Porta obrigatório'),
@@ -44,6 +47,7 @@ interface ModuleProps {
 }
 
 const Module = ({ deviceData, refresh, setRefresh }: ModuleProps) => {
+  const { handleErrorResponse } = useErrorHandling()
   const { setDeviceId, setProjectDeviceId, deviceKeys, loadingDeviceKeys } = useDeviceKeys()
   const { handleAvaliableOutputPorts, setRefreshMenu, refreshMenu, handleCheckDeviceSequence, handleCheckDevicePort } =
     useProjectMenu()
@@ -121,8 +125,12 @@ const Module = ({ deviceData, refresh, setRefresh }: ModuleProps) => {
             setRefreshMenu(!refreshMenu)
           }
         })
-        .catch(() => {
-          toast.error('Erro ao alterar porta, tente novamente mais tarde')
+        .catch(error => {
+          handleErrorResponse({
+            error: error,
+            errorReference: projectDevicesErrors,
+            defaultErrorMessage: 'Erro ao alterar porta, tente novamente mais tarde.'
+          })
         })
 
       return
@@ -152,8 +160,12 @@ const Module = ({ deviceData, refresh, setRefresh }: ModuleProps) => {
             setRefreshMenu(!refreshMenu)
           }
         })
-        .catch(() => {
-          toast.error('Erro ao alterar sequência, tente novamente mais tarde')
+        .catch(error => {
+          handleErrorResponse({
+            error: error,
+            errorReference: projectDevicesErrors,
+            defaultErrorMessage: 'Erro ao alterar sequência, tente novamente mais tarde.'
+          })
         })
 
       return
@@ -176,8 +188,12 @@ const Module = ({ deviceData, refresh, setRefresh }: ModuleProps) => {
           setRefreshMenu(!refreshMenu)
         }
       })
-      .catch(() => {
-        toast.error('Erro ao alterar dados, tente novamente mais tarde')
+      .catch(error => {
+        handleErrorResponse({
+          error: error,
+          errorReference: projectDevicesErrors,
+          defaultErrorMessage: 'Erro ao alterar dados, tente novamente mais tarde.'
+        })
       })
   }
 

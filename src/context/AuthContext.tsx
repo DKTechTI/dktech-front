@@ -12,6 +12,9 @@ import toast from 'react-hot-toast'
 
 import { AuthValuesType, LoginParams, ErrCallbackType, UserDataType } from './types'
 
+import authErrors from 'src/errors/authErrors'
+import useErrorHandling from 'src/hooks/useErrorHandling'
+
 // ** Defaults
 const defaultProvider: AuthValuesType = {
   user: null,
@@ -33,6 +36,7 @@ const AuthProvider = ({ children }: Props) => {
   const [loading, setLoading] = useState<boolean>(defaultProvider.loading)
 
   const router = useRouter()
+  const { handleErrorResponse } = useErrorHandling()
 
   useEffect(() => {
     const initAuth = async (): Promise<void> => {
@@ -46,7 +50,7 @@ const AuthProvider = ({ children }: Props) => {
 
         api
           .get(`${authConfig.meEndpoint}/${userId}`)
-          .then(async response => {
+          .then(response => {
             setLoading(false)
             setUser(formatAuthUser(response.data.data))
           })
@@ -57,6 +61,7 @@ const AuthProvider = ({ children }: Props) => {
           })
       } else {
         setLoading(false)
+        router.pathname !== '/redefinir-senha' && handleLogout()
       }
     }
 
@@ -86,7 +91,13 @@ const AuthProvider = ({ children }: Props) => {
 
       router.replace(redirectURL as string)
     } catch (error) {
-      if (errorCallback) errorCallback(error as any)
+      if (errorCallback) return errorCallback(error as any)
+
+      handleErrorResponse({
+        error: error as any,
+        errorReference: authErrors,
+        defaultErrorMessage: 'Ocorreu um erro, tente novamente.'
+      })
     }
   }
 

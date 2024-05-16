@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useRouter } from 'next/router'
 import { Grid, Card, CardContent, Typography, Divider, CardActions, Button, Box } from '@mui/material'
 
 import DialogAlert from 'src/@core/components/dialogs/dialog-alert'
@@ -18,7 +19,9 @@ import { ResaleProps } from 'src/types/resales'
 import { api } from 'src/services/api'
 import toast from 'react-hot-toast'
 import { delay } from 'src/utils/delay'
-import { useRouter } from 'next/router'
+
+import usersErrors from 'src/errors/usersErrors'
+import useErrorHandling from 'src/hooks/useErrorHandling'
 
 interface ColorsType {
   [key: string]: ThemeColor
@@ -44,6 +47,7 @@ interface UserResaleProps {
 
 const UserResale = ({ data, refresh, setRefresh }: UserResaleProps) => {
   const router = useRouter()
+  const { handleErrorResponse } = useErrorHandling()
 
   const [openEdit, setOpenEdit] = useState<boolean>(false)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState<boolean>(false)
@@ -63,9 +67,13 @@ const UserResale = ({ data, refresh, setRefresh }: UserResaleProps) => {
           })
         }
       })
-      .catch(() => {
+      .catch(error => {
         setDeleteDialogOpen(false)
-        toast.error('Erro ao deletar revenda, tente novamente mais tarde')
+        handleErrorResponse({
+          error: error,
+          errorReference: usersErrors,
+          defaultErrorMessage: 'Erro ao deletar revenda, tente novamente mais tarde.'
+        })
       })
   }
 

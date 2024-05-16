@@ -11,10 +11,12 @@ import { api } from 'src/services/api'
 
 import useClipBoard from 'src/hooks/useClipboard'
 
-import toast from 'react-hot-toast'
+import usersErrors from 'src/errors/usersErrors'
+import useErrorHandling from 'src/hooks/useErrorHandling'
 
 const RowOptions = ({ id, handleConfirmDelete }: { id: string; handleConfirmDelete: (id: string) => void }) => {
   const router = useRouter()
+  const { handleErrorResponse } = useErrorHandling()
 
   const matches = useMediaQuery('(min-width:600px)')
 
@@ -45,8 +47,12 @@ const RowOptions = ({ id, handleConfirmDelete }: { id: string; handleConfirmDele
           copyToClipboard(response.data, 'Link copiado para a área de transferência')
         }
       })
-      .catch(() => {
-        toast.error('Erro ao gerar link de primeiro acesso, tente novamente mais tarde')
+      .catch(error => {
+        handleErrorResponse({
+          error: error,
+          errorReference: usersErrors,
+          defaultErrorMessage: 'Erro ao gerar link de primeiro acesso, tente novamente mais tarde.'
+        })
       })
   }
 

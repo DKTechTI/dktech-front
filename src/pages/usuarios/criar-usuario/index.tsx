@@ -1,14 +1,21 @@
+import { useState } from 'react'
+import { useRouter } from 'next/router'
+
 import { Box, Button, Card, CardContent, CardHeader, Grid, IconButton, InputAdornment, MenuItem } from '@mui/material'
 import CustomTextField from 'src/@core/components/mui/text-field'
+
+import Icon from 'src/@core/components/icon'
 
 import * as yup from 'yup'
 import { useForm, Controller } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
-import { useState } from 'react'
-import Icon from 'src/@core/components/icon'
-import { api } from 'src/services/api'
+
 import toast from 'react-hot-toast'
-import { useRouter } from 'next/router'
+
+import { api } from 'src/services/api'
+
+import usersErrors from 'src/errors/usersErrors'
+import useErrorHandling from 'src/hooks/useErrorHandling'
 
 const schema = yup.object().shape({
   name: yup.string().required('Nome obrigatório'),
@@ -32,6 +39,7 @@ interface FormData {
 
 const CreateUser = () => {
   const router = useRouter()
+  const { handleErrorResponse } = useErrorHandling()
 
   const [showPassword, setShowPassword] = useState<boolean>(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState<boolean>(false)
@@ -70,12 +78,17 @@ const CreateUser = () => {
         }
       })
       .catch(error => {
-        if (error.response.status === 409) {
-          setError('email', { type: 'manual', message: 'E-mail já cadastrado' })
+        handleErrorResponse({
+          error: error,
+          errorReference: usersErrors,
+          defaultErrorMessage: 'Erro ao criar usuário, tente novamente mais tarde.'
+        })
 
-          return toast.error('E-mail já cadastrado')
+        if (error.response) {
+          error.response.status === 409 &&
+            error.response.data.message === 'User Already Exists' &&
+            setError('email', { type: 'manual', message: 'E-mail já cadastrado' })
         }
-        toast.error('Erro ao criar usuário, tente novamente mais tarde')
       })
   }
 

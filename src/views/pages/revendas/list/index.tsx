@@ -12,7 +12,12 @@ import { Columns } from './Columns'
 import useGetDataApi from 'src/hooks/useGetDataApi'
 import { removeRowFromList } from 'src/utils/dataGrid'
 
+import usersErrors from 'src/errors/usersErrors'
+import useErrorHandling from 'src/hooks/useErrorHandling'
+
 const ResaleUsersList = () => {
+  const { handleErrorResponse } = useErrorHandling()
+
   const [paginationModel, setPaginationModel] = useState({ page: 0, pageSize: 10 })
   const [resales, setResales] = useState<ResaleProps[]>([])
   const [value, setValue] = useState<string>('')
@@ -36,8 +41,12 @@ const ResaleUsersList = () => {
           toast.success('Revenda deletada com sucesso!')
         }
       })
-      .catch(() => {
-        toast.error('Erro ao deletar revenda, tente novamente mais tarde')
+      .catch(error => {
+        handleErrorResponse({
+          error: error,
+          errorReference: usersErrors,
+          defaultErrorMessage: 'Erro ao deletar revenda, tente novamente mais tarde.'
+        })
       })
   }
 

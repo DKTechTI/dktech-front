@@ -35,6 +35,9 @@ import { api } from 'src/services/api'
 import { verifyObjectErrorsIsEmpty } from 'src/utils/verifyErrors'
 import { handleCheckOperationType } from 'src/utils/actions'
 
+import useErrorHandling from 'src/hooks/useErrorHandling'
+import projectSceneActionsErrors from 'src/errors/projectSceneActionsErrors'
+
 const schema = yup.object().shape({
   outputs: yup
     .array()
@@ -85,6 +88,7 @@ const Create = ({ open, handleClose }: CreateProps) => {
 
   const { menu } = useProjectMenu()
   const { keyId } = useDeviceKeys()
+  const { handleErrorResponse } = useErrorHandling()
   const { projectSceneId, refreshActions, setRefreshActions } = useActionsDnD()
 
   const [environments, setEnvironments] = useState<any[]>([])
@@ -123,7 +127,6 @@ const Create = ({ open, handleClose }: CreateProps) => {
 
     if (outputSelected.length > 0) {
       const output: any = outputSelected[0]
-      console.log('🚀 ~ handleSelectOutput ~ output:', output)
 
       api
         .get(`/projectDeviceKeys/${projectDeviceKeyId}`)
@@ -166,9 +169,13 @@ const Create = ({ open, handleClose }: CreateProps) => {
         toast.success('Ações adicionadas com sucesso!')
         setRefreshActions(!refreshActions)
       })
-      .catch(() => {
+      .catch(error => {
         handleClose()
-        toast.error('Erro ao adicionar ações, tente novamente mais tarde')
+        handleErrorResponse({
+          error: error,
+          errorReference: projectSceneActionsErrors,
+          defaultErrorMessage: 'Erro ao adicionar ações, tente novamente mais tarde'
+        })
       })
   }
 

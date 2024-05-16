@@ -31,6 +31,9 @@ import { yupResolver } from '@hookform/resolvers/yup'
 
 import { api } from 'src/services/api'
 
+import useErrorHandling from 'src/hooks/useErrorHandling'
+import projectDevicesErrors from 'src/errors/projectDevicesErrors'
+
 const schema = yup.object().shape({
   name: yup.string().required('Nome obrigatório'),
   connection: yup.string().required('Conexão obrigatória'),
@@ -89,6 +92,7 @@ interface EditCentralProps {
 const EditCentral = ({ handleClose, open, refresh, setRefresh, projectDeviceId }: EditCentralProps) => {
   const router = useRouter()
   const { copyToClipboard } = useClipboard()
+  const { handleErrorResponse } = useErrorHandling()
 
   const { data: projectDevice } = useGetDataApi<any>({
     url: `/projectDevices/${projectDeviceId}`,
@@ -167,9 +171,13 @@ const EditCentral = ({ handleClose, open, refresh, setRefresh, projectDeviceId }
           setRefresh(!refresh)
         }
       })
-      .catch(() => {
+      .catch(error => {
         handleClose()
-        toast.error('Erro ao atualizar os dados, tente novamente mais tarde')
+        handleErrorResponse({
+          error: error,
+          errorReference: projectDevicesErrors,
+          defaultErrorMessage: 'Erro ao atualizar os dados, tente novamente mais tarde.'
+        })
       })
   }
 

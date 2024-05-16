@@ -28,6 +28,9 @@ import { api } from 'src/services/api'
 
 import themeConfig from 'src/configs/themeConfig'
 
+import authErrors from 'src/errors/authErrors'
+import useErrorHandling from 'src/hooks/useErrorHandling'
+
 const Card = styled(MuiCard)<CardProps>(({ theme }) => ({
   [theme.breakpoints.up('sm')]: { width: '25rem' }
 }))
@@ -55,6 +58,7 @@ interface FormData {
 
 const FirstAccess = () => {
   const router = useRouter()
+  const { handleErrorResponse } = useErrorHandling()
 
   const [showNewPassword, setShowNewPassword] = useState<boolean>(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState<boolean>(false)
@@ -88,12 +92,13 @@ const FirstAccess = () => {
         }
       })
       .catch(error => {
-        if (error.response.status === 401) {
-          toast.error('Token inválido, solicite uma nova redefinição de senha')
+        handleErrorResponse({
+          error: error,
+          errorReference: authErrors,
+          defaultErrorMessage: 'Erro ao redefinir senha, tente novamente mais tarde.'
+        })
 
-          return router.push('/esqueceu-a-senha')
-        }
-        toast.error('Erro ao redefinir senha')
+        router.push('/login')
       })
   }
 

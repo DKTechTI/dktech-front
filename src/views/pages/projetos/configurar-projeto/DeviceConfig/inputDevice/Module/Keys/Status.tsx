@@ -19,6 +19,8 @@ import toast from 'react-hot-toast'
 import { useForm, useFieldArray } from 'react-hook-form'
 
 import { api } from 'src/services/api'
+import useErrorHandling from 'src/hooks/useErrorHandling'
+import projectDevicesKeysErrors from 'src/errors/projectDevicesKeysErrors'
 
 interface KeyStatusProps {
   [key: string]: string
@@ -52,6 +54,7 @@ interface StatusProps {
 
 const Status = ({ keys, handleClose, open, refresh, setRefresh }: StatusProps) => {
   const theme = useTheme()
+  const { handleErrorResponse } = useErrorHandling()
 
   const [keysIndexUpdated, setKeysIndexUpdated] = useState<number[]>([])
 
@@ -101,10 +104,14 @@ const Status = ({ keys, handleClose, open, refresh, setRefresh }: StatusProps) =
         toast.success('Teclas atualizadas com sucesso!')
         setRefresh(!refresh)
       })
-      .catch(() => {
+      .catch(error => {
         handleClose()
         setKeysIndexUpdated([])
-        toast.error('Erro ao atualizar teclas, tente novamente mais tarde')
+        handleErrorResponse({
+          error: error,
+          errorReference: projectDevicesKeysErrors,
+          defaultErrorMessage: 'Erro ao atualizar teclas, tente novamente mais tarde.'
+        })
       })
   }
 
