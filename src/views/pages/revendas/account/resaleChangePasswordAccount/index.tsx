@@ -19,9 +19,8 @@ import Icon from 'src/@core/components/icon'
 import CustomTextField from 'src/@core/components/mui/text-field'
 import { Box } from '@mui/system'
 import { api } from 'src/services/api'
-import toast from 'react-hot-toast'
 
-import { isAxiosError } from 'axios'
+import toast from 'react-hot-toast'
 import authErrors from 'src/errors/authErrors'
 import useErrorHandling from 'src/hooks/useErrorHandling'
 
@@ -72,15 +71,11 @@ const ResaleChangePasswordAccount = ({ id }: ResaleChangePasswordAccountProps) =
         }
       })
       .catch(error => {
-        if (!isAxiosError(error)) toast.error('Erro ao redefinir senha, tente novamente.')
-        if (error.response) {
-          const message = handleErrorResponse({
-            error: error.response.status,
-            message: error.response.data.message,
-            referenceError: authErrors
-          })
-          message ? toast.error(message) : toast.error('Erro ao redefinir senha, tente novamente.')
-        }
+        handleErrorResponse({
+          error: error,
+          errorReference: authErrors,
+          defaultErrorMessage: 'Erro ao redefinir senha, tente novamente.'
+        })
       })
   }
 
