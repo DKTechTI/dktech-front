@@ -26,6 +26,8 @@ import {
 
 import toast from 'react-hot-toast'
 import { useAutoSave } from 'src/hooks/useAutoSave'
+import useErrorHandling from 'src/hooks/useErrorHandling'
+import projectScenesErrors from 'src/errors/projectScenesErrors'
 
 const schemaScene = yup.object().shape({
   name: yup.string().required('Nome da cena obrigatório').min(3, 'Nome da cena deve ter no mínimo 3 caracteres'),
@@ -59,6 +61,7 @@ const Scenes = ({ keyId }: ScenesProps) => {
   const { id } = router.query
 
   const { handleSaveOnStateChange } = useAutoSave()
+  const { handleErrorResponse } = useErrorHandling()
   const { deviceId, projectDeviceType } = useDeviceKeys()
   const { setProjectSceneId, setOrderActions } = useActionsDnD()
 
@@ -184,11 +187,7 @@ const Scenes = ({ keyId }: ScenesProps) => {
       .then(() => {
         const responseMessage: { [key: number]: string } = {
           201: 'Cena criada com sucesso!',
-          200: 'Cena atualizada com sucesso!',
-          400: 'Erro ao criar cena, tente novamente mais tarde',
-          404: 'Erro ao criar cena, tente novamente mais tarde',
-          409: 'Erro ao criar cena, tente novamente mais tarde',
-          500: 'Erro ao criar cena, tente novamente mais tarde'
+          200: 'Cena atualizada com sucesso!'
         }
 
         const data = formatSceneObject(getValuesScene())
@@ -203,7 +202,11 @@ const Scenes = ({ keyId }: ScenesProps) => {
                 return
               }
 
-              toast.error(responseMessage[response.status])
+              handleErrorResponse({
+                error: response,
+                errorReference: projectScenesErrors,
+                defaultErrorMessage: 'Erro ao criar cena, tente novamente mais tarde.'
+              })
             }
           })
           .catch(error => console.error(error))
