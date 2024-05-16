@@ -15,6 +15,8 @@ import { useDeviceKeys } from 'src/hooks/useDeviceKeys'
 import Scenes from '../../Scenes'
 
 import toast from 'react-hot-toast'
+import useErrorHandling from 'src/hooks/useErrorHandling'
+import projectDevicesKeysErrors from 'src/errors/projectDevicesKeysErrors'
 
 const schemaKey = yup.object().shape({
   name: yup.string().required('Nome da tecla obrigatório'),
@@ -44,6 +46,7 @@ const Config = ({ keyData }: ConfigProps) => {
 
   const { keyId, environmentId } = useDeviceKeys()
   const { handleSaveOnStateChange } = useAutoSave()
+  const { handleErrorResponse } = useErrorHandling()
 
   const { data: environments } = useGetDataApi<any>({
     url: `/projectEnvironments/${environmentId}`,
@@ -72,10 +75,7 @@ const Config = ({ keyData }: ConfigProps) => {
 
   const onSubmitKey = async (formData: FormDataKey) => {
     const responseTypeStatus: { [key: number]: string } = {
-      200: 'Dados salvos com sucesso',
-      404: 'Erro ao atualizar os dados, tente novamente mais tarde',
-      409: 'Erro ao atualizar os dados, tente novamente mais tarde',
-      500: 'Erro ao atualizar os dados, tente novamente mais tarde'
+      200: 'Dados salvos com sucesso'
     }
     const data = formData
 
@@ -86,8 +86,13 @@ const Config = ({ keyData }: ConfigProps) => {
     const response = await handleSaveOnStateChange(`/projectDeviceKeys/${keyId}`, data, 'PUT', ['menu', 'deviceKeys'])
 
     if (response) {
-      response.status === 200 && toast.success(responseTypeStatus[response.status])
-      response.status !== 200 && toast.error(responseTypeStatus[response.status])
+      if (response.status === 200) return toast.success(responseTypeStatus[response.status])
+
+      handleErrorResponse({
+        error: response,
+        errorReference: projectDevicesKeysErrors,
+        defaultErrorMessage: 'Erro ao atualizar os dados, tente novamente mais tarde.'
+      })
     }
   }
 

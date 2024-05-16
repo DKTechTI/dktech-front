@@ -13,6 +13,8 @@ import { useAutoSave } from 'src/hooks/useAutoSave'
 import toast from 'react-hot-toast'
 import useGetDataApi from 'src/hooks/useGetDataApi'
 import { useRouter } from 'next/router'
+import useErrorHandling from 'src/hooks/useErrorHandling'
+import projectDevicesKeysErrors from 'src/errors/projectDevicesKeysErrors'
 
 const schema = yup.object().shape({
   name: yup.string().required('Nome é obrigatório'),
@@ -42,6 +44,7 @@ const TryKey = ({ keyData, operationType }: TryKeyProps) => {
   const { id } = router.query
 
   const { handleSaveOnStateChange } = useAutoSave()
+  const { handleErrorResponse } = useErrorHandling()
 
   const { data: environments } = useGetDataApi<any>({
     url: `projectEnvironments/by-project/${id}`,
@@ -98,21 +101,22 @@ const TryKey = ({ keyData, operationType }: TryKeyProps) => {
 
   const onSubmit = async (data: FormData) => {
     const responseTypeStatus: { [key: number]: string } = {
-      200: 'Dados salvos com sucesso',
-      404: 'Erro ao atualizar os dados, tente novamente mais tarde',
-      409: 'Erro ao atualizar os dados, tente novamente mais tarde',
-      500: 'Erro ao atualizar os dados, tente novamente mais tarde'
+      200: 'Dados salvos com sucesso'
     }
 
     const dataFormatted = await handleFromatRequest(data)
 
-    if (!dataFormatted) return toast.error('Erro ao formatar os dados, tente novamente mais tarde')
+    if (!dataFormatted) return toast.error('Erro ao formatar os dados, tente novamente mais tarde.')
 
     const response = await handleSaveOnStateChange(`/projectDeviceKeys/${data._id}`, dataFormatted, 'PUT', ['menu'])
 
     if (response) {
-      response.status === 200 && toast.success(responseTypeStatus[response.status])
-      response.status !== 200 && toast.error(responseTypeStatus[response.status])
+      if (response.status === 200) return toast.success(responseTypeStatus[response.status])
+      handleErrorResponse({
+        error: response,
+        errorReference: projectDevicesKeysErrors,
+        defaultErrorMessage: 'Erro ao atualizar os dados, tente novamente mais tarde.'
+      })
     }
   }
 
