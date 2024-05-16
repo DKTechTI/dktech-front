@@ -12,7 +12,9 @@ import { api } from 'src/services/api'
 
 import toast from 'react-hot-toast'
 
+import useErrorHandling from 'src/hooks/useErrorHandling'
 import { handleCheckOperationType } from 'src/utils/actions'
+import projectSceneActionsErrors from 'src/errors/projectSceneActionsErrors'
 
 type DraggableItem = {
   id: string
@@ -70,11 +72,11 @@ type Props = {
 
 const ActionsDnDProvider = ({ children }: Props) => {
   const router = useRouter()
+  const { id } = router.query
 
   const { menu } = useProjectMenu()
   const { keyId } = useDeviceKeys()
-
-  const { id } = router.query
+  const { handleErrorResponse } = useErrorHandling()
 
   const [actions, setActions] = useState<any[]>([])
   const [orderActions, setOrderActions] = useState<any>(null)
@@ -113,10 +115,13 @@ const ActionsDnDProvider = ({ children }: Props) => {
       })
 
       if (responseUpdatedIndex.status === 200) return toast.success('Ordem das ações atualizada com sucesso')
-    } catch (error) {
+    } catch (error: any) {
       setActions(actionsRef)
-
-      return toast.error('Erro ao atualizar a ordem das ações, tente novamente mais tarde')
+      handleErrorResponse({
+        error: error,
+        errorReference: projectSceneActionsErrors,
+        defaultErrorMessage: 'Erro ao atualizar a ordem das ações, tente novamente mais tarde.'
+      })
     }
   }
 
@@ -172,13 +177,23 @@ const ActionsDnDProvider = ({ children }: Props) => {
       tempData.splice(action.destination.index, 0, newAction)
 
       return setActions(tempData)
-    } catch (error) {
-      return toast.error('Erro ao criar ação, tente novamente mais tarde')
+    } catch (error: any) {
+      handleErrorResponse({
+        error: error,
+        errorReference: projectSceneActionsErrors,
+        defaultErrorMessage: 'Erro ao criar ação, tente novamente mais tarde.'
+      })
     }
   }
 
   const handleDragEnd = async (result: any) => {
     if (!result.destination) return
+
+    if (
+      result.destination.droppableId === result.source.droppableId &&
+      result.destination.index === result.source.index
+    )
+      return
 
     if (result.source.droppableId === 'outputs') return handleCreateAction(result)
 

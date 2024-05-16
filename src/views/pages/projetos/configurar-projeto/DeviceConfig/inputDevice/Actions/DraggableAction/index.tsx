@@ -19,6 +19,9 @@ import { api } from 'src/services/api'
 import { ValueType, typeMap } from './typeMap'
 import { useAutoSave } from 'src/hooks/useAutoSave'
 
+import useErrorHandling from 'src/hooks/useErrorHandling'
+import projectSceneActionsErrors from 'src/errors/projectSceneActionsErrors'
+
 interface DraggableActionProps {
   row: any
   index: number
@@ -27,6 +30,7 @@ interface DraggableActionProps {
 const DraggableAction = ({ row, index }: DraggableActionProps) => {
   const { setActions, actions } = useActionsDnD()
   const { handleSaveOnStateChange } = useAutoSave()
+  const { handleErrorResponse } = useErrorHandling()
 
   const [actionId, setActionId] = useState('')
   const [type, setType] = useState<ValueType | null>(null)
@@ -43,9 +47,13 @@ const DraggableAction = ({ row, index }: DraggableActionProps) => {
           toast.success('Ação deletada com sucesso!')
         }
       })
-      .catch(() => {
+      .catch(error => {
         setDeleteDialogOpen(false)
-        toast.error('Erro ao deletar ação, tente novamente mais tarde!')
+        handleErrorResponse({
+          error: error,
+          errorReference: projectSceneActionsErrors,
+          defaultErrorMessage: 'Erro ao deletar ação, tente novamente mais tarde.'
+        })
       })
   }
 
