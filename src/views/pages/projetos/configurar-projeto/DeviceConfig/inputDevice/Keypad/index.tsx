@@ -1,4 +1,4 @@
-import { SyntheticEvent, useEffect, useRef, useState } from 'react'
+import { SyntheticEvent, useEffect, useState } from 'react'
 
 import { Box, Button, CardContent, CardHeader, CircularProgress, Grid, MenuItem, Typography } from '@mui/material'
 
@@ -51,10 +51,9 @@ const Keypad = ({ deviceData, refresh, setRefresh }: KeypadProps) => {
   const { handleAvaliableInputPorts, setRefreshMenu, refreshMenu, handleCheckDeviceSequence, handleCheckDevicePort } =
     useProjectMenu()
 
-  const deviceKeysRef = useRef(deviceKeys)
-
   const [ports, setPorts] = useState<any[] | null>(null)
   const [sequences, setSequences] = useState<any[] | null>(null)
+  const [isReady, setIsReady] = useState(false)
 
   const {
     control,
@@ -216,6 +215,10 @@ const Keypad = ({ deviceData, refresh, setRefresh }: KeypadProps) => {
 
         if (devicePort !== null && String(devicePort)) setValue('boardIndex', String(devicePort))
         if (deviceSequence !== null && String(deviceSequence)) setValue('index', String(deviceSequence))
+
+        setTimeout(() => {
+          setIsReady(true)
+        }, 500)
       }
     }
 
@@ -331,7 +334,7 @@ const Keypad = ({ deviceData, refresh, setRefresh }: KeypadProps) => {
               </Box>
             </Grid>
             <Grid item xs={12} justifyContent={'center'}>
-              {loadingDeviceKeys && (
+              {loadingDeviceKeys && !isReady && (
                 <Box
                   sx={{
                     display: 'flex',
@@ -347,9 +350,7 @@ const Keypad = ({ deviceData, refresh, setRefresh }: KeypadProps) => {
                   </Box>
                 </Box>
               )}
-              {deviceData && deviceKeys && deviceKeysRef.current !== deviceKeys && !loadingDeviceKeys && (
-                <Keys keys={deviceKeys} />
-              )}
+              {!loadingDeviceKeys && isReady && deviceKeys && <Keys keys={deviceKeys} />}
             </Grid>
           </Grid>
         </form>
