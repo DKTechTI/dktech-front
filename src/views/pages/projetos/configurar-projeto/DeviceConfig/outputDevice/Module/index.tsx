@@ -219,7 +219,7 @@ const Module = ({ deviceData, refresh, setRefresh }: ModuleProps) => {
 
         setTimeout(() => {
           setIsReady(true)
-        }, 500)
+        }, 300)
       }
     }
 
