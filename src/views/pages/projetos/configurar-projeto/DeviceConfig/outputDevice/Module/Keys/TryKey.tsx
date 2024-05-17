@@ -12,6 +12,7 @@ import { checkInitialValue } from 'src/utils/project'
 import { useAutoSave } from 'src/hooks/useAutoSave'
 
 import toast from 'react-hot-toast'
+import { api } from 'src/services/api'
 import useErrorHandling from 'src/hooks/useErrorHandling'
 import projectDevicesKeysErrors from 'src/errors/projectDevicesKeysErrors'
 
@@ -88,6 +89,21 @@ const TryKey = ({ keyData, operationType, environments }: TryKeyProps) => {
     }
 
     return null
+  }
+
+  const handleTryKey = (keyId: string) => {
+    api
+      .get(`/mqtt/identify-load/${keyId}`)
+      .then(response => {
+        if (response.status === 202) return toast.success('Tecla acionada com sucesso.')
+      })
+      .catch(error => {
+        handleErrorResponse({
+          error,
+          errorReference: projectDevicesKeysErrors,
+          defaultErrorMessage: 'Erro ao acionar a tecla, tente novamente mais tarde.'
+        })
+      })
   }
 
   const onSubmit = async (data: FormData) => {
@@ -214,6 +230,7 @@ const TryKey = ({ keyData, operationType, environments }: TryKeyProps) => {
             color='primary'
             sx={{ minWidth: '138px' }}
             startIcon={<IconifyIcon icon='tabler:wifi' />}
+            onClick={() => handleTryKey(keyData._id)}
           >
             Testar
           </Button>
