@@ -1,4 +1,4 @@
-import { SyntheticEvent, useEffect, useRef, useState } from 'react'
+import { SyntheticEvent, useEffect, useState } from 'react'
 
 import { Box, Button, CardContent, CardHeader, CircularProgress, Grid, MenuItem, Typography } from '@mui/material'
 
@@ -52,10 +52,9 @@ const Module = ({ deviceData, refresh, setRefresh }: ModuleProps) => {
   const { handleAvaliableOutputPorts, setRefreshMenu, refreshMenu, handleCheckDeviceSequence, handleCheckDevicePort } =
     useProjectMenu()
 
-  const deviceKeysRef = useRef(deviceKeys)
-
   const [ports, setPorts] = useState<any[] | null>(null)
   const [sequences, setSequences] = useState<any[] | null>(null)
+  const [isReady, setIsReady] = useState(false)
 
   const {
     control,
@@ -217,6 +216,10 @@ const Module = ({ deviceData, refresh, setRefresh }: ModuleProps) => {
 
         if (devicePort !== null && String(devicePort)) setValue('boardIndex', String(devicePort))
         if (deviceSequence !== null && String(deviceSequence)) setValue('index', String(deviceSequence))
+
+        setTimeout(() => {
+          setIsReady(true)
+        }, 500)
       }
     }
 
@@ -333,7 +336,7 @@ const Module = ({ deviceData, refresh, setRefresh }: ModuleProps) => {
               </Box>
             </Grid>
             <Grid item xs={12} justifyContent={'center'}>
-              {loadingDeviceKeys && (
+              {loadingDeviceKeys && !isReady && (
                 <Box
                   sx={{
                     display: 'flex',
@@ -349,7 +352,7 @@ const Module = ({ deviceData, refresh, setRefresh }: ModuleProps) => {
                   </Box>
                 </Box>
               )}
-              {deviceData && !loadingDeviceKeys && deviceKeysRef.current !== deviceKeys && <Keys keys={deviceKeys} />}
+              {!loadingDeviceKeys && isReady && deviceKeys && <Keys keys={deviceKeys} />}
             </Grid>
           </Grid>
         </form>
