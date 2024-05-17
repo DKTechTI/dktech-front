@@ -1,5 +1,7 @@
+import { useRouter } from 'next/router'
 import { Box, Grid, List, ListItem, Typography } from '@mui/material'
 import TryKey from './TryKey'
+import useGetDataApi from 'src/hooks/useGetDataApi'
 import { handleCheckOperationType } from 'src/utils/actions'
 
 interface KeysProps {
@@ -7,6 +9,14 @@ interface KeysProps {
 }
 
 const Keys = ({ keys }: KeysProps) => {
+  const router = useRouter()
+  const { id } = router.query
+
+  const { data: environments } = useGetDataApi<any>({
+    url: `projectEnvironments/by-project/${id}`,
+    callInit: Boolean(router.isReady)
+  })
+
   const handleShowKeys = (keys: any[]) => {
     return keys.map((key: any, index: number) => {
       const operationType = handleCheckOperationType(key.initialValue)
@@ -21,7 +31,9 @@ const Keys = ({ keys }: KeysProps) => {
             margin: '0 auto'
           }}
         >
-          <TryKey keyData={key} operationType={operationType || ''} />
+          {environments && (
+            <TryKey keyData={key} operationType={operationType || ''} environments={environments.data || []} />
+          )}
         </ListItem>
       )
     })

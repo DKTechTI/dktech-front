@@ -10,9 +10,8 @@ import { useForm, Controller } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
 import { checkInitialValue } from 'src/utils/project'
 import { useAutoSave } from 'src/hooks/useAutoSave'
+
 import toast from 'react-hot-toast'
-import useGetDataApi from 'src/hooks/useGetDataApi'
-import { useRouter } from 'next/router'
 import useErrorHandling from 'src/hooks/useErrorHandling'
 import projectDevicesKeysErrors from 'src/errors/projectDevicesKeysErrors'
 
@@ -34,22 +33,14 @@ interface FormData {
 interface TryKeyProps {
   keyData: any
   operationType: string
+  environments: any[]
 }
 
-const TryKey = ({ keyData, operationType }: TryKeyProps) => {
+const TryKey = ({ keyData, operationType, environments }: TryKeyProps) => {
   const matches = useMediaQuery('(min-width:1534px)')
-
-  const router = useRouter()
-
-  const { id } = router.query
 
   const { handleSaveOnStateChange } = useAutoSave()
   const { handleErrorResponse } = useErrorHandling()
-
-  const { data: environments } = useGetDataApi<any>({
-    url: `projectEnvironments/by-project/${id}`,
-    callInit: Boolean(router.isReady)
-  })
 
   const {
     control,
@@ -160,8 +151,8 @@ const TryKey = ({ keyData, operationType }: TryKeyProps) => {
               <MenuItem value=''>
                 <em>selecione</em>
               </MenuItem>
-              {environments?.data &&
-                environments?.data.map((environment: any) => (
+              {environments &&
+                environments.map((environment: any) => (
                   <MenuItem key={environment._id} value={environment._id}>
                     {environment.name}
                   </MenuItem>
