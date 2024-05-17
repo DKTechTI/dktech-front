@@ -218,7 +218,7 @@ const Keypad = ({ deviceData, refresh, setRefresh }: KeypadProps) => {
 
         setTimeout(() => {
           setIsReady(true)
-        }, 500)
+        }, 300)
       }
     }
 
