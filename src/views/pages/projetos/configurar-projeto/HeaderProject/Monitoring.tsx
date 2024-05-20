@@ -1,4 +1,4 @@
-import { SyntheticEvent, useEffect, useState } from 'react'
+import { SyntheticEvent, useCallback, useEffect, useState } from 'react'
 
 import { useRouter } from 'next/router'
 
@@ -16,7 +16,9 @@ import {
   TableCell,
   TableBody,
   Typography,
-  MenuItem
+  MenuItem,
+  Button,
+  Box
 } from '@mui/material'
 
 import CustomTextField from 'src/@core/components/mui/text-field'
@@ -28,12 +30,11 @@ import useGetDataApi from 'src/hooks/useGetDataApi'
 import * as yup from 'yup'
 import { useForm, Controller } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
+import { socketIO } from 'src/services/socketIO'
 
 // import { api } from 'src/services/api'
 
 // import useErrorHandling from 'src/hooks/useErrorHandling'
-
-import { useSocketIO } from 'src/hooks/useSocketIO'
 
 const schema = yup.object().shape({
   centralId: yup.string().required('Central obrigatória')
@@ -54,11 +55,10 @@ const Monitoring = ({ handleClose, open }: MonitoringProps) => {
 
   const { id } = router.query
 
-  const { initializeSocket, socket } = useSocketIO()
-
   // const { handleErrorResponse } = useErrorHandling()
 
   const [renderedData, setRenderedData] = useState<DataType[]>([])
+  const [connected, setConnected] = useState(false)
   const [centralId, setCentralId] = useState<string | null>(null)
 
   const { data: projectDevices } = useGetDataApi<any>({
@@ -70,7 +70,6 @@ const Monitoring = ({ handleClose, open }: MonitoringProps) => {
     control,
     reset,
     setValue,
-    watch,
     clearErrors,
     setError,
     formState: { errors }
@@ -80,6 +79,48 @@ const Monitoring = ({ handleClose, open }: MonitoringProps) => {
     resolver: yupResolver(schema)
   })
 
+  const handleOnLog = (id: string) => {
+    const lastLog = document.getElementById(id)
+    if (lastLog) {
+      lastLog.scrollIntoView({ behavior: 'smooth', block: 'end', inline: 'nearest' })
+    }
+  }
+
+  const handleClearLogs = () => {
+    setRenderedData([])
+  }
+
+  const handleListenCentral = () => {
+    socketIO.on('connect', () => {
+      socketIO.on('test', (data: any) => setRenderedData(prevRenderedData => [...prevRenderedData, data]))
+    })
+  }
+
+  const handleDisconnect = () => {
+    socketIO.off('test')
+    socketIO.off('connect')
+    socketIO.disconnect()
+  }
+
+  const handleConnection = () => {
+    setConnected(current => !current)
+
+    if (connected) {
+      socketIO.off('test')
+
+      return
+    }
+
+    socketIO.on('test', (data: any) => setRenderedData(prevRenderedData => [...prevRenderedData, data]))
+  }
+
+  const handleConnect = useCallback(() => {
+    setConnected(true)
+
+    socketIO.connect()
+    handleListenCentral()
+  }, [])
+
   const handleSetCentral = (event: SyntheticEvent) => {
     const { value } = event.target as HTMLInputElement
 
@@ -87,19 +128,13 @@ const Monitoring = ({ handleClose, open }: MonitoringProps) => {
       setCentralId(value)
       setValue('centralId', value)
       clearErrors('centralId')
+      handleClearLogs()
 
       return
     }
 
     setValue('centralId', value)
     setError('centralId', { type: 'manual', message: 'Central obrigatória' })
-  }
-
-  const handleOnLog = (id: string) => {
-    const lastLog = document.getElementById(id)
-    if (lastLog) {
-      lastLog.scrollIntoView({ behavior: 'smooth', block: 'end', inline: 'nearest' })
-    }
   }
 
   useEffect(() => {
@@ -112,32 +147,23 @@ const Monitoring = ({ handleClose, open }: MonitoringProps) => {
   useEffect(() => {
     if (!open) {
       reset()
-      socket?.disconnect()
       setRenderedData([])
       setCentralId(null)
 
       return
     }
-
-    centralId && initializeSocket('http://localhost:3002')
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [centralId, open])
 
   useEffect(() => {
-    if (socket) {
-      socket.on('connect', () => {
-        socket.on('test', (data: any) => setRenderedData(prevRenderedData => [...prevRenderedData, data]))
-      })
-
-      socket.on('disconnect', () => {
-        console.log('disconnected')
-      })
+    if (centralId && socketIO) {
+      handleConnect()
 
       return () => {
-        socket.disconnect()
+        handleDisconnect()
       }
     }
-  }, [socket, centralId])
+  }, [centralId, handleConnect])
 
   return (
     <Dialog
@@ -191,7 +217,7 @@ const Monitoring = ({ handleClose, open }: MonitoringProps) => {
                     {projectDevices?.data.map((device: any) => {
                       if (device.type === 'CENTRAL') {
                         return (
-                          <MenuItem key={device.centralId} value={device.centralId}>
+                          <MenuItem key={device.centralId} value={device.boardId}>
                             {device.name}
                           </MenuItem>
                         )
@@ -203,11 +229,19 @@ const Monitoring = ({ handleClose, open }: MonitoringProps) => {
             </Grid>
           </Grid>
         </form>
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'end', gap: 2, mt: 4 }}>
+          <Button variant='contained' onClick={handleClearLogs} disabled={!centralId}>
+            Limpar Logs
+          </Button>
+          <Button variant='contained' onClick={handleConnection} disabled={!centralId}>
+            {connected ? 'Parar' : 'Continuar'}
+          </Button>
+        </Box>
       </DialogContent>
       <DialogActions>
         <TableContainer
           sx={{
-            maxHeight: 500,
+            maxHeight: 400,
             height: '100% !important',
             overflowY: 'auto',
             '& .MuiTableCell-root': { borderBottom: 0 }
@@ -218,7 +252,7 @@ const Monitoring = ({ handleClose, open }: MonitoringProps) => {
               <TableRow
                 sx={{ '& .MuiTableCell-root': { py: 2, borderTop: theme => `1px solid ${theme.palette.divider}` } }}
               >
-                <TableCell>Central</TableCell>
+                <TableCell>Central {centralId}</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -226,7 +260,7 @@ const Monitoring = ({ handleClose, open }: MonitoringProps) => {
                 <TableRow>
                   <TableCell>
                     <Typography noWrap sx={{ fontWeight: 500, color: 'text.secondary' }}>
-                      {watch('centralId') ? 'Buscando dados...' : 'Escolha uma central para monitorar'}
+                      {centralId ? 'Buscando dados...' : 'Escolha uma central para monitorar'}
                     </Typography>
                   </TableCell>
                 </TableRow>
