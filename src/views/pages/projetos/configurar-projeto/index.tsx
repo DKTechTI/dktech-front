@@ -10,13 +10,13 @@ import KeyConfig from './DeviceConfig/inputDevice/KeyConfig'
 import { useDeviceKeys } from 'src/hooks/useDeviceKeys'
 
 export default function ProjectConfig() {
-  const { project, projectDeviceId } = useProject()
+  const { project, projectDeviceId, loadingProject, refreshProject, setRefreshProject } = useProject()
   const { projectDeviceModuleType } = useDeviceKeys()
 
   return (
     <Card>
-      {project ? (
-        HeaderProject({ projectName: project.data.name, clientName: project.data.clientName })
+      {!loadingProject && project?.data ? (
+        <HeaderProject data={project.data} refresh={refreshProject} setRefresh={setRefreshProject} />
       ) : (
         <LinearProgress
           sx={{
