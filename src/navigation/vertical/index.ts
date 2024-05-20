@@ -62,16 +62,6 @@ const navigation = (): VerticalNavItemsType => {
       avatarColor: 'success'
     },
     {
-      title: 'Monitoramento',
-      subtitle: 'ver Monitoramento',
-      path: '/monitoramento',
-      action: 'read',
-      auth: true,
-      subject: 'client',
-      icon: 'tabler:eye-pin',
-      avatarColor: 'warning'
-    },
-    {
       title: 'Minha Conta',
       path: '/minha-conta',
       action: 'read',
