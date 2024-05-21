@@ -1,4 +1,4 @@
-import { SyntheticEvent, useEffect, useState } from 'react'
+import { SyntheticEvent, memo, useEffect, useState } from 'react'
 
 import { useRouter } from 'next/router'
 
@@ -77,8 +77,8 @@ interface CentralStatusType {
 }
 
 const centralStatusObj: CentralStatusType = {
-  online: '#28C76F',
-  offline: '#EA5455'
+  true: '#28C76F',
+  false: '#EA5455'
 }
 
 interface EditCentralProps {
@@ -94,12 +94,16 @@ const EditCentral = ({ handleClose, open, refresh, setRefresh, projectDeviceId }
   const { copyToClipboard } = useClipboard()
   const { handleErrorResponse } = useErrorHandling()
 
+  const [deleteDialogOpen, setDeletedDialogOpen] = useState<boolean>(false)
+
+  const [online, setOnline] = useState(false)
+  const [loadingCentral, setLoadingCentral] = useState(false)
+  const [refreshCentral, setRefreshCentral] = useState(false)
+
   const { data: projectDevice } = useGetDataApi<any>({
     url: `/projectDevices/${projectDeviceId}`,
     callInit: router.isReady && open
   })
-
-  const [deleteDialogOpen, setDeletedDialogOpen] = useState<boolean>(false)
 
   const {
     control,
@@ -182,10 +186,10 @@ const EditCentral = ({ handleClose, open, refresh, setRefresh, projectDeviceId }
   }
 
   useEffect(() => {
-    if (!open) {
-      reset()
-    }
+    if (!open) reset()
+  }, [open, reset])
 
+  useEffect(() => {
     if (projectDevice?.data) {
       reset({
         projectId: projectDevice?.data.projectId,
@@ -201,7 +205,42 @@ const EditCentral = ({ handleClose, open, refresh, setRefresh, projectDeviceId }
         port: projectDevice?.data.port
       })
     }
-  }, [open, reset, projectDevice])
+  }, [reset, projectDevice])
+
+  useEffect(() => {
+    if (projectDevice?.data && open) {
+      const controllerApi = new AbortController()
+
+      setLoadingCentral(true)
+
+      api
+        .get(`/mqtt/device-status`, {
+          signal: controllerApi.signal,
+          params: { boardId: projectDevice?.data.boardId, projectId: projectDevice?.data.projectId }
+        })
+        .then(response => {
+          setOnline(response.data)
+          setLoadingCentral(false)
+        })
+        .catch((error: any) => {
+          const responseError: { [key: string]: string } = {
+            ERR_CANCELED: 'Requisição cancelada'
+          }
+
+          setLoadingCentral(false)
+          !responseError[error.code] && toast.error('Erro ao buscar status da central, tente novamente mais tarde.')
+        })
+
+      const interval = setInterval(() => {
+        setRefreshCentral(!refreshCentral)
+      }, 20000)
+
+      return () => {
+        clearInterval(interval)
+        controllerApi.abort()
+      }
+    }
+  }, [refreshCentral, projectDevice, open])
 
   if (!projectDevice) {
     return null
@@ -245,11 +284,12 @@ const EditCentral = ({ handleClose, open, refresh, setRefresh, projectDeviceId }
             <Grid item xs={12} sm={6}>
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                 <Chip
-                  icon={<IconifyIcon icon='tabler:circle-filled' color={centralStatusObj['online']} />}
-                  label={'Online'}
+                  icon={<IconifyIcon icon='tabler:circle-filled' color={centralStatusObj[String(online)]} />}
+                  label={online ? 'Online' : 'Offline'}
                   variant='outlined'
                   deleteIcon={<IconifyIcon icon='tabler:refresh' />}
-                  onDelete={() => console.log('refresh')}
+                  onDelete={() => setRefreshCentral(!refreshCentral)}
+                  disabled={loadingCentral}
                   sx={{
                     width: 'fit-content',
                     color: '#d0d4f1c7',
@@ -462,4 +502,4 @@ const EditCentral = ({ handleClose, open, refresh, setRefresh, projectDeviceId }
   )
 }
 
-export default EditCentral
+export default memo(EditCentral)
