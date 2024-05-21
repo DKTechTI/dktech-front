@@ -1,4 +1,4 @@
-import { SyntheticEvent, useEffect, useState } from 'react'
+import { SyntheticEvent, memo, useEffect, useState } from 'react'
 
 import { useRouter } from 'next/router'
 
@@ -97,8 +97,13 @@ const EditCentral = ({ handleClose, open, refresh, setRefresh, projectDeviceId }
   const [deleteDialogOpen, setDeletedDialogOpen] = useState<boolean>(false)
 
   const [online, setOnline] = useState(false)
+<<<<<<< HEAD
   const [loadingCentralStatus, setLoadingCentralStatus] = useState(false)
   const [refreshCentralStatus, setRefreshCentralStatus] = useState(false)
+=======
+  const [loadingCentral, setLoadingCentral] = useState(false)
+  const [refreshCentral, setRefreshCentral] = useState(false)
+>>>>>>> 2d66449 (feat: Check status on edit central)
 
   const { data: projectDevice } = useGetDataApi<any>({
     url: `/projectDevices/${projectDeviceId}`,
@@ -211,7 +216,11 @@ const EditCentral = ({ handleClose, open, refresh, setRefresh, projectDeviceId }
     if (projectDevice?.data && open) {
       const controllerApi = new AbortController()
 
+<<<<<<< HEAD
       setLoadingCentralStatus(true)
+=======
+      setLoadingCentral(true)
+>>>>>>> 2d66449 (feat: Check status on edit central)
 
       api
         .get(`/mqtt/device-status`, {
@@ -220,18 +229,31 @@ const EditCentral = ({ handleClose, open, refresh, setRefresh, projectDeviceId }
         })
         .then(response => {
           setOnline(response.data)
+<<<<<<< HEAD
+=======
+          setLoadingCentral(false)
+>>>>>>> 2d66449 (feat: Check status on edit central)
         })
         .catch((error: any) => {
           const responseError: { [key: string]: string } = {
             ERR_CANCELED: 'Requisição cancelada'
           }
 
+<<<<<<< HEAD
           !responseError[error.code] && toast.error('Erro ao buscar status da central, tente novamente mais tarde.')
         })
         .finally(() => setLoadingCentralStatus(false))
 
       const interval = setInterval(() => {
         setRefreshCentralStatus(!refreshCentralStatus)
+=======
+          setLoadingCentral(false)
+          !responseError[error.code] && toast.error('Erro ao buscar status da central, tente novamente mais tarde.')
+        })
+
+      const interval = setInterval(() => {
+        setRefreshCentral(!refreshCentral)
+>>>>>>> 2d66449 (feat: Check status on edit central)
       }, 20000)
 
       return () => {
@@ -239,7 +261,11 @@ const EditCentral = ({ handleClose, open, refresh, setRefresh, projectDeviceId }
         controllerApi.abort()
       }
     }
+<<<<<<< HEAD
   }, [refreshCentralStatus, projectDevice, open])
+=======
+  }, [refreshCentral, projectDevice, open])
+>>>>>>> 2d66449 (feat: Check status on edit central)
 
   if (!projectDevice) {
     return null
@@ -287,8 +313,13 @@ const EditCentral = ({ handleClose, open, refresh, setRefresh, projectDeviceId }
                   label={online ? 'Online' : 'Offline'}
                   variant='outlined'
                   deleteIcon={<IconifyIcon icon='tabler:refresh' />}
+<<<<<<< HEAD
                   onDelete={() => setRefreshCentralStatus(!refreshCentralStatus)}
                   disabled={loadingCentralStatus}
+=======
+                  onDelete={() => setRefreshCentral(!refreshCentral)}
+                  disabled={loadingCentral}
+>>>>>>> 2d66449 (feat: Check status on edit central)
                   sx={{
                     width: 'fit-content',
                     color: '#d0d4f1c7',
@@ -501,4 +532,4 @@ const EditCentral = ({ handleClose, open, refresh, setRefresh, projectDeviceId }
   )
 }
 
-export default EditCentral
+export default memo(EditCentral)
