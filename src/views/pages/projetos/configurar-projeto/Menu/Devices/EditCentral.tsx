@@ -1,4 +1,4 @@
-import { SyntheticEvent, memo, useEffect, useState } from 'react'
+import { SyntheticEvent, useEffect, useState } from 'react'
 
 import { useRouter } from 'next/router'
 
@@ -98,12 +98,17 @@ const EditCentral = ({ handleClose, open, refresh, setRefresh, projectDeviceId }
 
   const [online, setOnline] = useState(false)
 <<<<<<< HEAD
+<<<<<<< HEAD
   const [loadingCentralStatus, setLoadingCentralStatus] = useState(false)
   const [refreshCentralStatus, setRefreshCentralStatus] = useState(false)
 =======
   const [loadingCentral, setLoadingCentral] = useState(false)
   const [refreshCentral, setRefreshCentral] = useState(false)
 >>>>>>> 2d66449 (feat: Check status on edit central)
+=======
+  const [loadingCentralStatus, setLoadingCentralStatus] = useState(false)
+  const [refreshCentralStatus, setRefreshCentralStatus] = useState(false)
+>>>>>>> e2d7455 (feat: Check status on create central)
 
   const { data: projectDevice } = useGetDataApi<any>({
     url: `/projectDevices/${projectDeviceId}`,
@@ -217,10 +222,14 @@ const EditCentral = ({ handleClose, open, refresh, setRefresh, projectDeviceId }
       const controllerApi = new AbortController()
 
 <<<<<<< HEAD
+<<<<<<< HEAD
       setLoadingCentralStatus(true)
 =======
       setLoadingCentral(true)
 >>>>>>> 2d66449 (feat: Check status on edit central)
+=======
+      setLoadingCentralStatus(true)
+>>>>>>> e2d7455 (feat: Check status on create central)
 
       api
         .get(`/mqtt/device-status`, {
@@ -230,15 +239,19 @@ const EditCentral = ({ handleClose, open, refresh, setRefresh, projectDeviceId }
         .then(response => {
           setOnline(response.data)
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
           setLoadingCentral(false)
 >>>>>>> 2d66449 (feat: Check status on edit central)
+=======
+>>>>>>> e2d7455 (feat: Check status on create central)
         })
         .catch((error: any) => {
           const responseError: { [key: string]: string } = {
             ERR_CANCELED: 'Requisição cancelada'
           }
 
+<<<<<<< HEAD
 <<<<<<< HEAD
           !responseError[error.code] && toast.error('Erro ao buscar status da central, tente novamente mais tarde.')
         })
@@ -248,12 +261,19 @@ const EditCentral = ({ handleClose, open, refresh, setRefresh, projectDeviceId }
         setRefreshCentralStatus(!refreshCentralStatus)
 =======
           setLoadingCentral(false)
+=======
+>>>>>>> e2d7455 (feat: Check status on create central)
           !responseError[error.code] && toast.error('Erro ao buscar status da central, tente novamente mais tarde.')
         })
+        .finally(() => setLoadingCentralStatus(false))
 
       const interval = setInterval(() => {
+<<<<<<< HEAD
         setRefreshCentral(!refreshCentral)
 >>>>>>> 2d66449 (feat: Check status on edit central)
+=======
+        setRefreshCentralStatus(!refreshCentralStatus)
+>>>>>>> e2d7455 (feat: Check status on create central)
       }, 20000)
 
       return () => {
@@ -262,10 +282,14 @@ const EditCentral = ({ handleClose, open, refresh, setRefresh, projectDeviceId }
       }
     }
 <<<<<<< HEAD
+<<<<<<< HEAD
   }, [refreshCentralStatus, projectDevice, open])
 =======
   }, [refreshCentral, projectDevice, open])
 >>>>>>> 2d66449 (feat: Check status on edit central)
+=======
+  }, [refreshCentralStatus, projectDevice, open])
+>>>>>>> e2d7455 (feat: Check status on create central)
 
   if (!projectDevice) {
     return null
@@ -314,12 +338,17 @@ const EditCentral = ({ handleClose, open, refresh, setRefresh, projectDeviceId }
                   variant='outlined'
                   deleteIcon={<IconifyIcon icon='tabler:refresh' />}
 <<<<<<< HEAD
+<<<<<<< HEAD
                   onDelete={() => setRefreshCentralStatus(!refreshCentralStatus)}
                   disabled={loadingCentralStatus}
 =======
                   onDelete={() => setRefreshCentral(!refreshCentral)}
                   disabled={loadingCentral}
 >>>>>>> 2d66449 (feat: Check status on edit central)
+=======
+                  onDelete={() => setRefreshCentralStatus(!refreshCentralStatus)}
+                  disabled={loadingCentralStatus}
+>>>>>>> e2d7455 (feat: Check status on create central)
                   sx={{
                     width: 'fit-content',
                     color: '#d0d4f1c7',
@@ -532,4 +561,4 @@ const EditCentral = ({ handleClose, open, refresh, setRefresh, projectDeviceId }
   )
 }
 
-export default memo(EditCentral)
+export default EditCentral
