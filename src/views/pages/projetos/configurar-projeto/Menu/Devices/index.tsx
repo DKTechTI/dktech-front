@@ -1,12 +1,11 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import { useRouter } from 'next/router'
 
 import { Typography, Box } from '@mui/material'
 import CloseIcon from '@mui/icons-material/Close'
 import { TreeItem } from '@mui/x-tree-view/TreeItem'
 import EditNoteIcon from '@mui/icons-material/EditNote'
 import AddCircleIcon from '@mui/icons-material/AddCircle'
-import HighlightOffIcon from '@mui/icons-material/HighlightOff'
-import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline'
 
 import { useProject } from 'src/hooks/useProject'
 import { useDeviceKeys } from 'src/hooks/useDeviceKeys'
@@ -20,12 +19,25 @@ import { verifyDeviceType } from 'src/utils/verifyDevice'
 import DeleteDevice from './Delete'
 import AddCentral from './AddCentral'
 import EditCentral from './EditCentral'
+import { api } from 'src/services/api'
+
+interface CentralStatusType {
+  [key: string]: string
+}
+
+const centralStatusObj: CentralStatusType = {
+  true: '#28C76F',
+  false: '#EA5455'
+}
 
 interface DevicesProps {
   devices: any
 }
 
 const Devices = ({ devices }: DevicesProps) => {
+  const router = useRouter()
+  const { id: projectId } = router.query
+
   const { setProjectDeviceId } = useProject()
   const { setKeyId, setProjectDeviceId: setProjectDeviceIdOnDeviceKeys } = useDeviceKeys()
 
@@ -36,6 +48,42 @@ const Devices = ({ devices }: DevicesProps) => {
   const [showDeleteDialog, setShowDeleteDialog] = useState<boolean>(false)
 
   const [deviceId, setDeviceId] = useState<string>('')
+  const [centralsStatus, setCentralsStatus] = useState<any[]>([])
+
+  useEffect(() => {
+    const fetchCentralsStatus = () => {
+      const centralsCheck = devices.map((device: any) =>
+        api.get('/mqtt/device-status', {
+          params: {
+            boardId: device.boardId,
+            projectId: projectId
+          }
+        })
+      )
+
+      Promise.all(centralsCheck)
+        .then(response => {
+          const centralsChecked = devices.map((device: any, index: number) => ({
+            [device.boardId]: response[index].data
+          }))
+
+          setCentralsStatus(centralsChecked)
+        })
+        .catch(() => {
+          setCentralsStatus([])
+        })
+    }
+
+    fetchCentralsStatus()
+
+    const interval = setInterval(() => {
+      fetchCentralsStatus()
+    }, 30000)
+
+    return () => {
+      clearInterval(interval)
+    }
+  }, [devices, projectId])
 
   return (
     <>
@@ -92,20 +140,14 @@ const Devices = ({ devices }: DevicesProps) => {
                 label={
                   <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                      {central.connectionStatus ? (
-                        <CheckCircleOutlineIcon
-                          color={'success'}
-                          sx={{
-                            fontSize: 16
-                          }}
+                      {centralsStatus.length > 0 ? (
+                        <IconifyIcon
+                          icon='tabler:circle-filled'
+                          width='0.7em'
+                          color={centralStatusObj[centralsStatus[index][central.boardId]]}
                         />
                       ) : (
-                        <HighlightOffIcon
-                          color={'error'}
-                          sx={{
-                            fontSize: 16
-                          }}
-                        />
+                        <IconifyIcon icon='tabler:circle-filled' width='0.7em' color={centralStatusObj['false']} />
                       )}
                       <Typography component={'span'} variant={'h6'}>
                         {central.projectDeviceName}
