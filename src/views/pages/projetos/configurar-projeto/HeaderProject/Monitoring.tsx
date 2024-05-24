@@ -1,5 +1,4 @@
-import { SyntheticEvent, useCallback, useEffect, useState } from 'react'
-
+import { SyntheticEvent, useCallback, useEffect, useState, useRef } from 'react'
 import { useRouter } from 'next/router'
 
 import {
@@ -20,30 +19,18 @@ import {
   Button,
   Box
 } from '@mui/material'
-
 import CustomTextField from 'src/@core/components/mui/text-field'
 
 import useGetDataApi from 'src/hooks/useGetDataApi'
-
-// import toast from 'react-hot-toast'
+import { useWebSocket } from 'src/hooks/useWebSocket'
 
 import * as yup from 'yup'
 import { useForm, Controller } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
-import { socketIO } from 'src/services/socketIO'
-
-// import { api } from 'src/services/api'
-
-// import useErrorHandling from 'src/hooks/useErrorHandling'
 
 const schema = yup.object().shape({
   centralId: yup.string().required('Central obrigatória')
 })
-
-interface DataType {
-  message: string
-  date: string
-}
 
 interface MonitoringProps {
   open: boolean
@@ -52,19 +39,19 @@ interface MonitoringProps {
 
 const Monitoring = ({ handleClose, open }: MonitoringProps) => {
   const router = useRouter()
+  const { id: projectId } = router.query
 
-  const { id } = router.query
-
-  // const { handleErrorResponse } = useErrorHandling()
-
-  const [renderedData, setRenderedData] = useState<DataType[]>([])
-  const [connected, setConnected] = useState(false)
   const [centralId, setCentralId] = useState<string | null>(null)
+  const [socketUrl, setSocketUrl] = useState<string | null>(null)
+
+  const firstRender = useRef(true)
 
   const { data: projectDevices } = useGetDataApi<any>({
-    url: `/projectDevices/by-project/${id}`,
+    url: `/projectDevices/by-project/${projectId}`,
     callInit: router.isReady && open
   })
+
+  const { ws, readyState, messages, error, handleClearMessages } = useWebSocket({ url: socketUrl })
 
   const {
     control,
@@ -79,47 +66,22 @@ const Monitoring = ({ handleClose, open }: MonitoringProps) => {
     resolver: yupResolver(schema)
   })
 
+  const handleReturnFeedback = (error: string, centralId: string) => {
+    if (error) return error
+
+    if (!centralId) return 'Escolha uma central para monitorar.'
+
+    if (readyState !== WebSocket.OPEN && centralId) return 'Conexão Pausada.'
+
+    return 'Buscando dados...'
+  }
+
   const handleOnLog = (id: string) => {
     const lastLog = document.getElementById(id)
     if (lastLog) {
       lastLog.scrollIntoView({ behavior: 'smooth', block: 'end', inline: 'nearest' })
     }
   }
-
-  const handleClearLogs = () => {
-    setRenderedData([])
-  }
-
-  const handleListenCentral = () => {
-    socketIO.on('connect', () => {
-      socketIO.on('test', (data: any) => setRenderedData(prevRenderedData => [...prevRenderedData, data]))
-    })
-  }
-
-  const handleDisconnect = () => {
-    socketIO.off('test')
-    socketIO.off('connect')
-    socketIO.disconnect()
-  }
-
-  const handleConnection = () => {
-    setConnected(current => !current)
-
-    if (connected) {
-      socketIO.off('test')
-
-      return
-    }
-
-    socketIO.on('test', (data: any) => setRenderedData(prevRenderedData => [...prevRenderedData, data]))
-  }
-
-  const handleConnect = useCallback(() => {
-    setConnected(true)
-
-    socketIO.connect()
-    handleListenCentral()
-  }, [])
 
   const handleSetCentral = (event: SyntheticEvent) => {
     const { value } = event.target as HTMLInputElement
@@ -128,7 +90,7 @@ const Monitoring = ({ handleClose, open }: MonitoringProps) => {
       setCentralId(value)
       setValue('centralId', value)
       clearErrors('centralId')
-      handleClearLogs()
+      handleClearMessages()
 
       return
     }
@@ -137,44 +99,53 @@ const Monitoring = ({ handleClose, open }: MonitoringProps) => {
     setError('centralId', { type: 'manual', message: 'Central obrigatória' })
   }
 
+  const handleConnect = useCallback(() => {
+    setSocketUrl(
+      `${process.env.NEXT_PUBLIC_MQTT_URL}/${process.env.NEXT_PUBLIC_MQTT_PATH}?boardId=${centralId}&projectId=${projectId}`
+    )
+  }, [centralId, projectId])
+
+  const handleDisconnect = useCallback(() => {
+    if (readyState === WebSocket.OPEN && !firstRender.current) {
+      ws?.close()
+      setSocketUrl(null)
+    }
+  }, [readyState, ws])
+
+  const handleConnection = () => {
+    readyState === WebSocket.OPEN ? handleDisconnect() : handleConnect()
+  }
+
+  const handleSetDefaultValues = useCallback(() => {
+    reset()
+    setSocketUrl(null)
+    setCentralId(null)
+    handleClearMessages()
+    handleDisconnect()
+    firstRender.current = true
+  }, [reset, handleClearMessages, handleDisconnect])
+
   useEffect(() => {
-    if (renderedData.length > 0) {
-      const lastItemId = renderedData[renderedData.length - 1].date
+    if (messages.length > 0) {
+      const lastItemId = messages[messages.length - 1].date
       handleOnLog(lastItemId)
     }
-  }, [renderedData])
+  }, [messages])
 
   useEffect(() => {
-    if (!open) {
-      reset()
-      setRenderedData([])
-      setCentralId(null)
+    if (!open && !firstRender.current) return handleSetDefaultValues()
 
-      return
-    }
+    firstRender.current = false
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [centralId, open])
+  }, [open])
 
   useEffect(() => {
-    if (centralId && socketIO) {
-      handleConnect()
-
-      return () => {
-        handleDisconnect()
-      }
-    }
+    if (centralId) handleConnect()
   }, [centralId, handleConnect])
 
   return (
-    <Dialog
-      open={open}
-      onClose={handleClose}
-      aria-labelledby='user-view-edit'
-      aria-describedby='user-view-edit-description'
-      sx={{ '& .MuiPaper-root': { width: '100%', maxWidth: 1000 } }}
-    >
+    <Dialog open={open} onClose={handleClose} sx={{ '& .MuiPaper-root': { width: '100%', maxWidth: 1000 } }}>
       <DialogTitle
-        id='user-view-edit'
         sx={{
           textAlign: 'center',
           fontSize: '1.5rem !important',
@@ -208,6 +179,7 @@ const Monitoring = ({ handleClose, open }: MonitoringProps) => {
                     value={value || ''}
                     onBlur={onBlur}
                     onChange={e => handleSetCentral(e)}
+                    disabled={readyState === WebSocket.OPEN}
                     error={Boolean(errors.centralId)}
                     {...(errors.centralId && { helperText: errors.centralId.message })}
                   >
@@ -230,11 +202,11 @@ const Monitoring = ({ handleClose, open }: MonitoringProps) => {
           </Grid>
         </form>
         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'end', gap: 2, mt: 4 }}>
-          <Button variant='contained' onClick={handleClearLogs} disabled={!centralId}>
+          <Button variant='contained' onClick={handleClearMessages} disabled={!centralId}>
             Limpar Logs
           </Button>
-          <Button variant='contained' onClick={handleConnection} disabled={!centralId}>
-            {connected ? 'Parar' : 'Continuar'}
+          <Button variant='contained' onClick={handleConnection} disabled={!centralId || !!error}>
+            {readyState === WebSocket.OPEN ? 'Parar' : 'Continuar'}
           </Button>
         </Box>
       </DialogContent>
@@ -256,17 +228,16 @@ const Monitoring = ({ handleClose, open }: MonitoringProps) => {
               </TableRow>
             </TableHead>
             <TableBody>
-              {(!renderedData || renderedData.length === 0) && (
+              {(!messages || messages.length === 0) && (
                 <TableRow>
                   <TableCell>
                     <Typography noWrap sx={{ fontWeight: 500, color: 'text.secondary' }}>
-                      {centralId ? 'Buscando dados...' : 'Escolha uma central para monitorar'}
+                      {handleReturnFeedback(error || '', centralId || '')}
                     </Typography>
                   </TableCell>
                 </TableRow>
               )}
-
-              {renderedData.map((row: DataType) => {
+              {messages.map(row => {
                 return (
                   <TableRow
                     key={row.date}
