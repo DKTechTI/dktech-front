@@ -19,6 +19,7 @@ import AddInputDevice from './AddInputDevice'
 import AddOutputDevice from './AddOutputDevice'
 
 import { Draggable, Droppable } from 'react-beautiful-dnd'
+import toast from 'react-hot-toast'
 
 interface EnvironmentsProps {
   environments: any
@@ -38,6 +39,10 @@ const Environments = ({ environments }: EnvironmentsProps) => {
 
   const [showAddInputDevice, setShowAddInputDevice] = useState<boolean>(false)
   const [showAddOutputDevice, setShowAddOutputDevice] = useState<boolean>(false)
+
+  const handleCheckEnvironmentEmpty = (environment: any) => {
+    return environment.inputs.length === 0 && environment.outputs.length === 0
+  }
 
   return (
     <>
@@ -61,9 +66,7 @@ const Environments = ({ environments }: EnvironmentsProps) => {
         open={showDeleteDialog}
         setOpen={setShowDeleteDialog}
         question={'Deseja realmente deletar este ambiente?'}
-        description={
-          'O ambiente pode estar conectado a dispositivos, deseja continuar? Esta ação não poderá ser desfeita!'
-        }
+        description={'Esta ação não poderá ser desfeita, deseja continuar?'}
       />
 
       <AddInputDevice
@@ -126,6 +129,10 @@ const Environments = ({ environments }: EnvironmentsProps) => {
                     <CloseIcon
                       onClick={e => {
                         e.stopPropagation()
+                        const isEmpty = handleCheckEnvironmentEmpty(environment)
+
+                        if (!isEmpty) return toast.error('O ambiente não está vazio, remova os dispositivos antes!')
+
                         setEnvironmentId(environment.environmentId)
                         setShowDeleteDialog(true)
                       }}

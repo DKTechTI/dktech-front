@@ -153,7 +153,7 @@ const Monitoring = ({ handleClose, open }: MonitoringProps) => {
           pt: theme => [`${theme.spacing(8)} !important`, `${theme.spacing(12.5)} !important`]
         }}
       >
-        Adicionar Dispositivo de Entrada
+        Monitoramento
       </DialogTitle>
       <DialogContent
         sx={{
@@ -162,7 +162,7 @@ const Monitoring = ({ handleClose, open }: MonitoringProps) => {
         }}
       >
         <DialogContentText variant='body2' id='user-view-edit-description' sx={{ textAlign: 'center', mb: 7 }}>
-          Selecione o dispositivo de entrada que deseja adicionar e o ambiente que deseja associar
+          Selecione a central que deseja monitorar.
         </DialogContentText>
         <form noValidate autoComplete='off'>
           <Grid container spacing={6}>
