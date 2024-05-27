@@ -54,7 +54,7 @@ const schema = yup.object().shape({
   cellphone: yup.string(),
   stateRegistration: yup.string(),
   municipalRegistration: yup.string(),
-  cep: yup.string().required('CEP obrigatório'),
+  cep: yup.string().required('CEP obrigatório').matches(/([\d]{2})\.?([\d]{3})\-?([\d]{3})/, 'CEP inválido'),
   city: yup.string().required('Cidade obrigatória'),
   address: yup.string().required('Endereço obrigatório'),
   neighborhood: yup.string().required('Bairro obrigatório'),
