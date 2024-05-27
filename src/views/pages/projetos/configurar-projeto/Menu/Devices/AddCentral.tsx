@@ -160,9 +160,9 @@ const AddCentral = ({ handleClose, open, refresh, setRefresh }: AddCentralProps)
       .post('/projectDevices', formData)
       .then(response => {
         if (response.status === 201) {
+          setRefresh(!refresh)
           handleClose()
           toast.success('Central adicionada com sucesso!')
-          setRefresh(!refresh)
         }
       })
       .catch(error => {

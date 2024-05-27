@@ -35,6 +35,7 @@ interface DevicesProps {
 }
 
 const Devices = ({ devices }: DevicesProps) => {
+  console.log(devices)
   const router = useRouter()
   const { id: projectId } = router.query
 
@@ -83,7 +84,7 @@ const Devices = ({ devices }: DevicesProps) => {
     return () => {
       clearInterval(interval)
     }
-  }, [devices, projectId])
+  }, [devices, projectId, refreshMenu])
 
   return (
     <>
@@ -144,7 +145,7 @@ const Devices = ({ devices }: DevicesProps) => {
                         <IconifyIcon
                           icon='tabler:circle-filled'
                           width='0.7em'
-                          color={centralStatusObj[centralsStatus[index][central.boardId]]}
+                          color={centralStatusObj[centralsStatus[index][central?.boardId]] || centralStatusObj['false']}
                         />
                       ) : (
                         <IconifyIcon icon='tabler:circle-filled' width='0.7em' color={centralStatusObj['false']} />

@@ -6,6 +6,7 @@ import Monitoring from './Monitoring'
 import BackdropConfig from '../DeviceConfig/BackdropConfig'
 import { api } from 'src/services/api'
 import toast from 'react-hot-toast'
+import { AxiosError } from 'axios'
 
 interface HeaderProjectProps {
   data: any
@@ -21,6 +22,7 @@ const HeaderProject = ({ data, refresh, setRefresh }: HeaderProjectProps) => {
   const [success, setSuccess] = useState(false)
 
   const hamdleConfigProject = (projectId: string) => {
+    let hasError: Error | AxiosError | null = null
     setOpenBackdrop(true)
     setSuccess(false)
 
@@ -29,13 +31,15 @@ const HeaderProject = ({ data, refresh, setRefresh }: HeaderProjectProps) => {
       .then(() => {
         setSuccess(true)
       })
-      .catch(() => {
+      .catch(error => {
+        hasError = error
         toast.error('Erro ao enviar configuração')
       })
       .finally(() => {
         setFinished(true)
 
         setTimeout(() => {
+          console.log(hasError)
           setOpenBackdrop(false)
           setRefresh(!refresh)
           setFinished(false)
