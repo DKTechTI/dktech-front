@@ -5,8 +5,11 @@ import Edit from './Edit'
 import Monitoring from './Monitoring'
 import BackdropConfig from '../DeviceConfig/BackdropConfig'
 import { api } from 'src/services/api'
-import toast from 'react-hot-toast'
-import { AxiosError } from 'axios'
+
+interface ErrorsProps {
+  status: string
+  reason: string
+}
 
 interface HeaderProjectProps {
   data: any
@@ -20,9 +23,17 @@ const HeaderProject = ({ data, refresh, setRefresh }: HeaderProjectProps) => {
   const [openMonitoring, setOpenMonitoring] = useState(false)
   const [finished, setFinished] = useState(false)
   const [success, setSuccess] = useState(false)
+  const [errors, setErrors] = useState<ErrorsProps[]>([])
+
+  const handleCloseBackdrop = () => {
+    setOpenBackdrop(false)
+    setRefresh(!refresh)
+    setFinished(false)
+    setErrors([])
+  }
 
   const hamdleConfigProject = (projectId: string) => {
-    let hasError: Error | AxiosError | null = null
+    let hasError = false
     setOpenBackdrop(true)
     setSuccess(false)
 
@@ -32,17 +43,18 @@ const HeaderProject = ({ data, refresh, setRefresh }: HeaderProjectProps) => {
         setSuccess(true)
       })
       .catch(error => {
-        hasError = error
-        toast.error('Erro ao enviar configuração')
+        hasError = true
+        setErrors(error.response.data)
       })
       .finally(() => {
         setFinished(true)
 
         setTimeout(() => {
-          console.log(hasError)
-          setOpenBackdrop(false)
-          setRefresh(!refresh)
-          setFinished(false)
+          if (!hasError) {
+            setOpenBackdrop(false)
+            setRefresh(!refresh)
+            setFinished(false)
+          }
         }, 5000)
       })
   }
@@ -57,7 +69,13 @@ const HeaderProject = ({ data, refresh, setRefresh }: HeaderProjectProps) => {
         setRefresh={setRefresh}
       />
       <Monitoring open={openMonitoring} handleClose={() => setOpenMonitoring(false)} />
-      <BackdropConfig open={openBackdrop} finished={finished} success={success} />
+      <BackdropConfig
+        open={openBackdrop}
+        finished={finished}
+        success={success}
+        errors={errors}
+        handleClose={handleCloseBackdrop}
+      />
 
       <Box
         sx={{
