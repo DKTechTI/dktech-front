@@ -4,8 +4,22 @@ import { useRouter } from 'next/router'
 
 import useGetDataApi from 'src/hooks/useGetDataApi'
 
+interface ProjectDataProps {
+  _id: string
+  resellerId: string
+  clientId: string
+  name: string
+  clientName: string
+  status: string
+}
+
+interface ProjectResponseProps {
+  message: string
+  data: ProjectDataProps
+}
+
 type projectValuesType = {
-  project: null | any
+  project: null | ProjectResponseProps
   loadingProject: boolean
   refreshProject: boolean
   setRefreshProject: (value: boolean) => void
@@ -41,7 +55,7 @@ const ProjectProvider = ({ children }: Props) => {
     setRefresh: setRefreshProject,
     loading: loadingProject,
     error: errorProject
-  } = useGetDataApi<any>({
+  } = useGetDataApi<ProjectResponseProps>({
     url: `/projects/${id}`,
     callInit: router.isReady
   })
