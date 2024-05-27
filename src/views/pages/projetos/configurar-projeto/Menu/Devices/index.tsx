@@ -35,7 +35,6 @@ interface DevicesProps {
 }
 
 const Devices = ({ devices }: DevicesProps) => {
-  console.log(devices)
   const router = useRouter()
   const { id: projectId } = router.query
 
@@ -133,220 +132,208 @@ const Devices = ({ devices }: DevicesProps) => {
             </Box>
           }
         >
-          {devices.map((central: any, index: number) => {
-            return (
+          {devices.map((central: any, index: number) => (
+            <TreeItem
+              key={central.projectDeviceId}
+              nodeId={central.projectDeviceId}
+              label={
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                    {centralsStatus.length > 0 ? (
+                      <IconifyIcon
+                        icon='tabler:circle-filled'
+                        width='0.7em'
+                        color={
+                          centralStatusObj?.[centralsStatus?.[index]?.[central?.boardId]] || centralStatusObj['false']
+                        }
+                      />
+                    ) : (
+                      <IconifyIcon icon='tabler:circle-filled' width='0.7em' color={centralStatusObj['false']} />
+                    )}
+                    <Typography component={'span'} variant={'h6'}>
+                      {central.projectDeviceName}
+                    </Typography>
+                  </Box>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <EditNoteIcon
+                      sx={{ fontSize: 18 }}
+                      onClick={e => {
+                        e.stopPropagation()
+                        setDeviceId(central.projectDeviceId)
+                        setShowEditCentralDialog(true)
+                      }}
+                    />
+                    <CloseIcon
+                      sx={{ fontSize: 16 }}
+                      onClick={e => {
+                        e.stopPropagation()
+                        setDeviceId(central.projectDeviceId)
+                        setShowDeleteDialog(true)
+                      }}
+                    />
+                  </Box>
+                </Box>
+              }
+            >
               <TreeItem
-                key={central.projectDeviceId}
-                nodeId={central.projectDeviceId}
+                key={`entradas${index}`}
+                nodeId={`entradas${index}`}
+                icon={<IconifyIcon icon='material-symbols:input-rounded' width='1.2em' height='1.2em' />}
                 label={
-                  <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                      {centralsStatus.length > 0 ? (
-                        <IconifyIcon
-                          icon='tabler:circle-filled'
-                          width='0.7em'
-                          color={centralStatusObj[centralsStatus[index][central?.boardId]] || centralStatusObj['false']}
-                        />
-                      ) : (
-                        <IconifyIcon icon='tabler:circle-filled' width='0.7em' color={centralStatusObj['false']} />
-                      )}
-                      <Typography component={'span'} variant={'h6'}>
-                        {central.projectDeviceName}
-                      </Typography>
-                    </Box>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                      <EditNoteIcon
-                        sx={{ fontSize: 18 }}
-                        onClick={e => {
-                          e.stopPropagation()
-                          setDeviceId(central.projectDeviceId)
-                          setShowEditCentralDialog(true)
-                        }}
-                      />
-                      <CloseIcon
-                        sx={{ fontSize: 16 }}
-                        onClick={e => {
-                          e.stopPropagation()
-                          setDeviceId(central.projectDeviceId)
-                          setShowDeleteDialog(true)
-                        }}
-                      />
-                    </Box>
+                  <Box sx={{ display: 'flex', alignItems: 'end', gap: 2 }}>
+                    <Typography component={'span'} variant={'h6'}>
+                      Entradas
+                    </Typography>
+                    <Typography
+                      component={'span'}
+                      variant={'h6'}
+                      color={central.boardInputTotal < central.boardInputLimit ? 'green' : 'red'}
+                    >
+                      [{central.boardInputTotal}/{central.boardInputLimit}]
+                    </Typography>
                   </Box>
                 }
               >
-                <TreeItem
-                  key={`entradas${index}`}
-                  nodeId={`entradas${index}`}
-                  icon={<IconifyIcon icon='material-symbols:input-rounded' width='1.2em' height='1.2em' />}
-                  label={
-                    <Box sx={{ display: 'flex', alignItems: 'end', gap: 2 }}>
-                      <Typography component={'span'} variant={'h6'}>
-                        Entradas
-                      </Typography>
-                      <Typography
-                        component={'span'}
-                        variant={'h6'}
-                        color={central.boardInputTotal < central.boardInputLimit ? 'green' : 'red'}
-                      >
-                        [{central.boardInputTotal}/{central.boardInputLimit}]
-                      </Typography>
-                    </Box>
-                  }
-                >
-                  {central.inputPorts.map((inputPort: any, index: number) => {
-                    return (
+                {central.inputPorts.map((inputPort: any, index: number) => (
+                  <TreeItem
+                    key={central.projectDeviceId + inputPort.order + index}
+                    nodeId={central.projectDeviceId + inputPort.order + index}
+                    label={
+                      <Box sx={{ display: 'flex', alignItems: 'end', gap: 2 }}>
+                        <Typography component={'span'} variant={'h6'}>
+                          {checkPortName(inputPort.order)}
+                        </Typography>
+                        <Typography
+                          component={'span'}
+                          variant={'h6'}
+                          color={inputPort.portTotal < inputPort.portLimit ? 'green' : 'red'}
+                        >
+                          [{inputPort.portTotal}/{inputPort.portLimit}]
+                        </Typography>
+                      </Box>
+                    }
+                  >
+                    {inputPort.inputs.map((input: any) => (
                       <TreeItem
-                        key={central.projectDeviceId + inputPort.order + index}
-                        nodeId={central.projectDeviceId + inputPort.order + index}
+                        key={'input' + input.projectDeviceId + input.deviceName}
+                        nodeId={'input' + input.projectDeviceId + input.deviceName}
                         label={
-                          <Box sx={{ display: 'flex', alignItems: 'end', gap: 2 }}>
-                            <Typography component={'span'} variant={'h6'}>
-                              {checkPortName(inputPort.order)}
-                            </Typography>
-                            <Typography
-                              component={'span'}
-                              variant={'h6'}
-                              color={inputPort.portTotal < inputPort.portLimit ? 'green' : 'red'}
-                            >
-                              [{inputPort.portTotal}/{inputPort.portLimit}]
-                            </Typography>
+                          <Box sx={{ display: 'flex', alignItems: 'end', justifyContent: 'space-between', gap: 2 }}>
+                            <Box sx={{ display: 'flex', alignItems: 'end', gap: 2 }}>
+                              <Typography
+                                component={'span'}
+                                variant={'h6'}
+                                onClick={() => {
+                                  setProjectDeviceId(input.projectDeviceId)
+                                  setKeyId(null)
+                                }}
+                              >
+                                {verifyDeviceType(input.deviceType)} - {input.deviceName}
+                              </Typography>
+                              <Typography
+                                component={'span'}
+                                variant={'h6'}
+                                color={input.deviceKeysTotal < input.deviceKeysLimit ? 'green' : 'red'}
+                              >
+                                [{input.deviceKeysTotal}/{input.deviceKeysLimit}]
+                              </Typography>
+                            </Box>
+                            <CloseIcon
+                              onClick={e => {
+                                e.stopPropagation()
+                                setDeviceId(input.projectDeviceId)
+                                setShowDeleteDialog(true)
+                              }}
+                              sx={{ fontSize: 16 }}
+                            />
                           </Box>
                         }
-                      >
-                        {inputPort.inputs.map((input: any) => {
-                          return (
-                            <TreeItem
-                              key={'input' + input.projectDeviceId + input.deviceName}
-                              nodeId={'input' + input.projectDeviceId + input.deviceName}
-                              label={
-                                <Box
-                                  sx={{ display: 'flex', alignItems: 'end', justifyContent: 'space-between', gap: 2 }}
-                                >
-                                  <Box sx={{ display: 'flex', alignItems: 'end', gap: 2 }}>
-                                    <Typography
-                                      component={'span'}
-                                      variant={'h6'}
-                                      onClick={() => {
-                                        setProjectDeviceId(input.projectDeviceId)
-                                        setKeyId(null)
-                                      }}
-                                    >
-                                      {verifyDeviceType(input.deviceType)} - {input.deviceName}
-                                    </Typography>
-                                    <Typography
-                                      component={'span'}
-                                      variant={'h6'}
-                                      color={input.deviceKeysTotal < input.deviceKeysLimit ? 'green' : 'red'}
-                                    >
-                                      [{input.deviceKeysTotal}/{input.deviceKeysLimit}]
-                                    </Typography>
-                                  </Box>
-                                  <CloseIcon
-                                    onClick={e => {
-                                      e.stopPropagation()
-                                      setDeviceId(input.projectDeviceId)
-                                      setShowDeleteDialog(true)
-                                    }}
-                                    sx={{ fontSize: 16 }}
-                                  />
-                                </Box>
-                              }
-                            ></TreeItem>
-                          )
-                        })}
-                      </TreeItem>
-                    )
-                  })}
-                </TreeItem>
-                <TreeItem
-                  key={`saidas${index}`}
-                  nodeId={`saidas${index}`}
-                  icon={<IconifyIcon icon='material-symbols:output-rounded' width='1.2rem' height='1.2rem' />}
-                  label={
-                    <Box sx={{ display: 'flex', alignItems: 'end', gap: 2 }}>
-                      <Typography component={'span'} variant={'h6'}>
-                        Saídas
-                      </Typography>
-                      <Typography
-                        component={'span'}
-                        variant={'h6'}
-                        color={central.boardOutputTotal < central.boardOutputLimit ? 'green' : 'red'}
-                      >
-                        [{central.boardOutputTotal}/{central.boardOutputLimit}]
-                      </Typography>
-                    </Box>
-                  }
-                >
-                  {central.outputPorts.map((outputPort: any, index: number) => {
-                    return (
-                      <TreeItem
-                        key={'output' + central.projectDeviceId + outputPort.order + index}
-                        nodeId={'output' + central.projectDeviceId + outputPort.order + index}
-                        label={
-                          <Box sx={{ display: 'flex', alignItems: 'end', gap: 2 }}>
-                            <Typography component={'span'} variant={'h6'}>
-                              {checkPortName(outputPort.order)}
-                            </Typography>
-                            <Typography
-                              component={'span'}
-                              variant={'h6'}
-                              color={outputPort.portTotal < outputPort.portLimit ? 'green' : 'red'}
-                            >
-                              [{outputPort.portTotal}/{outputPort.portLimit}]
-                            </Typography>
-                          </Box>
-                        }
-                      >
-                        {outputPort.inputs.map((output: any) => {
-                          return (
-                            <TreeItem
-                              key={'output' + output.projectDeviceId + output.deviceName}
-                              nodeId={'output' + output.projectDeviceId + output.deviceName}
-                              label={
-                                <Box
-                                  sx={{ display: 'flex', alignItems: 'end', justifyContent: 'space-between', gap: 2 }}
-                                >
-                                  <Box sx={{ display: 'flex', alignItems: 'end', gap: 2 }}>
-                                    <Typography
-                                      component={'span'}
-                                      variant={'h6'}
-                                      onClick={() => {
-                                        setProjectDeviceId(output.projectDeviceId)
-                                        setProjectDeviceIdOnDeviceKeys(null)
-                                        setKeyId(null)
-                                      }}
-                                    >
-                                      {verifyDeviceType(output.deviceType)} - {output.deviceName}
-                                    </Typography>
-                                    <Typography
-                                      component={'span'}
-                                      variant={'h6'}
-                                      color={output.deviceKeysTotal < output.deviceKeysLimit ? 'green' : 'red'}
-                                    >
-                                      [{output.deviceKeysTotal}/{output.deviceKeysLimit}]
-                                    </Typography>
-                                  </Box>
-                                  <CloseIcon
-                                    onClick={e => {
-                                      e.stopPropagation()
-                                      setDeviceId(output.projectDeviceId)
-                                      setShowDeleteDialog(true)
-                                    }}
-                                    sx={{ fontSize: 16 }}
-                                  />
-                                </Box>
-                              }
-                            ></TreeItem>
-                          )
-                        })}
-                      </TreeItem>
-                    )
-                  })}
-                </TreeItem>
+                      ></TreeItem>
+                    ))}
+                  </TreeItem>
+                ))}
               </TreeItem>
-            )
-          })}
+              <TreeItem
+                key={`saidas${index}`}
+                nodeId={`saidas${index}`}
+                icon={<IconifyIcon icon='material-symbols:output-rounded' width='1.2rem' height='1.2rem' />}
+                label={
+                  <Box sx={{ display: 'flex', alignItems: 'end', gap: 2 }}>
+                    <Typography component={'span'} variant={'h6'}>
+                      Saídas
+                    </Typography>
+                    <Typography
+                      component={'span'}
+                      variant={'h6'}
+                      color={central.boardOutputTotal < central.boardOutputLimit ? 'green' : 'red'}
+                    >
+                      [{central.boardOutputTotal}/{central.boardOutputLimit}]
+                    </Typography>
+                  </Box>
+                }
+              >
+                {central.outputPorts.map((outputPort: any, index: number) => (
+                  <TreeItem
+                    key={'output' + central.projectDeviceId + outputPort.order + index}
+                    nodeId={'output' + central.projectDeviceId + outputPort.order + index}
+                    label={
+                      <Box sx={{ display: 'flex', alignItems: 'end', gap: 2 }}>
+                        <Typography component={'span'} variant={'h6'}>
+                          {checkPortName(outputPort.order)}
+                        </Typography>
+                        <Typography
+                          component={'span'}
+                          variant={'h6'}
+                          color={outputPort.portTotal < outputPort.portLimit ? 'green' : 'red'}
+                        >
+                          [{outputPort.portTotal}/{outputPort.portLimit}]
+                        </Typography>
+                      </Box>
+                    }
+                  >
+                    {outputPort.inputs.map((output: any) => (
+                      <TreeItem
+                        key={'output' + output.projectDeviceId + output.deviceName}
+                        nodeId={'output' + output.projectDeviceId + output.deviceName}
+                        label={
+                          <Box sx={{ display: 'flex', alignItems: 'end', justifyContent: 'space-between', gap: 2 }}>
+                            <Box sx={{ display: 'flex', alignItems: 'end', gap: 2 }}>
+                              <Typography
+                                component={'span'}
+                                variant={'h6'}
+                                onClick={() => {
+                                  setProjectDeviceId(output.projectDeviceId)
+                                  setProjectDeviceIdOnDeviceKeys(null)
+                                  setKeyId(null)
+                                }}
+                              >
+                                {verifyDeviceType(output.deviceType)} - {output.deviceName}
+                              </Typography>
+                              <Typography
+                                component={'span'}
+                                variant={'h6'}
+                                color={output.deviceKeysTotal < output.deviceKeysLimit ? 'green' : 'red'}
+                              >
+                                [{output.deviceKeysTotal}/{output.deviceKeysLimit}]
+                              </Typography>
+                            </Box>
+                            <CloseIcon
+                              onClick={e => {
+                                e.stopPropagation()
+                                setDeviceId(output.projectDeviceId)
+                                setShowDeleteDialog(true)
+                              }}
+                              sx={{ fontSize: 16 }}
+                            />
+                          </Box>
+                        }
+                      ></TreeItem>
+                    ))}
+                  </TreeItem>
+                ))}
+              </TreeItem>
+            </TreeItem>
+          ))}
         </TreeItem>
       </TreeItem>
     </>
