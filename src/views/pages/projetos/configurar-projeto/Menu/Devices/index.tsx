@@ -19,9 +19,11 @@ import { verifyDeviceType } from 'src/utils/verifyDevice'
 import DeleteDevice from './Delete'
 import AddCentral from './AddCentral'
 import EditCentral from './EditCentral'
-import { api } from 'src/services/api'
 
-interface CentralStatusType {
+import { api } from 'src/services/api'
+import { DeviceProps } from 'src/types/menu'
+
+type CentralStatusType = {
   [key: string]: string
 }
 
@@ -31,7 +33,7 @@ const centralStatusObj: CentralStatusType = {
 }
 
 interface DevicesProps {
-  devices: any
+  devices: DeviceProps[]
 }
 
 const Devices = ({ devices }: DevicesProps) => {
@@ -48,11 +50,11 @@ const Devices = ({ devices }: DevicesProps) => {
   const [showDeleteDialog, setShowDeleteDialog] = useState<boolean>(false)
 
   const [deviceId, setDeviceId] = useState<string>('')
-  const [centralsStatus, setCentralsStatus] = useState<any[]>([])
+  const [centralsStatus, setCentralsStatus] = useState<CentralStatusType[]>([])
 
   useEffect(() => {
     const fetchCentralsStatus = () => {
-      const centralsCheck = devices.map((device: any) =>
+      const centralsCheck = devices.map(device =>
         api.get('/mqtt/device-status', {
           params: {
             boardId: device.boardId,
@@ -63,7 +65,7 @@ const Devices = ({ devices }: DevicesProps) => {
 
       Promise.all(centralsCheck)
         .then(response => {
-          const centralsChecked = devices.map((device: any, index: number) => ({
+          const centralsChecked = devices.map((device, index: number) => ({
             [device.boardId]: response[index].data
           }))
 
@@ -132,7 +134,7 @@ const Devices = ({ devices }: DevicesProps) => {
             </Box>
           }
         >
-          {devices.map((central: any, index: number) => (
+          {devices.map((central, index: number) => (
             <TreeItem
               key={central.projectDeviceId}
               nodeId={central.projectDeviceId}
@@ -194,7 +196,7 @@ const Devices = ({ devices }: DevicesProps) => {
                   </Box>
                 }
               >
-                {central.inputPorts.map((inputPort: any, index: number) => (
+                {central.inputPorts.map((inputPort, index: number) => (
                   <TreeItem
                     key={central.projectDeviceId + inputPort.order + index}
                     nodeId={central.projectDeviceId + inputPort.order + index}
@@ -213,7 +215,7 @@ const Devices = ({ devices }: DevicesProps) => {
                       </Box>
                     }
                   >
-                    {inputPort.inputs.map((input: any) => (
+                    {inputPort.inputs.map(input => (
                       <TreeItem
                         key={'input' + input.projectDeviceId + input.deviceName}
                         nodeId={'input' + input.projectDeviceId + input.deviceName}
@@ -272,7 +274,7 @@ const Devices = ({ devices }: DevicesProps) => {
                   </Box>
                 }
               >
-                {central.outputPorts.map((outputPort: any, index: number) => (
+                {central.outputPorts.map((outputPort, index: number) => (
                   <TreeItem
                     key={'output' + central.projectDeviceId + outputPort.order + index}
                     nodeId={'output' + central.projectDeviceId + outputPort.order + index}
@@ -291,7 +293,7 @@ const Devices = ({ devices }: DevicesProps) => {
                       </Box>
                     }
                   >
-                    {outputPort.inputs.map((output: any) => (
+                    {outputPort.inputs.map(output => (
                       <TreeItem
                         key={'output' + output.projectDeviceId + output.deviceName}
                         nodeId={'output' + output.projectDeviceId + output.deviceName}

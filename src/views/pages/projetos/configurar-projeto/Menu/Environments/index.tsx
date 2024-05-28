@@ -21,8 +21,10 @@ import AddOutputDevice from './AddOutputDevice'
 import { Draggable, Droppable } from 'react-beautiful-dnd'
 import toast from 'react-hot-toast'
 
+import { EnvironmentProps } from 'src/types/menu'
+
 interface EnvironmentsProps {
-  environments: any
+  environments: EnvironmentProps[]
 }
 
 const Environments = ({ environments }: EnvironmentsProps) => {
@@ -40,7 +42,7 @@ const Environments = ({ environments }: EnvironmentsProps) => {
   const [showAddInputDevice, setShowAddInputDevice] = useState<boolean>(false)
   const [showAddOutputDevice, setShowAddOutputDevice] = useState<boolean>(false)
 
-  const handleCheckEnvironmentEmpty = (environment: any) => {
+  const handleCheckEnvironmentEmpty = (environment: EnvironmentProps) => {
     return environment.inputs.length === 0 && environment.outputs.length === 0
   }
 
@@ -106,7 +108,7 @@ const Environments = ({ environments }: EnvironmentsProps) => {
           </Box>
         }
       >
-        {environments.map((environment: any) => {
+        {environments.map((environment) => {
           return (
             <TreeItem
               key={environment.environmentId}
@@ -165,7 +167,7 @@ const Environments = ({ environments }: EnvironmentsProps) => {
                   </Box>
                 }
               >
-                {environment.inputs.map((input: any, index: number) => {
+                {environment.inputs.map((input, index: number) => {
                   return (
                     <TreeItem
                       key={input.projectDeviceId + input.projectDeviceKeyId}
@@ -209,7 +211,7 @@ const Environments = ({ environments }: EnvironmentsProps) => {
                 <Droppable droppableId='outputs'>
                   {provided => (
                     <Box ref={provided.innerRef} {...provided.droppableProps}>
-                      {environment.outputs.map((output: any, index: number) => (
+                      {environment.outputs.map((output, index: number) => (
                         <Draggable
                           key={output.projectDeviceKeyId}
                           draggableId={output.projectDeviceKeyId}

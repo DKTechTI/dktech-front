@@ -37,6 +37,7 @@ import { handleCheckOperationType } from 'src/utils/actions'
 
 import useErrorHandling from 'src/hooks/useErrorHandling'
 import projectSceneActionsErrors from 'src/errors/projectSceneActionsErrors'
+import { EnvironmentProps } from 'src/types/menu'
 
 const schema = yup.object().shape({
   outputs: yup
@@ -57,21 +58,23 @@ const schema = yup.object().shape({
     .min(1, 'Pelo menos uma saída deve ser adicionada')
 })
 
-const outputs: any[] = []
+type OutputProps = {
+  projectId: string
+  projectSceneId: string
+  projectDeviceKeyId: string
+  actionProjectDeviceKeyId: string
+  name: string
+  boardId: string
+  type: string
+  actionValueReles?: string
+  actionValueEngine?: string
+  actionValueDimmer?: string
+}
+
+const outputs: OutputProps[] = []
 
 interface FormData {
-  outputs: {
-    projectId: string
-    projectSceneId: string
-    projectDeviceKeyId: string
-    actionProjectDeviceKeyId: string
-    name: string
-    boardId: string
-    type: string
-    actionValueReles?: string
-    actionValueEngine?: string
-    actionValueDimmer?: string
-  }[]
+  outputs: OutputProps[]
 }
 
 interface CreateProps {
@@ -91,7 +94,7 @@ const Create = ({ open, handleClose }: CreateProps) => {
   const { handleErrorResponse } = useErrorHandling()
   const { projectSceneId, refreshActions, setRefreshActions } = useActionsDnD()
 
-  const [environments, setEnvironments] = useState<any[]>([])
+  const [environments, setEnvironments] = useState<EnvironmentProps[]>([])
 
   const {
     control,
@@ -119,15 +122,13 @@ const Create = ({ open, handleClose }: CreateProps) => {
       return toast.error('Selecione uma cena antes de adicionar uma ação')
     }
 
-    const environmentSelected: any = environments.filter(environment => environment.environmentId === environmentId)
+    const environmentSelected = environments.filter(environment => environment.environmentId === environmentId)[0]
 
-    const outputSelected: any = environmentSelected[0].outputs.filter(
-      (output: any) => output.projectDeviceKeyId === projectDeviceKeyId
-    )
+    const outputSelected = environmentSelected.outputs.filter(
+      output => output.projectDeviceKeyId === projectDeviceKeyId
+    )[0]
 
-    if (outputSelected.length > 0) {
-      const output: any = outputSelected[0]
-
+    if (outputSelected) {
       api
         .get(`/projectDeviceKeys/${projectDeviceKeyId}`)
         .then(response => {
@@ -143,9 +144,9 @@ const Create = ({ open, handleClose }: CreateProps) => {
             projectId: id as string,
             projectSceneId: projectSceneId,
             projectDeviceKeyId: keyId,
-            actionProjectDeviceKeyId: output.projectDeviceKeyId,
-            boardId: output.boardId,
-            name: output.deviceKeyName,
+            actionProjectDeviceKeyId: outputSelected.projectDeviceKeyId,
+            boardId: outputSelected.boardId,
+            name: outputSelected.deviceKeyName,
             type: 'EXTERNAL',
             ...(operationType === 'RELES' && { actionValueReles: initialValue }),
             ...(operationType === 'ENGINE' && { actionValueEngine: initialValue }),
@@ -157,7 +158,7 @@ const Create = ({ open, handleClose }: CreateProps) => {
   }
 
   const onSubmit = (formData: FormData) => {
-    const createActions = async (data: any) => {
+    const createActions = async (data: OutputProps) => {
       return api.post('/projectSceneActions', data)
     }
 
@@ -242,7 +243,7 @@ const Create = ({ open, handleClose }: CreateProps) => {
                         <ListItemText primary='Nenhuma opção' />
                       </ListItem>
                     )}
-                    {environment.outputs.map((output: any) => (
+                    {environment.outputs.map(output => (
                       <ListItemButton
                         key={output.projectDeviceKeyId}
                         onClick={() => handleSelectOutput(environment.environmentId, output.projectDeviceKeyId)}

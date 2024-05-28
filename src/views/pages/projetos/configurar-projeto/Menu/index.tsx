@@ -14,8 +14,8 @@ export default function Menu() {
 
   const defaultExpandedValues = menu
     ? menu.devices
-        .map((device: any) => device.projectDeviceId)
-        .concat(menu.environments.map((environment: any) => environment.environmentId))
+        .map((device) => device.projectDeviceId)
+        .concat(menu.environments.map((environment) => environment.environmentId))
         .concat(['1', '2', '3'])
     : []
 
