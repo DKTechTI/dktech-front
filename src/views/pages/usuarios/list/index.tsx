@@ -58,7 +58,7 @@ const UsersList = () => {
     (data: UserDataProps) => {
       const usersData = data.data
 
-      if ((paginationModel.page === 0 && value !== '') || value === '') setUsers([])
+      if ((paginationModel.page === 0 && value !== '') || (paginationModel.page === 0 && value === '')) setUsers([])
 
       setUsers(prevState => [
         ...prevState,

@@ -57,7 +57,7 @@ const DevicesList = () => {
     (data: DeviceDataProps) => {
       const devicesData = data.data
 
-      if ((paginationModel.page === 0 && value !== '') || value === '') setDevices([])
+      if ((paginationModel.page === 0 && value !== '') || (paginationModel.page === 0 && value === '')) setDevices([])
 
       setDevices(prevState => [
         ...prevState,

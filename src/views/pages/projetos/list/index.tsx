@@ -72,7 +72,7 @@ const ProjectsList = () => {
     (data: ProjectDataProps) => {
       const projectData = data.data
 
-      if ((paginationModel.page === 0 && name !== '') || name === '') setProjects([])
+      if ((paginationModel.page === 0 && name !== '') || (paginationModel.page === 0 && name === '')) setProjects([])
 
       setProjects(prevState => [
         ...prevState,

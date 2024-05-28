@@ -54,7 +54,7 @@ const ResaleUsersList = () => {
     (data: ResaleDataProps) => {
       const resalesData = data.data
 
-      if ((paginationModel.page === 0 && value !== '') || value === '') setResales([])
+      if ((paginationModel.page === 0 && value !== '') || (paginationModel.page === 0 && value === '')) setResales([])
 
       setResales(prevState => [
         ...prevState,

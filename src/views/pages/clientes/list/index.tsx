@@ -60,7 +60,7 @@ const ClientsList = () => {
     (data: ClientDataProps) => {
       const clientsData = data.data
 
-      if ((paginationModel.page === 0 && value !== '') || value === '') setClients([])
+      if ((paginationModel.page === 0 && value !== '') || (paginationModel.page === 0 && value === '')) setClients([])
 
       setClients(prevState => [
         ...prevState,
