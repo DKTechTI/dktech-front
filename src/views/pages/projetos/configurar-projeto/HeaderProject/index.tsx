@@ -5,6 +5,7 @@ import Edit from './Edit'
 import Monitoring from './Monitoring'
 import BackdropConfig from '../DeviceConfig/BackdropConfig'
 import { api } from 'src/services/api'
+import { delay } from 'src/utils/delay'
 
 interface ErrorsProps {
   status: string
@@ -28,8 +29,11 @@ const HeaderProject = ({ data, refresh, setRefresh }: HeaderProjectProps) => {
   const handleCloseBackdrop = () => {
     setOpenBackdrop(false)
     setRefresh(!refresh)
-    setFinished(false)
-    setErrors([])
+
+    delay(100).then(() => {
+      setFinished(false)
+      setErrors([])
+    })
   }
 
   const hamdleConfigProject = (projectId: string) => {
@@ -53,7 +57,7 @@ const HeaderProject = ({ data, refresh, setRefresh }: HeaderProjectProps) => {
           if (!hasError) {
             setOpenBackdrop(false)
             setRefresh(!refresh)
-            setFinished(false)
+            delay(100).then(() => setFinished(false))
           }
         }, 5000)
       })
