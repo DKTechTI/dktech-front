@@ -24,6 +24,7 @@ import useClipboard from 'src/hooks/useClipboard'
 import useGetDataApi from 'src/hooks/useGetDataApi'
 
 import toast from 'react-hot-toast'
+import { motion, AnimatePresence } from 'framer-motion'
 
 import * as yup from 'yup'
 import { useForm, Controller } from 'react-hook-form'
@@ -33,6 +34,7 @@ import { api } from 'src/services/api'
 
 import useErrorHandling from 'src/hooks/useErrorHandling'
 import projectDevicesErrors from 'src/errors/projectDevicesErrors'
+import { delay } from 'src/utils/delay'
 
 const schema = yup.object().shape({
   name: yup.string().required('Nome obrigatório'),
@@ -187,8 +189,11 @@ const EditCentral = ({ handleClose, open, refresh, setRefresh, projectDeviceId }
   }
 
   useEffect(() => {
-    if (!open) reset()
-  }, [open, reset])
+    if (!open) {
+      reset()
+      delay(200).then(() => online && setOnline(false))
+    }
+  }, [online, open, reset])
 
   useEffect(() => {
     if (projectDevice?.data) {
@@ -210,8 +215,10 @@ const EditCentral = ({ handleClose, open, refresh, setRefresh, projectDeviceId }
 
   useEffect(() => {
     if (projectDevice?.data && open) {
-      const controllerApi = new AbortController()
       setLoadingCentralStatus(true)
+
+      const controllerApi = new AbortController()
+
       api
         .get(`/mqtt/device-status`, {
           signal: controllerApi.signal,
@@ -225,7 +232,14 @@ const EditCentral = ({ handleClose, open, refresh, setRefresh, projectDeviceId }
             ERR_CANCELED: 'Requisição cancelada'
           }
           !responseError[error.code] && toast.error('Erro ao buscar status da central, tente novamente mais tarde.')
-        }).finally(() => setLoadingCentralStatus(false))
+        })
+        .finally(() => setLoadingCentralStatus(false))
+
+      const closeDialog = document.getElementById('closeDialog')
+
+      closeDialog?.addEventListener('click', () => {
+        controllerApi.abort()
+      })
 
       const interval = setInterval(() => {
         setRefreshCentralStatus(!refreshCentralStatus)
@@ -233,10 +247,10 @@ const EditCentral = ({ handleClose, open, refresh, setRefresh, projectDeviceId }
 
       return () => {
         clearInterval(interval)
-        controllerApi.abort()
       }
     }
-  }, [refreshCentralStatus, projectDevice, open])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [refreshCentralStatus, open])
 
   if (!projectDevice) {
     return null
@@ -279,25 +293,39 @@ const EditCentral = ({ handleClose, open, refresh, setRefresh, projectDeviceId }
           <Grid container spacing={6} justifyContent={'space-between'} pb={6}>
             <Grid item xs={12} sm={6}>
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                <Chip
-                  icon={<IconifyIcon icon='tabler:circle-filled' color={centralStatusObj[String(online)]} />}
-                  label={online ? 'Online' : 'Offline'}
-                  variant='outlined'
-                  deleteIcon={<IconifyIcon icon='tabler:refresh' />}
-                  onDelete={() => setRefreshCentralStatus(!refreshCentralStatus)}
-                  disabled={loadingCentralStatus}
-                  sx={{
-                    width: 'fit-content',
-                    color: '#d0d4f1c7',
-                    '& .MuiChip-deleteIcon': {
-                      color: '#d0d4f1c7',
-                      ':hover': {
-                        opacity: 0.9,
-                        transition: '0.1s'
-                      }
+                <AnimatePresence>
+                  <Chip
+                    icon={<IconifyIcon icon='tabler:circle-filled' color={centralStatusObj[String(online)]} />}
+                    label={online ? 'Online' : 'Offline'}
+                    variant='outlined'
+                    deleteIcon={
+                      loadingCentralStatus ? (
+                        <motion.div
+                          style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                          animate={{ rotate: [0, 360] }}
+                          transition={{ repeat: Infinity, duration: 4 }}
+                        >
+                          <IconifyIcon icon='tabler:refresh' />
+                        </motion.div>
+                      ) : (
+                        <IconifyIcon icon='tabler:refresh' />
+                      )
                     }
-                  }}
-                />
+                    onDelete={() => setRefreshCentralStatus(current => !current)}
+                    disabled={loadingCentralStatus}
+                    sx={{
+                      width: 'fit-content',
+                      color: '#d0d4f1c7',
+                      '& .MuiChip-deleteIcon': {
+                        color: '#d0d4f1c7',
+                        ':hover': {
+                          opacity: 0.9,
+                          transition: '0.1s'
+                        }
+                      }
+                    }}
+                  />
+                </AnimatePresence>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                   <Typography variant='h4' sx={{ color: 'text.primaty' }}>
                     # {watch('boardId')}
@@ -486,7 +514,7 @@ const EditCentral = ({ handleClose, open, refresh, setRefresh, projectDeviceId }
             pb: theme => [`${theme.spacing(8)} !important`, `${theme.spacing(12.5)} !important`]
           }}
         >
-          <Button variant='tonal' color='secondary' onClick={handleClose}>
+          <Button id='closeDialog' variant='tonal' color='secondary' onClick={handleClose}>
             Cancelar
           </Button>
           <Button variant='contained' sx={{ mr: 2 }} onClick={handleSubmit(onSubmit)}>
