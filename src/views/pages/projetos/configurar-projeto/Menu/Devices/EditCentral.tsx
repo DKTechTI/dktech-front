@@ -250,7 +250,7 @@ const EditCentral = ({ handleClose, open, refresh, setRefresh, projectDeviceId }
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [refreshCentralStatus, open])
+  }, [refreshCentralStatus, projectDevice?.data])
 
   if (!projectDevice) {
     return null
