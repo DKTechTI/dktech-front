@@ -54,16 +54,27 @@ const ResaleUsersList = () => {
     (data: ResaleDataProps) => {
       const resalesData = data.data
 
-      if ((paginationModel.page === 0 && value !== '') || (paginationModel.page === 0 && value === '')) setResales([])
-
-      setResales(prevState => [
-        ...prevState,
-        ...(Array.isArray(resalesData)
+      setResales(prevState => {
+        const newResales = Array.isArray(resalesData)
           ? resalesData.filter(newResale => !prevState.some(existingResale => existingResale._id === newResale._id))
-          : [])
-      ])
+          : []
+
+        if (paginationModel.page === 0) {
+          if (
+            newResales.length === 0 &&
+            prevState.length === newResales.length &&
+            prevState.every((resale, index) => resale._id === newResales[index]._id)
+          ) {
+            return prevState
+          }
+
+          return newResales
+        }
+
+        return [...prevState, ...newResales]
+      })
     },
-    [paginationModel.page, value]
+    [paginationModel.page]
   )
 
   useEffect(() => {
