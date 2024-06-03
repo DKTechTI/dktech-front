@@ -58,16 +58,27 @@ const UsersList = () => {
     (data: UserDataProps) => {
       const usersData = data.data
 
-      if ((paginationModel.page === 0 && value !== '') || value === '') setUsers([])
-
-      setUsers(prevState => [
-        ...prevState,
-        ...(Array.isArray(usersData)
+      setUsers(prevState => {
+        const newUsers = Array.isArray(usersData)
           ? usersData.filter(newUser => !prevState.some(existingUser => existingUser._id === newUser._id))
-          : [])
-      ])
+          : []
+
+        if (paginationModel.page === 0) {
+          if (
+            newUsers.length === 0 &&
+            prevState.length === usersData.length &&
+            prevState.every((user, index) => user._id === usersData[index]._id)
+          ) {
+            return prevState
+          }
+
+          return usersData
+        }
+
+        return [...prevState, ...newUsers]
+      })
     },
-    [paginationModel.page, value]
+    [paginationModel.page]
   )
 
   useEffect(() => {

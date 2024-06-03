@@ -131,8 +131,8 @@ const ActionsDnDProvider = ({ children }: Props) => {
 
       const draggedOutputId = action.draggableId
 
-      const draggedOutput = menu.environments
-        .map((environment: any) => {
+      const draggedOutput = menu?.environments
+        .map(environment => {
           if (environment.outputs) {
             const output = environment.outputs.find((output: any) => output.projectDeviceKeyId === draggedOutputId)
             if (output) {
@@ -143,6 +143,8 @@ const ActionsDnDProvider = ({ children }: Props) => {
           return null
         })
         .filter(Boolean)[0]
+
+      if (!draggedOutput) return toast.error('Erro ao buscar informações do dispositivo, tente novamente mais tarde')
 
       const response = await api.get(`/projectDeviceKeys/${draggedOutput.projectDeviceKeyId}`)
       const data = response.data

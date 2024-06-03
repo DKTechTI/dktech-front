@@ -72,16 +72,27 @@ const ProjectsList = () => {
     (data: ProjectDataProps) => {
       const projectData = data.data
 
-      if ((paginationModel.page === 0 && name !== '') || name === '') setProjects([])
+      setProjects(prevState => {
+        const newProjects = Array.isArray(projectData)
+          ? projectData.filter(newProject => !prevState.some(existingProject => existingProject._id === newProject._id))
+          : []
 
-      setProjects(prevState => [
-        ...prevState,
-        ...(Array.isArray(projectData)
-          ? projectData.filter(project => !prevState.some(existingProject => existingProject._id === project._id))
-          : [])
-      ])
+        if (paginationModel.page === 0) {
+          if (
+            newProjects.length === 0 &&
+            prevState.length === projectData.length &&
+            prevState.every((project, index) => project._id === projectData[index]._id)
+          ) {
+            return prevState
+          }
+
+          return projectData
+        }
+
+        return [...prevState, ...newProjects]
+      })
     },
-    [paginationModel.page, name]
+    [paginationModel.page]
   )
 
   useEffect(() => {

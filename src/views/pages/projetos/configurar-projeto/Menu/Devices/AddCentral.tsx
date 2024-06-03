@@ -1,4 +1,4 @@
-import { SyntheticEvent, useEffect } from 'react'
+import { SyntheticEvent, useEffect, useState } from 'react'
 
 import { useRouter } from 'next/router'
 
@@ -61,12 +61,12 @@ interface FormData {
 }
 
 interface CentralStatusType {
-  [key: string]: string
+  [key: string]: 'success' | 'error'
 }
 
 const centralStatusObj: CentralStatusType = {
-  online: '#28C76F',
-  offline: '#EA5455'
+  true: 'success',
+  false: 'error'
 }
 
 interface AddCentralProps {
@@ -80,6 +80,10 @@ const AddCentral = ({ handleClose, open, refresh, setRefresh }: AddCentralProps)
   const router = useRouter()
   const { id } = router.query
   const { handleErrorResponse } = useErrorHandling()
+
+  const [online, setOnline] = useState(false)
+  const [loadingCentralStatus, setLoadingCentralStatus] = useState(false)
+  const [boardId, setBoardId] = useState<string | null>(null)
 
   const { data: devices } = useGetDataApi<any>({ url: '/devices', callInit: router.isReady && open })
 
@@ -139,6 +143,10 @@ const AddCentral = ({ handleClose, open, refresh, setRefresh }: AddCentralProps)
     })
   }
 
+  const handleStatusCentral = (boardId: string) => {
+    if (boardId) setBoardId(boardId)
+  }
+
   const onSubmit = (formData: FormData) => {
     const data = formData
 
@@ -152,9 +160,9 @@ const AddCentral = ({ handleClose, open, refresh, setRefresh }: AddCentralProps)
       .post('/projectDevices', formData)
       .then(response => {
         if (response.status === 201) {
+          setRefresh(!refresh)
           handleClose()
           toast.success('Central adicionada com sucesso!')
-          setRefresh(!refresh)
         }
       })
       .catch(error => {
@@ -170,8 +178,41 @@ const AddCentral = ({ handleClose, open, refresh, setRefresh }: AddCentralProps)
   useEffect(() => {
     if (!open) {
       reset()
+      setOnline(false)
+      setBoardId(null)
     }
   }, [open, reset])
+
+  useEffect(() => {
+    if (open && boardId) {
+      const controllerApi = new AbortController()
+
+      setLoadingCentralStatus(true)
+
+      api
+        .get(`/mqtt/device-status`, {
+          signal: controllerApi.signal,
+          params: { boardId: boardId, projectId: id }
+        })
+        .then(response => {
+          setOnline(response.data)
+        })
+        .catch((error: any) => {
+          const responseError: { [key: string]: string } = {
+            ERR_CANCELED: 'Requisição cancelada'
+          }
+
+          if (responseError[error.code]) return reset()
+
+          toast.error('Erro ao buscar status da central, tente novamente mais tarde.')
+        })
+        .finally(() => setLoadingCentralStatus(false))
+
+      return () => {
+        controllerApi.abort()
+      }
+    }
+  }, [id, open, boardId, reset])
 
   return (
     <Dialog
@@ -201,9 +242,10 @@ const AddCentral = ({ handleClose, open, refresh, setRefresh }: AddCentralProps)
           <Grid item xs={12} sm={6}>
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
               <Chip
-                icon={<IconifyIcon icon='tabler:circle-filled' color={centralStatusObj['offline']} />}
-                label={'Offline'}
+                icon={<IconifyIcon icon='tabler:circle-filled' color={online ? '#28C76F' : '#EA5455'} />}
+                label={online ? 'Online' : 'Offline'}
                 variant='outlined'
+                disabled={loadingCentralStatus}
                 sx={{ width: 'fit-content', color: '#d0d4f1c7' }}
               />
             </Box>
@@ -265,14 +307,18 @@ const AddCentral = ({ handleClose, open, refresh, setRefresh }: AddCentralProps)
               <Controller
                 name='boardId'
                 control={control}
-                render={({ field: { value, onChange, onBlur } }) => (
+                render={({ field: { value, onBlur, onChange } }) => (
                   <CustomTextField
                     fullWidth
                     label='ID'
                     required
                     value={value || ''}
-                    onBlur={onBlur}
+                    onBlur={() => {
+                      onBlur()
+                      handleStatusCentral(value)
+                    }}
                     onChange={onChange}
+                    color={centralStatusObj[String(online)]}
                     error={Boolean(errors.boardId)}
                     {...(errors.boardId && { helperText: errors.boardId.message })}
                   />

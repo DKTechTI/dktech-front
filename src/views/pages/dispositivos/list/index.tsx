@@ -57,16 +57,27 @@ const DevicesList = () => {
     (data: DeviceDataProps) => {
       const devicesData = data.data
 
-      if ((paginationModel.page === 0 && value !== '') || value === '') setDevices([])
-
-      setDevices(prevState => [
-        ...prevState,
-        ...(Array.isArray(devicesData)
+      setDevices(prevState => {
+        const newDevices = Array.isArray(devicesData)
           ? devicesData.filter(newDevice => !prevState.some(existingDevice => existingDevice._id === newDevice._id))
-          : [])
-      ])
+          : []
+
+        if (paginationModel.page === 0) {
+          if (
+            newDevices.length === 0 &&
+            prevState.length === devicesData.length &&
+            prevState.every((device, index) => device._id === devicesData[index]._id)
+          ) {
+            return prevState
+          }
+
+          return devicesData
+        }
+
+        return [...prevState, ...newDevices]
+      })
     },
-    [paginationModel.page, value]
+    [paginationModel.page]
   )
 
   useEffect(() => {

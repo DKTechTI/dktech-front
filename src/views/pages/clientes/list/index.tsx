@@ -60,16 +60,27 @@ const ClientsList = () => {
     (data: ClientDataProps) => {
       const clientsData = data.data
 
-      if ((paginationModel.page === 0 && value !== '') || value === '') setClients([])
+      setClients(prevState => {
+        const newClients = Array.isArray(clientsData)
+          ? clientsData.filter(newClient => !prevState.some(existingClient => existingClient._id === newClient._id))
+          : []
 
-      setClients(prevState => [
-        ...prevState,
-        ...(Array.isArray(clientsData)
-          ? clientsData.filter(newClient => !prevState.some(existingUser => existingUser._id === newClient._id))
-          : [])
-      ])
+        if (paginationModel.page === 0) {
+          if (
+            newClients.length === 0 &&
+            prevState.length === clientsData.length &&
+            prevState.every((client, index) => client._id === clientsData[index]._id)
+          ) {
+            return prevState
+          }
+
+          return clientsData
+        }
+
+        return [...prevState, ...newClients]
+      })
     },
-    [paginationModel.page, value]
+    [paginationModel.page]
   )
 
   useEffect(() => {

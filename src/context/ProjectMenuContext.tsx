@@ -5,6 +5,7 @@ import { useRouter } from 'next/router'
 import useGetDataApi from 'src/hooks/useGetDataApi'
 import { api } from 'src/services/api'
 import toast from 'react-hot-toast'
+import { DeviceProps, MenuProps } from 'src/types/menu'
 
 interface SequenceProps {
   index: string
@@ -22,14 +23,14 @@ interface PortsProps {
 }
 
 type projectMenuValuesType = {
-  menu: null | any
+  menu: null | MenuProps
   loadingMenu: boolean
   refreshMenu: boolean
   setRefreshMenu: (value: boolean) => void
   handleAvaliableInputPorts: (centralId: string) => Promise<any[]>
   handleAvaliableOutputPorts: (centralId: string) => Promise<any[]>
-  handleCheckDeviceSequence: (deviceId: string, centralId: string, where: string) => number | null
-  handleCheckDevicePort: (deviceId: string, centralId: string, where: string) => number | null
+  handleCheckDeviceSequence: (deviceId: string, centralId: string, where: 'inputPorts' | 'outputPorts') => number | null
+  handleCheckDevicePort: (deviceId: string, centralId: string, where: 'inputPorts' | 'outputPorts') => number | null
 }
 
 const defaultProvider: projectMenuValuesType = {
@@ -59,7 +60,7 @@ const ProjectMenuProvider = ({ children }: Props) => {
     refresh: refreshMenu,
     setRefresh: setRefreshMenu,
     loading: loadingMenu
-  } = useGetDataApi<any>({ url: `/projects/menu/${id}`, callInit: router.isReady })
+  } = useGetDataApi<MenuProps>({ url: `/projects/menu/${id}`, callInit: router.isReady })
 
   const handleAvaliableInputPorts = async (centralId: string) => {
     try {
@@ -195,8 +196,8 @@ const ProjectMenuProvider = ({ children }: Props) => {
     }
   }
 
-  const handleCheckDeviceSequence = (deviceId: string, centralId: string, where: string) => {
-    const central = menu.devices.find((central: any) => central.projectDeviceId === centralId)
+  const handleCheckDeviceSequence = (deviceId: string, centralId: string, where: 'inputPorts' | 'outputPorts') => {
+    const central = menu?.devices.find((central: DeviceProps) => central.projectDeviceId === centralId)
     if (central) {
       const portQuantity = central[where].length
 
@@ -216,8 +217,8 @@ const ProjectMenuProvider = ({ children }: Props) => {
     return null
   }
 
-  const handleCheckDevicePort = (deviceId: string, centralId: string, where: string) => {
-    const central = menu.devices.find((central: any) => central.projectDeviceId === centralId)
+  const handleCheckDevicePort = (deviceId: string, centralId: string, where: 'inputPorts' | 'outputPorts') => {
+    const central = menu?.devices.find((central: DeviceProps) => central.projectDeviceId === centralId)
     if (central) {
       const portQuantity = central[where].length
 
