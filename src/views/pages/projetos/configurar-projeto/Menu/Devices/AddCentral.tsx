@@ -37,9 +37,6 @@ const schema = yup.object().shape({
   dns: yup.string().when('connection', ([connection], schema) => {
     return connection === 'STATIC_IP' ? schema.required('DNS obrigatório') : schema.notRequired()
   }),
-  tcp: yup.string().when('connection', ([connection], schema) => {
-    return connection === 'STATIC_IP' ? schema.required('DNS obrigatório') : schema.notRequired()
-  }),
   port: yup.string().required('Porta obrigatória')
 })
 
@@ -57,7 +54,6 @@ interface FormData {
   subnet: string
   dns: string
   port: string
-  tcp: string
 }
 
 interface CentralStatusType {
@@ -108,8 +104,7 @@ const AddCentral = ({ handleClose, open, refresh, setRefresh }: AddCentralProps)
       ip: '0',
       gateway: '0',
       subnet: '0',
-      dns: '0',
-      tcp: '0'
+      dns: '0'
     } as FormData,
     mode: 'onBlur',
     resolver: yupResolver(schema)
@@ -253,7 +248,7 @@ const AddCentral = ({ handleClose, open, refresh, setRefresh }: AddCentralProps)
         </Grid>
         <form noValidate autoComplete='off'>
           <Grid container spacing={6}>
-            <Grid item xs={12} sm={6}>
+            <Grid item xs={12}>
               <Controller
                 name='deviceId'
                 control={control}
@@ -269,7 +264,7 @@ const AddCentral = ({ handleClose, open, refresh, setRefresh }: AddCentralProps)
                     error={Boolean(errors.deviceId)}
                     {...(errors.deviceId && { helperText: errors.deviceId.message })}
                   >
-                    <MenuItem value=''>
+                    <MenuItem disabled>
                       <em>selecione</em>
                     </MenuItem>
                     {devices?.data.map((device: any) => {
@@ -285,7 +280,7 @@ const AddCentral = ({ handleClose, open, refresh, setRefresh }: AddCentralProps)
                 )}
               />
             </Grid>
-            <Grid item xs={12} sm={6}>
+            <Grid item xs={12} sm={3}>
               <Controller
                 name='name'
                 control={control}
@@ -341,7 +336,7 @@ const AddCentral = ({ handleClose, open, refresh, setRefresh }: AddCentralProps)
                     error={Boolean(errors.connection)}
                     {...(errors.connection && { helperText: errors.connection.message })}
                   >
-                    <MenuItem value=''>
+                    <MenuItem disabled>
                       <em>selecione</em>
                     </MenuItem>
                     <MenuItem value='DHCP'>DHCP</MenuItem>
@@ -418,24 +413,6 @@ const AddCentral = ({ handleClose, open, refresh, setRefresh }: AddCentralProps)
                     onChange={onChange}
                     error={Boolean(errors.dns)}
                     {...(errors.dns && { helperText: errors.dns.message })}
-                  />
-                )}
-              />
-            </Grid>
-            <Grid item xs={12} sm={3}>
-              <Controller
-                name='tcp'
-                control={control}
-                render={({ field: { value, onChange, onBlur } }) => (
-                  <CustomTextField
-                    fullWidth
-                    label='TCP'
-                    disabled={handleCheckConnectionType(watch('connection') as string)}
-                    value={value || ''}
-                    onBlur={onBlur}
-                    onChange={onChange}
-                    error={Boolean(errors.tcp)}
-                    {...(errors.tcp && { helperText: errors.tcp.message })}
                   />
                 )}
               />
