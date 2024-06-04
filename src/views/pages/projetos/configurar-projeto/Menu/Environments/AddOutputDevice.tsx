@@ -232,7 +232,7 @@ const AddOutputDevice = ({
           pt: theme => [`${theme.spacing(8)} !important`, `${theme.spacing(12.5)} !important`]
         }}
       >
-        Adicionar Dispositivo de saída
+        Adicionar Dispositivo de Saída
       </DialogTitle>
       <DialogContent
         sx={{

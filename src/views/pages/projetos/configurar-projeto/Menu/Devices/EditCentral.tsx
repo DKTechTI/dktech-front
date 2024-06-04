@@ -11,9 +11,9 @@ import {
   Button,
   MenuItem,
   Box,
-  Typography,
   Chip,
-  IconButton
+  IconButton,
+  InputAdornment
 } from '@mui/material'
 
 import IconifyIcon from 'src/@core/components/icon'
@@ -37,6 +37,7 @@ import projectDevicesErrors from 'src/errors/projectDevicesErrors'
 import { delay } from 'src/utils/delay'
 
 const schema = yup.object().shape({
+  boardId: yup.string().required('Board ID obrigatório'),
   name: yup.string().required('Nome obrigatório'),
   connection: yup.string().required('Conexão obrigatória'),
   ip: yup.string().when('connection', ([connection], schema) => {
@@ -49,9 +50,6 @@ const schema = yup.object().shape({
     return connection === 'STATIC_IP' ? schema.required('Subnet obrigatório') : schema.notRequired()
   }),
   dns: yup.string().when('connection', ([connection], schema) => {
-    return connection === 'STATIC_IP' ? schema.required('DNS obrigatório') : schema.notRequired()
-  }),
-  tcp: yup.string().when('connection', ([connection], schema) => {
     return connection === 'STATIC_IP' ? schema.required('DNS obrigatório') : schema.notRequired()
   }),
   port: yup.string().required('Porta obrigatória')
@@ -71,7 +69,6 @@ interface FormData {
   subnet: string
   dns: string
   port: string
-  tcp: string
 }
 
 interface CentralStatusType {
@@ -140,7 +137,6 @@ const EditCentral = ({ handleClose, open, refresh, setRefresh, projectDeviceId }
         setValue('gateway', '0')
         setValue('subnet', '0')
         setValue('dns', '0')
-        setValue('tcp', '0')
 
         return
       }
@@ -149,7 +145,6 @@ const EditCentral = ({ handleClose, open, refresh, setRefresh, projectDeviceId }
       setValue('gateway', projectDevice?.data.gateway)
       setValue('subnet', projectDevice?.data.subnet)
       setValue('dns', projectDevice?.data.dns)
-      setValue('tcp', projectDevice?.data.tcp)
 
       return
     }
@@ -207,7 +202,6 @@ const EditCentral = ({ handleClose, open, refresh, setRefresh, projectDeviceId }
         gateway: projectDevice?.data.gateway,
         subnet: projectDevice?.data.subnet,
         dns: projectDevice?.data.dns,
-        tcp: projectDevice?.data.tcp,
         port: projectDevice?.data.port
       })
     }
@@ -292,50 +286,39 @@ const EditCentral = ({ handleClose, open, refresh, setRefresh, projectDeviceId }
         >
           <Grid container spacing={6} justifyContent={'space-between'} pb={6}>
             <Grid item xs={12} sm={6}>
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                <AnimatePresence>
-                  <Chip
-                    icon={<IconifyIcon icon='tabler:circle-filled' color={centralStatusObj[String(online)]} />}
-                    label={online ? 'Online' : 'Offline'}
-                    variant='outlined'
-                    deleteIcon={
-                      loadingCentralStatus ? (
-                        <motion.div
-                          style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-                          animate={{ rotate: [0, 360] }}
-                          transition={{ repeat: Infinity, duration: 4 }}
-                        >
-                          <IconifyIcon icon='tabler:refresh' />
-                        </motion.div>
-                      ) : (
+              <AnimatePresence>
+                <Chip
+                  icon={<IconifyIcon icon='tabler:circle-filled' color={centralStatusObj[String(online)]} />}
+                  label={online ? 'Online' : 'Offline'}
+                  variant='outlined'
+                  deleteIcon={
+                    loadingCentralStatus ? (
+                      <motion.div
+                        style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                        animate={{ rotate: [0, 360] }}
+                        transition={{ repeat: Infinity, duration: 4 }}
+                      >
                         <IconifyIcon icon='tabler:refresh' />
-                      )
-                    }
-                    onDelete={() => setRefreshCentralStatus(current => !current)}
-                    disabled={loadingCentralStatus}
-                    sx={{
-                      width: 'fit-content',
+                      </motion.div>
+                    ) : (
+                      <IconifyIcon icon='tabler:refresh' />
+                    )
+                  }
+                  onDelete={() => setRefreshCentralStatus(current => !current)}
+                  disabled={loadingCentralStatus}
+                  sx={{
+                    width: 'fit-content',
+                    color: '#d0d4f1c7',
+                    '& .MuiChip-deleteIcon': {
                       color: '#d0d4f1c7',
-                      '& .MuiChip-deleteIcon': {
-                        color: '#d0d4f1c7',
-                        ':hover': {
-                          opacity: 0.9,
-                          transition: '0.1s'
-                        }
+                      ':hover': {
+                        opacity: 0.9,
+                        transition: '0.1s'
                       }
-                    }}
-                  />
-                </AnimatePresence>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                  <Typography variant='h4' sx={{ color: 'text.primaty' }}>
-                    # {watch('boardId')}
-                  </Typography>
-
-                  <IconButton onClick={() => copyToClipboard(watch('boardId'))}>
-                    <IconifyIcon icon='tabler:copy' color={centralStatusObj['online']} />
-                  </IconButton>
-                </Box>
-              </Box>
+                    }
+                  }}
+                />
+              </AnimatePresence>
             </Grid>
             <Grid item xs={12} sm={6} gap={10}>
               <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'end', gap: 2 }}>
@@ -354,6 +337,33 @@ const EditCentral = ({ handleClose, open, refresh, setRefresh, projectDeviceId }
             <Grid container spacing={6}>
               <Grid item xs={12} sm={6}>
                 <Controller
+                  name='boardId'
+                  control={control}
+                  render={({ field: { value, onChange, onBlur } }) => (
+                    <CustomTextField
+                      fullWidth
+                      label='Board ID'
+                      required
+                      value={value || ''}
+                      onBlur={onBlur}
+                      onChange={onChange}
+                      error={Boolean(errors.boardId)}
+                      {...(errors.boardId && { helperText: errors.boardId.message })}
+                      InputProps={{
+                        endAdornment: (
+                          <InputAdornment position='end'>
+                            <IconButton onClick={() => copyToClipboard(watch('boardId'))}>
+                              <IconifyIcon icon='tabler:copy' color={centralStatusObj['online']} />
+                            </IconButton>
+                          </InputAdornment>
+                        )
+                      }}
+                    />
+                  )}
+                />
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <Controller
                   name='name'
                   control={control}
                   render={({ field: { value, onChange, onBlur } }) => (
@@ -370,7 +380,6 @@ const EditCentral = ({ handleClose, open, refresh, setRefresh, projectDeviceId }
                   )}
                 />
               </Grid>
-
               <Grid item xs={12} sm={6}>
                 <Controller
                   name='connection'
@@ -387,7 +396,7 @@ const EditCentral = ({ handleClose, open, refresh, setRefresh, projectDeviceId }
                       error={Boolean(errors.connection)}
                       {...(errors.connection && { helperText: errors.connection.message })}
                     >
-                      <MenuItem value=''>
+                      <MenuItem disabled>
                         <em>selecione</em>
                       </MenuItem>
                       <MenuItem value='DHCP'>DHCP</MenuItem>
@@ -464,24 +473,6 @@ const EditCentral = ({ handleClose, open, refresh, setRefresh, projectDeviceId }
                       onChange={onChange}
                       error={Boolean(errors.dns)}
                       {...(errors.dns && { helperText: errors.dns.message })}
-                    />
-                  )}
-                />
-              </Grid>
-              <Grid item xs={12} sm={6}>
-                <Controller
-                  name='tcp'
-                  control={control}
-                  render={({ field: { value, onChange, onBlur } }) => (
-                    <CustomTextField
-                      fullWidth
-                      label='TCP'
-                      disabled={handleCheckConnectionType(watch('connection') as string)}
-                      value={value || ''}
-                      onBlur={onBlur}
-                      onChange={onChange}
-                      error={Boolean(errors.tcp)}
-                      {...(errors.tcp && { helperText: errors.tcp.message })}
                     />
                   )}
                 />
