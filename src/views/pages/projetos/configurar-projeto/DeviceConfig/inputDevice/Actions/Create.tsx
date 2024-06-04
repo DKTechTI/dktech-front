@@ -48,7 +48,7 @@ const schema = yup.object().shape({
         projectSceneId: yup.string().required('Cena obrigatória'),
         projectDeviceKeyId: yup.string().required('Chave obrigatória'),
         actionProjectDeviceKeyId: yup.string().required('Dispositivo obrigatório'),
-        boardId: yup.string().required('Placa obrigatória'),
+        centralId: yup.string().required('Placa obrigatória'),
         type: yup.string().required('Tipo obrigatório'),
         actionValueReles: yup.string(),
         actionValueEngine: yup.string(),
@@ -64,7 +64,7 @@ type OutputProps = {
   projectDeviceKeyId: string
   actionProjectDeviceKeyId: string
   name: string
-  boardId: string
+  centralId: string
   type: string
   actionValueReles?: string
   actionValueEngine?: string
@@ -115,46 +115,40 @@ const Create = ({ open, handleClose }: CreateProps) => {
     name: 'outputs'
   })
 
-  const handleSelectOutput = (environmentId: string, projectDeviceKeyId: string) => {
+  const handleSelectOutput = (projectDeviceKeyId: string) => {
     if (!projectSceneId) {
       handleClose()
 
       return toast.error('Selecione uma cena antes de adicionar uma ação')
     }
 
-    const environmentSelected = environments.filter(environment => environment.environmentId === environmentId)[0]
+    api
+      .get(`/projectDeviceKeys/${projectDeviceKeyId}`)
+      .then(response => {
+        const { data } = response
 
-    const outputSelected = environmentSelected.outputs.filter(
-      output => output.projectDeviceKeyId === projectDeviceKeyId
-    )[0]
+        const device = data.data
 
-    if (outputSelected) {
-      api
-        .get(`/projectDeviceKeys/${projectDeviceKeyId}`)
-        .then(response => {
-          const { data } = response
+        const initialValue = device.initialValue
+        const operationType = handleCheckOperationType(initialValue)
 
-          const initialValue = data?.data.initialValue
-          const operationType = handleCheckOperationType(initialValue)
+        if (!initialValue && !operationType)
+          return setError('outputs', { message: 'Erro ao buscar informações', type: 'manual' })
 
-          if (!initialValue && !operationType)
-            return setError('outputs', { message: 'Erro ao buscar informações', type: 'manual' })
-
-          append({
-            projectId: id as string,
-            projectSceneId: projectSceneId,
-            projectDeviceKeyId: keyId,
-            actionProjectDeviceKeyId: outputSelected.projectDeviceKeyId,
-            boardId: outputSelected.boardId,
-            name: outputSelected.deviceKeyName,
-            type: 'EXTERNAL',
-            ...(operationType === 'RELES' && { actionValueReles: initialValue }),
-            ...(operationType === 'ENGINE' && { actionValueEngine: initialValue }),
-            ...(operationType === 'DIMMER' && { actionValueDimmer: initialValue })
-          })
+        append({
+          projectId: id as string,
+          projectSceneId: projectSceneId,
+          projectDeviceKeyId: keyId,
+          actionProjectDeviceKeyId: device._id,
+          centralId: device.centralId,
+          name: device.name,
+          type: 'EXTERNAL',
+          ...(operationType === 'RELES' && { actionValueReles: initialValue }),
+          ...(operationType === 'ENGINE' && { actionValueEngine: initialValue }),
+          ...(operationType === 'DIMMER' && { actionValueDimmer: initialValue })
         })
-        .catch(() => toast.error('Erro ao buscar informações do dispositivo, tente novamente mais tarde'))
-    }
+      })
+      .catch(() => toast.error('Erro ao buscar informações do dispositivo, tente novamente mais tarde'))
   }
 
   const onSubmit = (formData: FormData) => {
@@ -246,7 +240,7 @@ const Create = ({ open, handleClose }: CreateProps) => {
                     {environment.outputs.map(output => (
                       <ListItemButton
                         key={output.projectDeviceKeyId}
-                        onClick={() => handleSelectOutput(environment.environmentId, output.projectDeviceKeyId)}
+                        onClick={() => handleSelectOutput(output.projectDeviceKeyId)}
                         sx={{
                           borderBottom: `1px solid ${theme.palette.divider}`
                         }}
