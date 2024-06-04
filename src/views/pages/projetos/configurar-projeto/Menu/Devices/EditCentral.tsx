@@ -243,7 +243,7 @@ const EditCentral = ({ handleClose, open, refresh, setRefresh, projectDeviceId }
 
       const interval = setInterval(() => {
         setRefreshCentralStatus(!refreshCentralStatus)
-      }, 20000)
+      }, 5000)
 
       return () => {
         clearInterval(interval)

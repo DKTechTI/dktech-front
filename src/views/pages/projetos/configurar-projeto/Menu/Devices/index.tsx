@@ -80,7 +80,7 @@ const Devices = ({ devices }: DevicesProps) => {
 
     const interval = setInterval(() => {
       fetchCentralsStatus()
-    }, 30000)
+    }, 5000)
 
     return () => {
       clearInterval(interval)
