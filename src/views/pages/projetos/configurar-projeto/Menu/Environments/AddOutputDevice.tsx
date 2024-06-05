@@ -232,6 +232,8 @@ const AddOutputDevice = ({
       reset()
       setPorts([])
       setDevicesAvailable([])
+      setBoardId(null)
+      setBoardIndex(null)
     }
 
     setValue('environmentId', environmentId)
