@@ -78,6 +78,7 @@ const AddInputDevice = ({
   const { handleAvaliableInputPorts } = useProjectMenu()
 
   const [ports, setPorts] = useState<any[]>([])
+  const [devicesAvailable, setDevicesAvailable] = useState<any[]>([])
 
   const { data: projectDevices } = useGetDataApi<any>({
     url: `/projectDevices/by-project/${id}`,
@@ -92,6 +93,7 @@ const AddInputDevice = ({
     reset,
     setValue,
     watch,
+    getValues,
     clearErrors,
     setError,
     formState: { errors }
@@ -126,12 +128,26 @@ const AddInputDevice = ({
     setError('centralId', { type: 'manual', message: 'Central obrigatória' })
   }
 
+  const handleCheckDeviceOptions = (devices: any[]) => {
+    const validDevices = devices?.filter(
+      device =>
+        device.moduleType === 'INPUT' &&
+        (device?.keysQuantity <= ports[Number(watch('boardIndex'))]?.keysQuantityAvaliable ||
+          device?.inputTotal <= ports[Number(watch('boardIndex'))]?.keysQuantityAvaliable)
+    )
+
+    if (validDevices.length === 0) return
+
+    setDevicesAvailable(validDevices)
+  }
+
   const handleSetBoardIndex = (event: SyntheticEvent) => {
     const { value } = event.target as HTMLInputElement
 
     if (value) {
       setValue('boardIndex', value)
       clearErrors('boardIndex')
+      handleCheckDeviceOptions(devices?.data)
 
       return
     }
@@ -158,27 +174,22 @@ const AddInputDevice = ({
     setError('deviceId', { type: 'manual', message: 'Dispositivo de entrada obrigatório' })
   }
 
-  const handleRenderDeviceOptions = (devices: any[]) => {
-    const validDevices = devices?.filter(
-      device =>
-        device.moduleType === 'INPUT' &&
-        (device?.keysQuantity <= ports[Number(watch('boardIndex'))]?.keysQuantityAvaliable ||
-          device?.inputTotal <= ports[Number(watch('boardIndex'))]?.keysQuantityAvaliable)
-    )
+  const handleRenderDeviceOptions = (currentDevicesAvailable: any[]) => {
+    if (currentDevicesAvailable.length > 0)
+      return currentDevicesAvailable.map(device => (
+        <MenuItem key={device._id} value={device._id}>
+          {device.modelName}
+        </MenuItem>
+      ))
 
-    if (validDevices.length === 0) {
+    if (getValues('boardIndex'))
       return (
         <MenuItem value='' disabled>
-          <em>Nenhum dispositivo de entrada disponível</em>
+          <em>Nenhum dispositivo disponível</em>
         </MenuItem>
       )
-    }
 
-    return validDevices.map(device => (
-      <MenuItem key={device._id} value={device._id}>
-        {device.modelName}
-      </MenuItem>
-    ))
+    return null
   }
 
   const onSubmit = (formData: FormData) => {
@@ -195,24 +206,24 @@ const AddInputDevice = ({
       .post('/projectDevices', data)
       .then(response => {
         if (response.status === 201) {
-          handleClose()
           toast.success('Dispositivo de entrada adicionado com sucesso!')
           setRefresh(!refresh)
         }
       })
       .catch(error => {
-        handleClose()
         handleErrorResponse({
           error: error,
           errorReference: projectDevicesErrors,
           defaultErrorMessage: 'Erro ao adicionar dispositivo de entrada, tente novamente mais tarde.'
         })
       })
+      .finally(() => handleClose())
   }
 
   useEffect(() => {
     if (!open) {
       setPorts([])
+      setDevicesAvailable([])
       reset()
     }
 
@@ -361,7 +372,7 @@ const AddInputDevice = ({
                     <MenuItem value='' disabled>
                       <em>{watch('boardId') ? 'Selecione' : 'Selecione uma porta primeiro'}</em>
                     </MenuItem>
-                    {devices && watch('boardId') && handleRenderDeviceOptions(devices?.data)}
+                    {handleRenderDeviceOptions(devicesAvailable)}
                   </CustomTextField>
                 )}
               />

@@ -83,6 +83,7 @@ const AddOutputDevice = ({
   const { handleAvaliableOutputPorts } = useProjectMenu()
 
   const [ports, setPorts] = useState<any[]>([])
+  const [devicesAvailable, setDevicesAvailable] = useState<any[]>([])
 
   const { data: projectDevices } = useGetDataApi<any>({
     url: `/projectDevices/by-project/${id}`,
@@ -138,6 +139,7 @@ const AddOutputDevice = ({
     if (value) {
       setValue('boardIndex', value)
       clearErrors('boardIndex')
+      handleCheckDeviceOptions(devices?.data)
 
       return
     }
@@ -178,6 +180,20 @@ const AddOutputDevice = ({
     return deviceInitialValue
   }
 
+  const handleCheckDeviceOptions = (devices: any[]) => {
+    devices.map((device: any) => {
+      device.moduleType === 'OUTPUT' && setDevicesAvailable(prevState => [...prevState, device])
+    })
+  }
+
+  const handleRenderDeviceOption = (device: any) => {
+    return (
+      <MenuItem key={device._id} value={device._id}>
+        {device.modelName}
+      </MenuItem>
+    )
+  }
+
   const onSubmit = (formData: FormData) => {
     const data = formData
 
@@ -210,6 +226,8 @@ const AddOutputDevice = ({
   useEffect(() => {
     if (!open) {
       reset()
+      setPorts([])
+      setDevicesAvailable([])
     }
 
     setValue('environmentId', environmentId)
@@ -277,7 +295,6 @@ const AddOutputDevice = ({
                 )}
               />
             </Grid>
-
             <Grid item xs={12} sm={6}>
               <Controller
                 name='boardIndex'
@@ -308,7 +325,6 @@ const AddOutputDevice = ({
                 )}
               />
             </Grid>
-
             <Grid item xs={12} sm={6}>
               <Controller
                 name='index'
@@ -339,7 +355,6 @@ const AddOutputDevice = ({
                 )}
               />
             </Grid>
-
             <Grid item xs={12} sm={6}>
               <Controller
                 name='deviceId'
@@ -359,15 +374,7 @@ const AddOutputDevice = ({
                     <MenuItem value='' disabled>
                       <em>{watch('boardId') ? 'Selecione' : 'Selecione uma porta primeiro'}</em>
                     </MenuItem>
-                    {devices?.data.map((device: any) => {
-                      if (device.moduleType === 'OUTPUT' && watch('boardId')) {
-                        return (
-                          <MenuItem key={device._id} value={device._id}>
-                            {device.modelName}
-                          </MenuItem>
-                        )
-                      }
-                    })}
+                    {devicesAvailable.map((device: any) => handleRenderDeviceOption(device))}
                   </CustomTextField>
                 )}
               />
@@ -390,7 +397,6 @@ const AddOutputDevice = ({
                 )}
               />
             </Grid>
-
             <Grid item xs={12} sm={6}>
               <Controller
                 name='initialValue'
@@ -421,7 +427,6 @@ const AddOutputDevice = ({
                 )}
               />
             </Grid>
-
             <Grid item xs={12} sm={6}>
               <Controller
                 name='environmentId'
@@ -446,7 +451,6 @@ const AddOutputDevice = ({
                 )}
               />
             </Grid>
-
             <Grid item xs={12} sm={4} alignContent={'end'}>
               <Controller
                 name='voiceActivation'

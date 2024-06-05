@@ -17,10 +17,12 @@ import { useForm, Controller } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
 
 import { ResaleProps } from 'src/types/resales'
+import { applyMask } from 'src/utils/inputs'
 import { formatDocumentNumber } from 'src/utils/formatDocumentNumber'
-import toast from 'react-hot-toast'
-import { api } from 'src/services/api'
 
+import toast from 'react-hot-toast'
+
+import { api } from 'src/services/api'
 import usersErrors from 'src/errors/usersErrors'
 import useErrorHandling from 'src/hooks/useErrorHandling'
 
@@ -35,9 +37,9 @@ const schema = yup.object().shape({
     .when('documentType', ([documentType], schema) => {
       switch (documentType) {
         case 'CPF':
-          return schema.matches(/^[0-9]{3}\.[0-9]{3}\.[0-9]{3}-[0-9]{2}$/, 'CPF inválido')
+          return schema.matches(/^[0-9]{3}\.[0-9]{3}\.[0-9]{3}-[0-9]{2}$/, 'CPF inválido').max(14, 'CPF inválido')
         case 'CNPJ':
-          return schema.matches(/^\d{2}\.\d{3}\.\d{3}\/\d{4}-\d{2}$/, 'CNPJ inválido')
+          return schema.matches(/^\d{2}\.\d{3}\.\d{3}\/\d{4}-\d{2}$/, 'CNPJ inválido').max(18, 'CNPJ inválido')
         default:
           return schema.min(8, 'Documento inválido')
       }
@@ -51,7 +53,10 @@ const schema = yup.object().shape({
   cellphone: yup.string(),
   stateRegistration: yup.string(),
   municipalRegistration: yup.string(),
-  cep: yup.string().required('CEP obrigatório').matches(/([\d]{2})\.?([\d]{3})\-?([\d]{3})/, 'CEP inválido'),
+  cep: yup
+    .string()
+    .required('CEP obrigatório')
+    .matches(/([\d]{2})\.?([\d]{3})\-?([\d]{3})/, 'CEP inválido'),
   city: yup.string().required('Cidade obrigatória'),
   address: yup.string().required('Endereço obrigatório'),
   neighborhood: yup.string().required('Bairro obrigatório'),
@@ -96,6 +101,7 @@ const EditAccount = ({ openEdit, handleEditClose, data, refresh, setRefresh }: E
   const {
     control,
     handleSubmit,
+    watch,
     formState: { errors }
   } = useForm({
     defaultValues: { ...data, documentNumber: formatDocumentNumber(data?.documentNumber, data.documentType) },
@@ -277,7 +283,7 @@ const EditAccount = ({ openEdit, handleEditClose, data, refresh, setRefresh }: E
                     label='Número do Documento'
                     value={value}
                     onBlur={onBlur}
-                    onChange={onChange}
+                    onChange={e => onChange(applyMask(e.target.value, watch('documentType')))}
                     placeholder='Número do Documento'
                     error={Boolean(errors.documentNumber)}
                     {...(errors.documentNumber && { helperText: errors.documentNumber.message })}
