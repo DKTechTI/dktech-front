@@ -37,7 +37,7 @@ const schema = yup.object().shape({
   boardIndex: yup.string().required('Porta obrigatória'),
   index: yup.string().required('Sequencia obrigatória'),
   centralId: yup.string().required('Central obrigatória'),
-  deviceId: yup.string().required('Dispositivo de entrada obrigatório'),
+  deviceId: yup.string().required('Dispositivo de saída obrigatório'),
   environmentId: yup.string().required('Ambiente obrigatório'),
   initialValue: yup.string().required('Valor inicial obrigatório'),
   voiceActivation: yup.string()
@@ -261,7 +261,7 @@ const AddOutputDevice = ({
                     error={Boolean(errors.centralId)}
                     {...(errors.centralId && { helperText: errors.centralId.message })}
                   >
-                    <MenuItem value=''>
+                    <MenuItem value='' disabled>
                       <em>selecione</em>
                     </MenuItem>
                     {projectDevices?.data.map((device: any) => {
@@ -438,7 +438,7 @@ const AddOutputDevice = ({
                     error={Boolean(errors.environmentId)}
                     {...(errors.environmentId && { helperText: errors.environmentId.message })}
                   >
-                    <MenuItem value=''>
+                    <MenuItem value='' disabled>
                       <em>selecione</em>
                     </MenuItem>
                     <MenuItem value={environmentId}>{environmentName}</MenuItem>

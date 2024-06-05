@@ -152,7 +152,7 @@ const AddCentral = ({ handleClose, open, refresh, setRefresh }: AddCentralProps)
     delete data['connection']
 
     api
-      .post('/projectDevices', formData)
+      .post('/projectDevices', data)
       .then(response => {
         if (response.status === 201) {
           setRefresh(!refresh)
