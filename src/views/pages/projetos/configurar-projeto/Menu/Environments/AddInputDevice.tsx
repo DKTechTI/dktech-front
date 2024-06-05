@@ -79,6 +79,8 @@ const AddInputDevice = ({
 
   const [ports, setPorts] = useState<any[]>([])
   const [devicesAvailable, setDevicesAvailable] = useState<any[]>([])
+  const [boardId, setBoardId] = useState<string | null>(null)
+  const [boardIndex, setBoardIndex] = useState<string | null>(null)
 
   const { data: projectDevices } = useGetDataApi<any>({
     url: `/projectDevices/by-project/${id}`,
@@ -118,6 +120,7 @@ const AddInputDevice = ({
       const central = projectDevices.data.filter((device: any) => device.centralId === value)[0]
 
       setValue('boardId', central.boardId)
+      setBoardId(central.boardId)
       setValue('centralId', value)
       clearErrors('centralId')
 
@@ -146,6 +149,7 @@ const AddInputDevice = ({
 
     if (value) {
       setValue('boardIndex', value)
+      setBoardIndex(value)
       clearErrors('boardIndex')
       handleCheckDeviceOptions(devices?.data)
 
@@ -309,7 +313,7 @@ const AddInputDevice = ({
                     {...(errors.boardIndex && { helperText: errors.boardIndex.message })}
                   >
                     <MenuItem value='' disabled>
-                      <em>{watch('centralId') ? 'Selecione' : 'Selecione uma central primeiro'}</em>
+                      <em>{boardId ? 'Selecione' : 'Selecione uma central primeiro'}</em>
                     </MenuItem>
                     {ports.length > 0
                       ? ports.map((port: any, index: number) => (
@@ -339,7 +343,7 @@ const AddInputDevice = ({
                     {...(errors.index && { helperText: errors.index.message })}
                   >
                     <MenuItem value='' disabled>
-                      <em>{watch('boardIndex') ? 'Selecione' : 'Selecione uma porta primeiro'}</em>
+                      <em>{boardIndex ? 'Selecione' : 'Selecione uma porta primeiro'}</em>
                     </MenuItem>
                     {ports.length > 0 && watch('boardIndex')
                       ? ports[Number(watch('boardIndex'))].sequence.map((sequence: any, index: number) => (
@@ -370,7 +374,7 @@ const AddInputDevice = ({
                     {...(errors.deviceId && { helperText: errors.deviceId.message })}
                   >
                     <MenuItem value='' disabled>
-                      <em>{watch('boardId') ? 'Selecione' : 'Selecione uma porta primeiro'}</em>
+                      <em>{boardIndex ? 'Selecione' : 'Selecione uma porta primeiro'}</em>
                     </MenuItem>
                     {handleRenderDeviceOptions(devicesAvailable)}
                   </CustomTextField>
