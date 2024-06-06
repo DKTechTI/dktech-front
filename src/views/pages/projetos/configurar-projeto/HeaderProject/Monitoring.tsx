@@ -47,7 +47,7 @@ const Monitoring = ({ handleClose, open }: MonitoringProps) => {
   const firstRender = useRef(true)
 
   const { data: projectDevices } = useGetDataApi<any>({
-    url: `/projectDevices/by-project/${projectId}`,
+    url: `/projectDevices/by-project/${projectId}?moduleType=INOUT`,
     callInit: router.isReady && open
   })
 
@@ -186,15 +186,11 @@ const Monitoring = ({ handleClose, open }: MonitoringProps) => {
                     <MenuItem value='' disabled>
                       <em>selecione</em>
                     </MenuItem>
-                    {projectDevices?.data.map((device: any) => {
-                      if (device.type === 'CENTRAL') {
-                        return (
-                          <MenuItem key={device.centralId} value={device.boardId}>
-                            {device.name}
-                          </MenuItem>
-                        )
-                      }
-                    })}
+                    {projectDevices?.data.map((device: any) => (
+                      <MenuItem key={device.centralId} value={device.boardId}>
+                        {device.name}
+                      </MenuItem>
+                    ))}
                   </CustomTextField>
                 )}
               />

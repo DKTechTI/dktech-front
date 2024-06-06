@@ -83,7 +83,7 @@ const AddInputDevice = ({
   const [boardIndex, setBoardIndex] = useState<string | null>(null)
 
   const { data: projectDevices } = useGetDataApi<any>({
-    url: `/projectDevices/by-project/${id}`,
+    url: `/projectDevices/by-project/${id}?moduleType=INOUT`,
     callInit: router.isReady && open
   })
 
@@ -285,15 +285,11 @@ const AddInputDevice = ({
                     <MenuItem value='' disabled>
                       <em>selecione</em>
                     </MenuItem>
-                    {projectDevices?.data.map((device: any) => {
-                      if (device.type === 'CENTRAL') {
-                        return (
-                          <MenuItem key={device._id} value={device._id}>
-                            {device.name}
-                          </MenuItem>
-                        )
-                      }
-                    })}
+                    {projectDevices?.data.map((device: any) => (
+                      <MenuItem key={device._id} value={device._id}>
+                        {device.name}
+                      </MenuItem>
+                    ))}
                   </CustomTextField>
                 )}
               />
