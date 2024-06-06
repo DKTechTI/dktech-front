@@ -117,7 +117,7 @@ const AddInputDevice = ({
         setPorts(response)
       })
 
-      const central = projectDevices.data.filter((device: any) => device.centralId === value)[0]
+      const central = projectDevices.data.filter((device: any) => device._id === value)[0]
 
       setValue('boardId', central.boardId)
       setBoardId(central.boardId)
@@ -288,7 +288,7 @@ const AddInputDevice = ({
                     {projectDevices?.data.map((device: any) => {
                       if (device.type === 'CENTRAL') {
                         return (
-                          <MenuItem key={device.centralId} value={device.centralId}>
+                          <MenuItem key={device._id} value={device._id}>
                             {device.name}
                           </MenuItem>
                         )
