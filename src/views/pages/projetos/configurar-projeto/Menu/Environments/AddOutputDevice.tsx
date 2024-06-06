@@ -47,7 +47,6 @@ interface FormData {
   name: string
   projectId: string
   centralId: string
-  boardId: string
   boardIndex: string
   type: string
   moduleType: string
@@ -124,7 +123,6 @@ const AddOutputDevice = ({
 
       const central = projectDevices.data.filter((device: any) => device._id === value)[0]
 
-      setValue('boardId', central.boardId)
       setBoardId(central.boardId)
       setValue('centralId', value)
       clearErrors('centralId')
