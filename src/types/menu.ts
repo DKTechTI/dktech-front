@@ -46,6 +46,6 @@ export type EnvironmentDeviceProps = {
   projectDeviceKeyId: string
   deviceName: string
   deviceKeyName: string
-  boardId: string
+  centralId: string
   keyDeviceOrder: number
 }

@@ -160,7 +160,7 @@ const ActionsDnDProvider = ({ children }: Props) => {
         projectSceneId: projectSceneId,
         projectDeviceKeyId: keyId,
         actionProjectDeviceKeyId: draggedOutput.projectDeviceKeyId,
-        boardId: draggedOutput.boardId,
+        centralId: draggedOutput.centralId,
         order: action.destination.index,
         name: draggedOutput.deviceKeyName,
         type: 'EXTERNAL',
