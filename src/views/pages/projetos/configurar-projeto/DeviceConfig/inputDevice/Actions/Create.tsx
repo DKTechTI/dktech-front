@@ -92,7 +92,7 @@ const Create = ({ open, handleClose }: CreateProps) => {
   const { menu } = useProjectMenu()
   const { keyId } = useDeviceKeys()
   const { handleErrorResponse } = useErrorHandling()
-  const { projectSceneId, refreshActions, setRefreshActions } = useActionsDnD()
+  const { projectSceneId, refreshActions, setRefreshActions, setRefreshScenes } = useActionsDnD()
 
   const [environments, setEnvironments] = useState<EnvironmentProps[]>([])
 
@@ -162,6 +162,7 @@ const Create = ({ open, handleClose }: CreateProps) => {
       .then(() => {
         handleClose()
         toast.success('Ações adicionadas com sucesso!')
+        setRefreshScenes(true)
         setRefreshActions(!refreshActions)
       })
       .catch(error => {

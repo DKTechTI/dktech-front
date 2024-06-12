@@ -47,7 +47,7 @@ const Config = () => {
 
   const { keyId } = useDeviceKeys()
   const { handleErrorResponse } = useErrorHandling()
-  const { actions, projectSceneId, setActions } = useActionsDnD()
+  const { actions, projectSceneId, setRefreshActions, setRefreshScenes, refreshActions } = useActionsDnD()
 
   const [addDialogOpen, setAddDialogOpen] = useState<boolean>(false)
 
@@ -84,11 +84,8 @@ const Config = () => {
       .post('/projectSceneActions', data)
       .then(response => {
         if (response.status === 201) {
-          const newData = {
-            ...response.data.data,
-            name: 'DELAY'
-          }
-          setActions((prevState: any) => [...prevState, newData])
+          setRefreshActions(!refreshActions)
+          setRefreshScenes(true)
         }
       })
       .catch(error => {

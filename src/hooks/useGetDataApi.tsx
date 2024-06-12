@@ -28,10 +28,11 @@ const useGetDataApi = <T,>({ url, params, callInit = true }: GetDataApiProps) =>
           .get(url, { params: paramsRef.current })
           .then(response => {
             setData(response.data)
-            setLoading(false)
           })
           .catch(error => {
             setError(error)
+          })
+          .finally(() => {
             setLoading(false)
           })
       }
@@ -46,10 +47,11 @@ const useGetDataApi = <T,>({ url, params, callInit = true }: GetDataApiProps) =>
         .get(url, { params: paramsRef.current })
         .then(response => {
           setData(response.data)
-          setLoading(false)
         })
         .catch(error => {
           setError(error)
+        })
+        .finally(() => {
           setLoading(false)
         })
     }

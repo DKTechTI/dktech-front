@@ -21,4 +21,24 @@ const handleCheckOperationType = (value: string) => {
   if (dimmer.includes(value)) return 'DIMMER'
 }
 
-export { checkActionValueEngine, handleCheckOperationType }
+const handleCheckItemsFrontAndBack = (items: any[], index: number, checkType: string) => {
+  const itemType = items[index].type
+  const itemTypeBefore = items[index - 1]?.type
+  const itemTypeAfter = items[index + 1]?.type
+
+  if (itemType === checkType && (itemTypeBefore === checkType || itemTypeAfter === checkType)) return false
+
+  return true
+}
+
+const handleCheckItemsFrontAndBackOnDelete = (items: any[], index: number, checkType: string) => {
+  const itemTypeBefore = items[index - 1]?.type
+  const itemTypeAfter = items[index + 1]?.type
+
+  if (itemTypeBefore === checkType && itemTypeAfter === checkType) return false
+
+  return true
+
+}
+
+export { checkActionValueEngine, handleCheckOperationType, handleCheckItemsFrontAndBack, handleCheckItemsFrontAndBackOnDelete }
