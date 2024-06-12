@@ -21,6 +21,7 @@ import { useAutoSave } from 'src/hooks/useAutoSave'
 
 import useErrorHandling from 'src/hooks/useErrorHandling'
 import projectSceneActionsErrors from 'src/errors/projectSceneActionsErrors'
+import { handleCheckItemsFrontAndBackOnDelete } from 'src/utils/actions'
 
 interface DraggableActionProps {
   row: any
@@ -28,7 +29,7 @@ interface DraggableActionProps {
 }
 
 const DraggableAction = ({ row, index }: DraggableActionProps) => {
-  const { setActions, actions } = useActionsDnD()
+  const { setActions, actions, setRefreshScenes, refreshActions, setRefreshActions } = useActionsDnD()
   const { handleSaveOnStateChange } = useAutoSave()
   const { handleErrorResponse } = useErrorHandling()
 
@@ -37,23 +38,29 @@ const DraggableAction = ({ row, index }: DraggableActionProps) => {
   const [isDirty, setIsDirty] = useState(false)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
 
-  const handleConfirmDeleteAction = (id: string) => {
+  const handleConfirmDeleteAction = (id: string, index: number) => {
+    const operationCheck = handleCheckItemsFrontAndBackOnDelete(actions, index, 'DELAY')
+
+    if (!operationCheck) return toast.error('Não é possível deletar a ação, pois delays não podem ficar em sequência.')
+
     api
       .delete(`/projectSceneActions/${id}`)
       .then(response => {
         if (response.status === 200) {
-          setActions(actions.filter((action: any) => action._id !== id))
-          setDeleteDialogOpen(false)
+          setRefreshScenes(true)
+          setRefreshActions(!refreshActions)
           toast.success('Ação deletada com sucesso!')
         }
       })
       .catch(error => {
-        setDeleteDialogOpen(false)
         handleErrorResponse({
           error: error,
           errorReference: projectSceneActionsErrors,
           defaultErrorMessage: 'Erro ao deletar ação, tente novamente mais tarde.'
         })
+      })
+      .finally(() => {
+        setDeleteDialogOpen(false)
       })
   }
 
@@ -144,7 +151,7 @@ const DraggableAction = ({ row, index }: DraggableActionProps) => {
         setOpen={setDeleteDialogOpen}
         question='Você tem certeza que deseja deletar esta ação?'
         description='Esta ação não poderá ser desfeita'
-        handleConfirmDelete={() => handleConfirmDeleteAction(actionId)}
+        handleConfirmDelete={() => handleConfirmDeleteAction(actionId, index)}
       />
 
       <Draggable key={row._id} draggableId={row._id} index={index}>

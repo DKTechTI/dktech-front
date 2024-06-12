@@ -63,7 +63,7 @@ const Scenes = ({ keyId }: ScenesProps) => {
   const { handleSaveOnStateChange } = useAutoSave()
   const { handleErrorResponse } = useErrorHandling()
   const { deviceId, projectDeviceType } = useDeviceKeys()
-  const { setProjectSceneId, setOrderActions } = useActionsDnD()
+  const { setProjectSceneId, setOrderActions, refreshScenes, setRefreshScenes } = useActionsDnD()
 
   const autoSaveEnabledRef = useRef(false)
   const sceneDataRef = useRef<any>({})
@@ -92,7 +92,12 @@ const Scenes = ({ keyId }: ScenesProps) => {
     resolver: yupResolver(schemaScene)
   })
 
-  const { data: sceneData, error } = useGetDataApi<any>({
+  const {
+    data: sceneData,
+    error,
+    setRefresh,
+    refresh
+  } = useGetDataApi<any>({
     url: `/projectScenes/by-event-type/${keyId}`,
     params: {
       eventType: formatEventTypeForRequest(watchScene('eventValue')),
@@ -267,6 +272,13 @@ const Scenes = ({ keyId }: ScenesProps) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [setValueScene, switchOptions]
   )
+
+  useEffect(() => {
+    if (refreshScenes) {
+      setRefresh(!refresh)
+      setRefreshScenes(false)
+    }
+  }, [refresh, refreshScenes, setRefresh, setRefreshScenes])
 
   useEffect(() => {
     if (error?.response?.status === 404) setProjectSceneId(null)

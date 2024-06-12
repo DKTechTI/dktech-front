@@ -13,7 +13,7 @@ import { api } from 'src/services/api'
 import toast from 'react-hot-toast'
 
 import useErrorHandling from 'src/hooks/useErrorHandling'
-import { handleCheckOperationType } from 'src/utils/actions'
+import { handleCheckItemsFrontAndBack, handleCheckOperationType } from 'src/utils/actions'
 import projectSceneActionsErrors from 'src/errors/projectSceneActionsErrors'
 
 type DraggableItem = {
@@ -40,6 +40,8 @@ type actionsDnDValuesType = {
   loadingActions: boolean
   refreshActions: boolean
   setRefreshActions: (value: boolean) => void
+  refreshScenes: boolean
+  setRefreshScenes: (value: boolean) => void
   orderActions: any
   setOrderActions: (value: any) => void
   projectSceneId: null | string
@@ -55,6 +57,8 @@ const defaultProvider: actionsDnDValuesType = {
   loadingActions: true,
   refreshActions: false,
   setRefreshActions: () => Boolean,
+  refreshScenes: false,
+  setRefreshScenes: () => Boolean,
   orderActions: null,
   setOrderActions: () => null,
   projectSceneId: null,
@@ -80,6 +84,7 @@ const ActionsDnDProvider = ({ children }: Props) => {
 
   const [actions, setActions] = useState<any[]>([])
   const [orderActions, setOrderActions] = useState<any>(null)
+  const [refreshScenes, setRefreshScenes] = useState<boolean>(false)
   const [projectSceneId, setProjectSceneId] = useState<string | null>(null)
   const [draggedItem, setDraggedItem] = useState<DraggableItem | null>(null)
 
@@ -87,9 +92,11 @@ const ActionsDnDProvider = ({ children }: Props) => {
     data,
     loading: loadingActions,
     refresh: refreshActions,
-    setRefresh: setRefreshActions
+    setRefresh: setRefreshActions,
+    error: errorActions
   } = useGetDataApi<any>({
     url: `/projectSceneActions/by-project/${id}/by-scene/${projectSceneId}`,
+    params: { perPage: 10000 },
     callInit: Boolean(id) && Boolean(projectSceneId)
   })
 
@@ -108,13 +115,27 @@ const ActionsDnDProvider = ({ children }: Props) => {
       const tempData = Array.from(actions)
       const [sourceData] = tempData.splice(result.source.index, 1)
       tempData.splice(result.destination.index, 0, sourceData)
+
+      const checkActionDestination = handleCheckItemsFrontAndBack(tempData, result.destination.index, 'DELAY')
+
+      if (!checkActionDestination)
+        return toast.error('Não é possível atualizar as posições, delays não podem ficar em sequência.')
+
+      const checkSourceActionDestination = handleCheckItemsFrontAndBack(tempData, result.source.index, 'DELAY')
+
+      if (!checkSourceActionDestination)
+        return toast.error('Não é possível atualizar as posições, delays não podem ficar em sequência.')
+
       setActions(tempData)
 
       const responseUpdatedIndex = await api.put(`/projectSceneActions/update-index/${result.draggableId}`, {
         to: result.destination.index
       })
 
-      if (responseUpdatedIndex.status === 200) return toast.success('Ordem das ações atualizada com sucesso')
+      if (responseUpdatedIndex.status === 200) {
+        setRefreshScenes(true)
+        toast.success('Ordem das ações atualizada com sucesso')
+      }
     } catch (error: any) {
       setActions(actionsRef)
       handleErrorResponse({
@@ -171,14 +192,11 @@ const ActionsDnDProvider = ({ children }: Props) => {
 
       const responseCreate = await api.post('/projectSceneActions', reqBody)
 
-      if (responseCreate.status === 201) toast.success('Ação criada com sucesso')
-
-      const newAction = { ...reqBody, _id: responseCreate.data.data._id }
-
-      const tempData = Array.from(actions)
-      tempData.splice(action.destination.index, 0, newAction)
-
-      return setActions(tempData)
+      if (responseCreate.status === 201) {
+        setRefreshScenes(true)
+        setRefreshActions(!refreshActions)
+        toast.success('Ação criada com sucesso')
+      }
     } catch (error: any) {
       handleErrorResponse({
         error: error,
@@ -202,27 +220,41 @@ const ActionsDnDProvider = ({ children }: Props) => {
     if (result.source.droppableId === 'updateIndex') return handleUpdateIndex(actions, result)
   }
 
+  const handleSwapIndexToValue = (order: any, actions: any[]) => {
+    function getKeyByValue(object: any, value: string) {
+      return Object.keys(object).find(key => object[key] === value)
+    }
+
+    const sizeActions = Object.values(order).length
+
+    const alignedObj = new Array(sizeActions).fill(null)
+
+    actions.map(item => {
+      const index = getKeyByValue(order, item._id)
+      alignedObj[Number(index)] = item
+    })
+
+    return alignedObj
+  }
+
   useEffect(() => {
     if (!projectSceneId) return setActions([])
 
-    if (data?.data && data.data.length > 0) {
+    if (errorActions) return setActions([])
+
+    if (data && data.data.length > 0) {
       const arrayActions = data.data
+      const orderActionsLength = Object.values(orderActions).length
 
-      if (orderActions) {
-        const idToIndexMap: { [key: string]: number } = {}
+      if (orderActionsLength === arrayActions.length) {
+        const indexUpdated = handleSwapIndexToValue(orderActions, arrayActions)
 
-        Object.entries(orderActions).forEach(([index, id]) => {
-          idToIndexMap[id as string] = parseInt(index as string)
-        })
-
-        arrayActions.sort((a: any, b: any) => idToIndexMap[a._id] - idToIndexMap[b._id])
+        return setActions(indexUpdated)
       }
-
-      return setActions(arrayActions)
     }
 
     setActions([])
-  }, [data, orderActions, projectSceneId])
+  }, [actions.length, data, errorActions, orderActions, projectSceneId])
 
   const memoizedChildren = useMemo(() => {
     return React.Children.map(children, child => {
@@ -253,6 +285,8 @@ const ActionsDnDProvider = ({ children }: Props) => {
         loadingActions,
         refreshActions,
         setRefreshActions,
+        refreshScenes,
+        setRefreshScenes,
         orderActions,
         setOrderActions,
         projectSceneId,
