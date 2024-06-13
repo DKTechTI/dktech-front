@@ -152,25 +152,22 @@ const Create = ({ open, handleClose }: CreateProps) => {
   }
 
   const onSubmit = (formData: FormData) => {
-    const createActions = async (data: OutputProps) => {
-      return api.post('/projectSceneActions', data)
-    }
-
-    const promises = formData.outputs.map(output => createActions(output))
-
-    Promise.all(promises)
-      .then(() => {
-        handleClose()
-        toast.success('Ações adicionadas com sucesso!')
-        setRefreshScenes(true)
-        setRefreshActions(!refreshActions)
+    api
+      .post('/projectSceneActions/store-multiple', {
+        actions: formData.outputs
+      })
+      .then(response => {
+        if (response.status === 201) {
+          setRefreshScenes(true)
+          setRefreshActions(!refreshActions)
+          toast.success('Ações adicionadas com sucesso!')
+        }
       })
       .catch(error => {
-        handleClose()
         handleErrorResponse({
           error: error,
           errorReference: projectSceneActionsErrors,
-          defaultErrorMessage: 'Erro ao adicionar ações, tente novamente mais tarde'
+          defaultErrorMessage: 'Erro ao adicionar ações, tente novamente mais tarde.'
         })
       })
   }
