@@ -170,6 +170,7 @@ const Create = ({ open, handleClose }: CreateProps) => {
           defaultErrorMessage: 'Erro ao adicionar ações, tente novamente mais tarde.'
         })
       })
+      .finally(() => handleClose())
   }
 
   useEffect(() => {
