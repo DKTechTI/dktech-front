@@ -244,12 +244,15 @@ const ActionsDnDProvider = ({ children }: Props) => {
 
     if (data && data.data.length > 0) {
       const arrayActions = data.data
-      const orderActionsLength = Object.values(orderActions).length
 
-      if (orderActionsLength === arrayActions.length) {
-        const indexUpdated = handleSwapIndexToValue(orderActions, arrayActions)
+      if (orderActions) {
+        const orderActionsLength = Object.values(orderActions).length
 
-        return setActions(indexUpdated)
+        if (orderActionsLength === arrayActions.length) {
+          const indexUpdated = handleSwapIndexToValue(orderActions, arrayActions)
+
+          return setActions(indexUpdated)
+        }
       }
     }
 
