@@ -1,10 +1,9 @@
-import React, { createContext, useEffect, useMemo, useState } from 'react'
+import React, { createContext, useCallback, useEffect, useMemo, useState } from 'react'
 
 import { useRouter } from 'next/router'
 
 import { DragDropContext } from 'react-beautiful-dnd'
 
-import useGetDataApi from 'src/hooks/useGetDataApi'
 import { useDeviceKeys } from 'src/hooks/useDeviceKeys'
 import { useProjectMenu } from 'src/hooks/useProjectMenu'
 
@@ -40,8 +39,6 @@ type actionsDnDValuesType = {
   loadingActions: boolean
   refreshActions: boolean
   setRefreshActions: (value: boolean) => void
-  refreshScenes: boolean
-  setRefreshScenes: (value: boolean) => void
   orderActions: any
   setOrderActions: (value: any) => void
   projectSceneId: null | string
@@ -57,8 +54,6 @@ const defaultProvider: actionsDnDValuesType = {
   loadingActions: true,
   refreshActions: false,
   setRefreshActions: () => Boolean,
-  refreshScenes: false,
-  setRefreshScenes: () => Boolean,
   orderActions: null,
   setOrderActions: () => null,
   projectSceneId: null,
@@ -84,21 +79,10 @@ const ActionsDnDProvider = ({ children }: Props) => {
 
   const [actions, setActions] = useState<any[]>([])
   const [orderActions, setOrderActions] = useState<any>(null)
-  const [refreshScenes, setRefreshScenes] = useState<boolean>(false)
+  const [loadingActions, setLoadingActions] = useState<boolean>(true)
+  const [refreshActions, setRefreshActions] = useState<boolean>(false)
   const [projectSceneId, setProjectSceneId] = useState<string | null>(null)
   const [draggedItem, setDraggedItem] = useState<DraggableItem | null>(null)
-
-  const {
-    data,
-    loading: loadingActions,
-    refresh: refreshActions,
-    setRefresh: setRefreshActions,
-    error: errorActions
-  } = useGetDataApi<any>({
-    url: `/projectSceneActions/by-project/${id}/by-scene/${projectSceneId}`,
-    params: { perPage: 10000 },
-    callInit: Boolean(id) && Boolean(projectSceneId)
-  })
 
   const beginDrag = (item: DraggableItem) => {
     setDraggedItem(item)
@@ -107,6 +91,50 @@ const ActionsDnDProvider = ({ children }: Props) => {
   const endDrag = () => {
     setDraggedItem(null)
   }
+
+  const handleSwapIndexToValue = (order: any, actions: any[]) => {
+    function getKeyByValue(object: any, value: string) {
+      return Object.keys(object).find(key => object[key] === value)
+    }
+
+    const sizeActions = Object.values(order).length
+
+    const alignedObj = new Array(sizeActions).fill(null)
+
+    actions.map(item => {
+      const index = getKeyByValue(order, item._id)
+      alignedObj[Number(index)] = item
+    })
+
+    return alignedObj
+  }
+
+  const handleGetActions = useCallback(async (projectSceneId: string, projectId: string) => {
+    try {
+      const [responseScene, responseActions] = await Promise.all([
+        api.get(`/projectScenes/${projectSceneId}`),
+        api.get(`/projectSceneActions/by-project/${projectId}/by-scene/${projectSceneId}`, {
+          params: { perPage: 10000 }
+        })
+      ])
+
+      if (responseScene.status === 200 && responseActions.status === 200) {
+        const { data: dataScene } = responseScene
+        const { data: actionsData } = responseActions
+
+        const orderActions = dataScene.data.indexActions
+
+        if (orderActions) return handleSwapIndexToValue(orderActions, actionsData.data)
+
+        return []
+      } else {
+        setActions([])
+        toast.error('Erro ao obter dados das ações ou da cena.')
+      }
+    } catch (error: any) {
+      return error
+    }
+  }, [])
 
   const handleUpdateIndex = async (actions: any[], result: any) => {
     const actionsRef = actions
@@ -132,10 +160,7 @@ const ActionsDnDProvider = ({ children }: Props) => {
         to: result.destination.index
       })
 
-      if (responseUpdatedIndex.status === 200) {
-        setRefreshScenes(true)
-        toast.success('Ordem das ações atualizada com sucesso')
-      }
+      if (responseUpdatedIndex.status === 200) toast.success('Ordem das ações atualizada com sucesso')
     } catch (error: any) {
       setActions(actionsRef)
       handleErrorResponse({
@@ -193,7 +218,6 @@ const ActionsDnDProvider = ({ children }: Props) => {
       const responseCreate = await api.post('/projectSceneActions', reqBody)
 
       if (responseCreate.status === 201) {
-        setRefreshScenes(true)
         setRefreshActions(!refreshActions)
         toast.success('Ação criada com sucesso')
       }
@@ -220,44 +244,24 @@ const ActionsDnDProvider = ({ children }: Props) => {
     if (result.source.droppableId === 'updateIndex') return handleUpdateIndex(actions, result)
   }
 
-  const handleSwapIndexToValue = (order: any, actions: any[]) => {
-    function getKeyByValue(object: any, value: string) {
-      return Object.keys(object).find(key => object[key] === value)
-    }
-
-    const sizeActions = Object.values(order).length
-
-    const alignedObj = new Array(sizeActions).fill(null)
-
-    actions.map(item => {
-      const index = getKeyByValue(order, item._id)
-      alignedObj[Number(index)] = item
-    })
-
-    return alignedObj
-  }
-
   useEffect(() => {
     if (!projectSceneId) return setActions([])
+    setLoadingActions(true)
 
-    if (errorActions) return setActions([])
+    handleGetActions(projectSceneId, id as string)
+      .then(response => setActions(response as any[]))
+      .catch(error => {
+        setActions([])
+        handleErrorResponse({
+          error: error,
+          errorReference: projectSceneActionsErrors,
+          defaultErrorMessage: 'Erro ao buscar ações, tente novamente mais tarde.'
+        })
+      })
+      .finally(() => setLoadingActions(false))
 
-    if (data && data.data.length > 0) {
-      const arrayActions = data.data
-
-      if (orderActions) {
-        const orderActionsLength = Object.values(orderActions).length
-
-        if (orderActionsLength === arrayActions.length) {
-          const indexUpdated = handleSwapIndexToValue(orderActions, arrayActions)
-
-          return setActions(indexUpdated)
-        }
-      }
-    }
-
-    setActions([])
-  }, [actions.length, data, errorActions, orderActions, projectSceneId])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id, projectSceneId, refreshActions])
 
   const memoizedChildren = useMemo(() => {
     return React.Children.map(children, child => {
@@ -288,8 +292,6 @@ const ActionsDnDProvider = ({ children }: Props) => {
         loadingActions,
         refreshActions,
         setRefreshActions,
-        refreshScenes,
-        setRefreshScenes,
         orderActions,
         setOrderActions,
         projectSceneId,

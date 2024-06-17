@@ -47,7 +47,7 @@ const Config = () => {
 
   const { keyId } = useDeviceKeys()
   const { handleErrorResponse } = useErrorHandling()
-  const { actions, projectSceneId, setRefreshActions, setRefreshScenes, refreshActions } = useActionsDnD()
+  const { actions, projectSceneId, setRefreshActions, refreshActions } = useActionsDnD()
 
   const [addDialogOpen, setAddDialogOpen] = useState<boolean>(false)
 
@@ -85,7 +85,7 @@ const Config = () => {
       .then(response => {
         if (response.status === 201) {
           setRefreshActions(!refreshActions)
-          setRefreshScenes(true)
+          toast.success('Ação adicionada com sucesso!')
         }
       })
       .catch(error => {
@@ -138,7 +138,7 @@ const Config = () => {
               />
             </Grid>
             <Grid item xs={12}>
-              <Actions actions={actions} />
+              {actions && <Actions actions={actions} />}
             </Grid>
           </Grid>
         </CardContent>

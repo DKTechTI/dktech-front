@@ -29,7 +29,7 @@ interface DraggableActionProps {
 }
 
 const DraggableAction = ({ row, index }: DraggableActionProps) => {
-  const { setActions, actions, setRefreshScenes, refreshActions, setRefreshActions } = useActionsDnD()
+  const { setActions, actions, refreshActions, setRefreshActions } = useActionsDnD()
   const { handleSaveOnStateChange } = useAutoSave()
   const { handleErrorResponse } = useErrorHandling()
 
@@ -47,7 +47,6 @@ const DraggableAction = ({ row, index }: DraggableActionProps) => {
       .delete(`/projectSceneActions/${id}`)
       .then(response => {
         if (response.status === 200) {
-          setRefreshScenes(true)
           setRefreshActions(!refreshActions)
           toast.success('Ação deletada com sucesso!')
         }
