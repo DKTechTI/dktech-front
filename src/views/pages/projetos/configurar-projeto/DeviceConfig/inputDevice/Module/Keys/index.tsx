@@ -111,7 +111,6 @@ const Keys = ({ keys }: KeysProps) => {
             justifyContent: 'center',
             gap: 3
           }}
-          onClick={e => handleSelectKeyHighlight(e, '')}
         >
           {keys && handleShowKeys(keys)}
         </List>
