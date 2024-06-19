@@ -122,7 +122,11 @@ const DraggableAction = ({ row, index }: DraggableActionProps) => {
     if (isDirty) {
       const formattedData = handleFormData(data)
       handleSaveOnStateChange(`/projectSceneActions/${row._id}`, formattedData, 'PUT')
-      setIsDirty(false)
+        .then(() => {
+          setIsDirty(false)
+          toast.success('Ação atualizada com sucesso!')
+        })
+        .catch(() => toast.error('Erro ao atualizar ação, tente novamente mais tarde.'))
     }
   }
 

@@ -231,17 +231,17 @@ const ActionsDnDProvider = ({ children }: Props) => {
   }
 
   const handleDragEnd = async (result: any) => {
-    if (!result.destination) return
+    const { source, destination } = result
 
-    if (
-      result.destination.droppableId === result.source.droppableId &&
-      result.destination.index === result.source.index
-    )
-      return
+    if (!destination) return
 
-    if (result.source.droppableId === 'outputs') return handleCreateAction(result)
+    if (source.droppableId === 'outputs' && destination.droppableId !== source.droppableId)
+      return handleCreateAction(result)
 
-    if (result.source.droppableId === 'updateIndex') return handleUpdateIndex(actions, result)
+    if (source.droppableId === 'updateIndex') {
+      if (destination.droppableId === source.droppableId && destination.index !== source.index)
+        return handleUpdateIndex(actions, result)
+    }
   }
 
   useEffect(() => {
