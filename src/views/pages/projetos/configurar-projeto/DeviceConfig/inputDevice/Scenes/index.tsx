@@ -181,7 +181,7 @@ const Scenes = ({ keyId }: ScenesProps) => {
   }
 
   const onSubmitScene = (formData: FormDataScene) => {
-    if (sceneDataRef.current && JSON.stringify(sceneDataRef.current) === JSON.stringify(watchScene())) return null
+    if (sceneDataRef.current && JSON.stringify(sceneDataRef.current) === JSON.stringify(formData)) return null
 
     handleEventValueForRequest(formData.eventValue)
       .then(() => {
@@ -198,6 +198,7 @@ const Scenes = ({ keyId }: ScenesProps) => {
               if (response.status <= 201) {
                 toast.success(responseMessage[response.status])
                 setProjectSceneId(response.data.data._id)
+                autoSaveEnabledRef.current = true
 
                 return
               }
