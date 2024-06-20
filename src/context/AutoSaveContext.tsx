@@ -8,15 +8,23 @@ import { api } from 'src/services/api'
 
 type HttpMethod = 'PATCH' | 'PUT' | 'POST'
 type refreshTypeValues = 'menu' | 'deviceKeys'
+type handleSaveOnStateChangeType = {
+  apiUrl: string
+  storageData: any
+  httpMethod: HttpMethod
+  autoCheck?: boolean
+  refreshOn?: refreshTypeValues[]
+}
 
 type AutoSaveValuesType = {
   saveState: string
-  handleSaveOnStateChange: (
-    apiUrl: string,
-    storageData: any,
-    httpMethod: HttpMethod,
-    refreshOn?: refreshTypeValues[]
-  ) => Promise<any>
+  handleSaveOnStateChange: ({
+    apiUrl,
+    httpMethod,
+    storageData,
+    autoCheck,
+    refreshOn
+  }: handleSaveOnStateChangeType) => Promise<any>
 }
 
 const defaultProvider: AutoSaveValuesType = {
@@ -39,44 +47,38 @@ const AutoSaveProvider = ({ children }: { children: React.ReactNode }) => {
 
   const prevData = useRef<any>({})
 
-  const handleSaveOnStateChange = async (
-    apiUrl: string,
-    storageData: any,
-    httpMethod: HttpMethod,
-    refreshOn?: refreshTypeValues[]
-  ) => {
-    let response = null
+  const handleSaveOnStateChange = async ({
+    apiUrl,
+    httpMethod,
+    storageData,
+    autoCheck = true,
+    refreshOn
+  }: handleSaveOnStateChangeType) => {
+    if (saveState === 'saved') {
+      if (autoCheck && equals(storageData, prevData.current)) return null
 
-    const saveToApi = async () => {
-      try {
+      const savePromise = apiUrl ? saveToApiMethod(apiUrl, storageData, httpMethod) : Promise.resolve()
+
+      if (savePromise && typeof savePromise.then === 'function') {
         setSaveState('saving')
-        const savePromise = apiUrl ? saveToApiMethod(apiUrl, storageData, httpMethod) : Promise.resolve()
 
-        if (savePromise && typeof savePromise.then === 'function') {
+        try {
           const response = await savePromise
 
-          if (refreshOn && refreshOn.length > 0) {
+          if (refreshOn && refreshOn.length > 0)
             refreshOn.forEach((refresh: refreshTypeValues) => refreshType[refresh]())
-          }
 
-          setSaveState('saved')
+          prevData.current = { ...storageData }
 
           return response
+        } catch (error) {
+          prevData.current = {}
+          throw error
+        } finally {
+          setSaveState('saved')
         }
-      } catch (error) {
-        setSaveState('saved')
-
-        return error
       }
     }
-
-    if (saveState === 'saved' && !equals(prevData.current, storageData)) {
-      response = await saveToApi()
-    }
-
-    prevData.current = storageData
-
-    return response
   }
 
   const saveToApiMethod = async (apiUrl: string, storageData: any, httpMethod: HttpMethod) => {

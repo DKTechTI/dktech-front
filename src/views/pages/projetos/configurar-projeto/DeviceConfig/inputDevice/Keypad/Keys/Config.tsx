@@ -83,17 +83,22 @@ const Config = ({ keyData }: ConfigProps) => {
       keyOrder: Number(formData.keyOrder)
     })
 
-    const response = await handleSaveOnStateChange(`/projectDeviceKeys/${keyId}`, data, 'PUT', ['menu', 'deviceKeys'])
-
-    if (response) {
-      if (response.status === 200) return toast.success(responseTypeStatus[response.status])
-
-      handleErrorResponse({
-        error: response,
-        errorReference: projectDevicesKeysErrors,
-        defaultErrorMessage: 'Erro ao atualizar os dados, tente novamente mais tarde.'
+    handleSaveOnStateChange({
+      apiUrl: `/projectDeviceKeys/${keyId}`,
+      storageData: data,
+      httpMethod: 'PUT',
+      refreshOn: ['menu', 'deviceKeys']
+    })
+      .then(response => {
+        if (response && response.status === 200) return toast.success(responseTypeStatus[response.status])
       })
-    }
+      .catch(error => {
+        handleErrorResponse({
+          error: error,
+          errorReference: projectDevicesKeysErrors,
+          defaultErrorMessage: 'Erro ao atualizar os dados, tente novamente mais tarde.'
+        })
+      })
   }
 
   if (keyId) {

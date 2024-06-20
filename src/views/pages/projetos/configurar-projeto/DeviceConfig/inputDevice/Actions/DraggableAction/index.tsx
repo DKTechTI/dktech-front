@@ -121,10 +121,17 @@ const DraggableAction = ({ row, index }: DraggableActionProps) => {
   const onSubmit = (data: any): void => {
     if (isDirty) {
       const formattedData = handleFormData(data)
-      handleSaveOnStateChange(`/projectSceneActions/${row._id}`, formattedData, 'PUT')
-        .then(() => {
-          setIsDirty(false)
-          toast.success('Ação atualizada com sucesso!')
+      handleSaveOnStateChange({
+        apiUrl: `/projectSceneActions/${row._id}`,
+        storageData: formattedData,
+        httpMethod: 'PUT',
+        autoCheck: false
+      })
+        .then(response => {
+          if (response.status === 200) {
+            setIsDirty(false)
+            toast.success('Ação atualizada com sucesso!')
+          }
         })
         .catch(() => toast.error('Erro ao atualizar ação, tente novamente mais tarde.'))
     }

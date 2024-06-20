@@ -115,16 +115,22 @@ const TryKey = ({ keyData, operationType, environments }: TryKeyProps) => {
 
     if (!dataFormatted) return toast.error('Erro ao formatar os dados, tente novamente mais tarde.')
 
-    const response = await handleSaveOnStateChange(`/projectDeviceKeys/${data._id}`, dataFormatted, 'PUT', ['menu'])
-
-    if (response) {
-      if (response.status === 200) return toast.success(responseTypeStatus[response.status])
-      handleErrorResponse({
-        error: response,
-        errorReference: projectDevicesKeysErrors,
-        defaultErrorMessage: 'Erro ao atualizar os dados, tente novamente mais tarde.'
+    handleSaveOnStateChange({
+      apiUrl: `/projectDeviceKeys/${data._id}`,
+      storageData: dataFormatted,
+      httpMethod: 'PUT',
+      refreshOn: ['menu']
+    })
+      .then(response => {
+        if (response && response.status === 200) return toast.success(responseTypeStatus[response.status])
       })
-    }
+      .catch(error => {
+        handleErrorResponse({
+          error: error,
+          errorReference: projectDevicesKeysErrors,
+          defaultErrorMessage: 'Erro ao atualizar os dados, tente novamente mais tarde.'
+        })
+      })
   }
 
   return (

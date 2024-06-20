@@ -191,26 +191,25 @@ const Scenes = ({ keyId }: ScenesProps) => {
         }
 
         const data = formatSceneObject(getValuesScene())
-
-        handleSaveOnStateChange(`/projectScenes`, data, 'PATCH')
+        handleSaveOnStateChange({
+          apiUrl: `/projectScenes`,
+          storageData: data,
+          httpMethod: 'PATCH'
+        })
           .then(response => {
-            if (response) {
-              if (response.status <= 201) {
-                toast.success(responseMessage[response.status])
-                setProjectSceneId(response.data.data._id)
-                autoSaveEnabledRef.current = true
-
-                return
-              }
-
-              handleErrorResponse({
-                error: response,
-                errorReference: projectScenesErrors,
-                defaultErrorMessage: 'Erro ao criar cena, tente novamente mais tarde.'
-              })
+            if (response && response.status <= 201) {
+              toast.success(responseMessage[response.status])
+              setProjectSceneId(response.data.data._id)
+              autoSaveEnabledRef.current = true
             }
           })
-          .catch(error => console.error(error))
+          .catch(error => {
+            handleErrorResponse({
+              error: error,
+              errorReference: projectScenesErrors,
+              defaultErrorMessage: 'Erro ao criar/atualizar cena, tente novamente mais tarde.'
+            })
+          })
       })
       .catch(error => console.error(error))
   }
