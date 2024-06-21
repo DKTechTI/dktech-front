@@ -45,7 +45,7 @@ const Config = () => {
 
   const { id: projectId } = router.query
 
-  const { keyId } = useDeviceKeys()
+  const { keyId, deviceKeys } = useDeviceKeys()
   const { handleErrorResponse } = useErrorHandling()
   const { actions, projectSceneId, setRefreshActions, refreshActions } = useActionsDnD()
 
@@ -75,13 +75,28 @@ const Config = () => {
     }
   }
 
+  const handleGetCentralId = (keyId: string) => {
+    const centralId = deviceKeys.find((key: any) => key._id === keyId)?.centralId
+
+    return centralId
+  }
+
   const onSubmit = (data: formData) => {
     const lastItemIsDelay = handleCheckLastAction(data, actions)
 
-    if (lastItemIsDelay) return toast.error('Não é possível adicionar uma ação de delay após outra ação de delay!')
+    if (lastItemIsDelay) return toast.error('Não é possível adicionar uma ação de delay após outra ação de delay.')
+
+    const centralId = handleGetCentralId(data.projectDeviceKeyId)
+
+    if (!centralId) return toast.error('Erro ao buscar centralId, tente novamente mais tarde.')
+
+    const dataToSend = {
+      ...data,
+      centralId: centralId
+    }
 
     api
-      .post('/projectSceneActions', data)
+      .post('/projectSceneActions', dataToSend)
       .then(response => {
         if (response.status === 201) {
           setRefreshActions(!refreshActions)
