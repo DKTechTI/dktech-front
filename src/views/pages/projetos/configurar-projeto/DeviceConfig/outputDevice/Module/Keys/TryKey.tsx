@@ -31,14 +31,22 @@ interface FormData {
   voiceActivation: string
 }
 
+interface BlockButtonTryKeyProps {
+  blockButtonTryKey: boolean
+  setBlockButtonTryKey: (value: boolean) => void
+}
+
 interface TryKeyProps {
   keyData: any
   operationType: string
   environments: any[]
+  blockButton: BlockButtonTryKeyProps
 }
 
-const TryKey = ({ keyData, operationType, environments }: TryKeyProps) => {
+const TryKey = ({ keyData, operationType, environments, blockButton }: TryKeyProps) => {
   const matches = useMediaQuery('(min-width:1534px)')
+
+  const { blockButtonTryKey, setBlockButtonTryKey } = blockButton
 
   const { handleSaveOnStateChange } = useAutoSave()
   const { handleErrorResponse } = useErrorHandling()
@@ -92,6 +100,8 @@ const TryKey = ({ keyData, operationType, environments }: TryKeyProps) => {
   }
 
   const handleTryKey = (keyId: string) => {
+    setBlockButtonTryKey(true)
+
     api
       .get(`/mqtt/identify-load/${keyId}`)
       .then(response => {
@@ -104,6 +114,7 @@ const TryKey = ({ keyData, operationType, environments }: TryKeyProps) => {
           defaultErrorMessage: 'Erro ao acionar a tecla, tente novamente mais tarde.'
         })
       })
+      .finally(() => setBlockButtonTryKey(false))
   }
 
   const onSubmit = async (data: FormData) => {
@@ -237,8 +248,9 @@ const TryKey = ({ keyData, operationType, environments }: TryKeyProps) => {
             sx={{ minWidth: '138px' }}
             startIcon={<IconifyIcon icon='tabler:wifi' />}
             onClick={() => handleTryKey(keyData._id)}
+            disabled={blockButtonTryKey}
           >
-            Testar
+            {blockButtonTryKey ? 'Aguarde...' : 'Testar'}
           </Button>
         </Box>
       </Grid>
