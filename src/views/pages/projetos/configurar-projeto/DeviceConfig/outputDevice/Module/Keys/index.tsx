@@ -3,6 +3,7 @@ import { Box, Grid, List, ListItem, Typography } from '@mui/material'
 import TryKey from './TryKey'
 import useGetDataApi from 'src/hooks/useGetDataApi'
 import { handleCheckOperationType } from 'src/utils/actions'
+import { useState } from 'react'
 
 interface KeysProps {
   keys: any[]
@@ -11,6 +12,8 @@ interface KeysProps {
 const Keys = ({ keys }: KeysProps) => {
   const router = useRouter()
   const { id } = router.query
+
+  const [blockButtonTryKey, setBlockButtonTryKey] = useState(false)
 
   const { data: environments } = useGetDataApi<any>({
     url: `projectEnvironments/by-project/${id}`,
@@ -32,7 +35,15 @@ const Keys = ({ keys }: KeysProps) => {
           }}
         >
           {environments && (
-            <TryKey keyData={key} operationType={operationType || ''} environments={environments.data || []} />
+            <TryKey
+              keyData={key}
+              operationType={operationType || ''}
+              environments={environments.data || []}
+              blockButton={{
+                blockButtonTryKey,
+                setBlockButtonTryKey
+              }}
+            />
           )}
         </ListItem>
       )
