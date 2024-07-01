@@ -1,6 +1,6 @@
-import { AxiosError } from 'axios'
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 
+import { AxiosError } from 'axios'
 import { api } from 'src/services/api'
 
 interface GetDataApiProps {
@@ -16,6 +16,12 @@ const useGetDataApi = <T,>({ url, params, callInit = true }: GetDataApiProps) =>
   const [refresh, setRefresh] = useState(false)
 
   const paramsRef = useRef(params)
+
+  const handleResetData = useCallback(() => {
+    setData(null)
+    setError(null)
+    setLoading(false)
+  }, [])
 
   useEffect(() => {
     if (callInit) {
@@ -57,7 +63,7 @@ const useGetDataApi = <T,>({ url, params, callInit = true }: GetDataApiProps) =>
     }
   }, [url, refresh, callInit])
 
-  return { data, loading, error, setRefresh, refresh }
+  return { data, loading, error, setRefresh, refresh, handleResetData }
 }
 
 export default useGetDataApi
