@@ -82,11 +82,20 @@ const AddInputDevice = ({
   const [boardIndex, setBoardIndex] = useState<string | null>(null)
 
   const { data: projectDevices } = useGetDataApi<any>({
-    url: `/projectDevices/by-project/${id}?moduleType=INOUT`,
+    url: `/projectDevices/by-project/${id}`,
+    params: {
+      moduleType: 'INOUT'
+    },
     callInit: router.isReady && open
   })
 
-  const { data: devices } = useGetDataApi<any>({ url: `/devices`, callInit: router.isReady && open })
+  const { data: devices } = useGetDataApi<any>({
+    url: `/devices`,
+    params: {
+      moduleType: 'INPUT'
+    },
+    callInit: router.isReady && open
+  })
 
   const {
     control,
@@ -132,9 +141,8 @@ const AddInputDevice = ({
   const handleCheckDeviceOptions = (devices: any[]) => {
     const validDevices = devices?.filter(
       device =>
-        device.moduleType === 'INPUT' &&
-        (device?.keysQuantity <= ports[Number(watch('boardIndex'))]?.keysQuantityAvaliable ||
-          device?.inputTotal <= ports[Number(watch('boardIndex'))]?.keysQuantityAvaliable)
+        device?.keysQuantity <= ports[Number(watch('boardIndex'))]?.keysQuantityAvaliable ||
+        device?.inputTotal <= ports[Number(watch('boardIndex'))]?.keysQuantityAvaliable
     )
 
     if (validDevices.length === 0) return

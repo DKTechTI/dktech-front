@@ -82,16 +82,24 @@ const AddOutputDevice = ({
   const { handleAvaliableOutputPorts } = useProjectMenu()
 
   const [ports, setPorts] = useState<any[]>([])
-  const [devicesAvailable, setDevicesAvailable] = useState<any[]>([])
   const [boardId, setBoardId] = useState<string | null>(null)
   const [boardIndex, setBoardIndex] = useState<string | null>(null)
 
   const { data: projectDevices } = useGetDataApi<any>({
-    url: `/projectDevices/by-project/${id}?moduleType=INOUT`,
+    url: `/projectDevices/by-project/${id}`,
+    params: {
+      moduleType: 'INOUT'
+    },
     callInit: router.isReady && open
   })
 
-  const { data: devices } = useGetDataApi<any>({ url: '/devices', callInit: router.isReady && open })
+  const { data: devices, handleResetData: handleResetDevices } = useGetDataApi<any>({
+    url: '/devices',
+    params: {
+      moduleType: 'OUTPUT'
+    },
+    callInit: router.isReady && open && !!boardIndex
+  })
 
   const {
     control,
@@ -141,7 +149,6 @@ const AddOutputDevice = ({
       setValue('boardIndex', value)
       setBoardIndex(value)
       clearErrors('boardIndex')
-      handleCheckDeviceOptions(devices?.data)
 
       return
     }
@@ -180,12 +187,6 @@ const AddOutputDevice = ({
     const deviceInitialValue = checkInitialValue(device?.operationType)
 
     return deviceInitialValue
-  }
-
-  const handleCheckDeviceOptions = (devices: any[]) => {
-    devices.map((device: any) => {
-      device.moduleType === 'OUTPUT' && setDevicesAvailable(prevState => [...prevState, device])
-    })
   }
 
   const handleRenderDeviceOption = (device: any) => {
@@ -229,13 +230,13 @@ const AddOutputDevice = ({
     if (!open) {
       reset()
       setPorts([])
-      setDevicesAvailable([])
+      handleResetDevices()
       setBoardId(null)
       setBoardIndex(null)
     }
 
     setValue('environmentId', environmentId)
-  }, [environmentId, open, reset, setValue])
+  }, [environmentId, handleResetDevices, open, reset, setValue])
 
   return (
     <Dialog
@@ -374,7 +375,7 @@ const AddOutputDevice = ({
                     <MenuItem value='' disabled>
                       <em>{boardIndex ? 'Selecione' : 'Selecione uma porta primeiro'}</em>
                     </MenuItem>
-                    {devicesAvailable.map((device: any) => handleRenderDeviceOption(device))}
+                    {devices && devices?.data.map((device: any) => handleRenderDeviceOption(device))}
                   </CustomTextField>
                 )}
               />
