@@ -105,7 +105,7 @@ const TryKey = ({ keyData, operationType, environments, blockButton }: TryKeyPro
     api
       .get(`/mqtt/identify-load/${keyId}`)
       .then(response => {
-        if (response.status === 202) return toast.success('Tecla acionada com sucesso.')
+        if (response.status === 200) return toast.success('Tecla acionada com sucesso.')
       })
       .catch(error => {
         handleErrorResponse({
