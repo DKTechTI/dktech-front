@@ -77,7 +77,7 @@ const AddInputDevice = ({
   const { handleAvaliableInputPorts } = useProjectMenu()
 
   const [ports, setPorts] = useState<any[]>([])
-  const [devicesAvailable, setDevicesAvailable] = useState<any[]>([])
+  const [devicesAvailableOrNot, setDevicesAvailableOrNot] = useState<any[]>([])
   const [boardId, setBoardId] = useState<string | null>(null)
   const [boardIndex, setBoardIndex] = useState<string | null>(null)
 
@@ -139,15 +139,18 @@ const AddInputDevice = ({
   }
 
   const handleCheckDeviceOptions = (devices: any[]) => {
-    const validDevices = devices?.filter(
-      device =>
+    const devicesFiltered = devices?.map((device: any) => {
+      if (
         device?.keysQuantity <= ports[Number(watch('boardIndex'))]?.keysQuantityAvaliable ||
         device?.inputTotal <= ports[Number(watch('boardIndex'))]?.keysQuantityAvaliable
-    )
+      ) {
+        return Object.assign(device, { avaliable: true })
+      }
 
-    if (validDevices.length === 0) return
+      return Object.assign(device, { avaliable: false })
+    })
 
-    setDevicesAvailable(validDevices)
+    setDevicesAvailableOrNot(devicesFiltered)
   }
 
   const handleSetBoardIndex = (event: SyntheticEvent) => {
@@ -187,7 +190,7 @@ const AddInputDevice = ({
   const handleRenderDeviceOptions = (currentDevicesAvailable: any[]) => {
     if (currentDevicesAvailable.length > 0)
       return currentDevicesAvailable.map(device => (
-        <MenuItem key={device._id} value={device._id}>
+        <MenuItem key={device._id} value={device._id} disabled={!device.avaliable}>
           {device.modelName}
         </MenuItem>
       ))
@@ -233,7 +236,7 @@ const AddInputDevice = ({
   useEffect(() => {
     if (!open) {
       setPorts([])
-      setDevicesAvailable([])
+      setDevicesAvailableOrNot([])
       reset()
       setBoardId(null)
       setBoardIndex(null)
@@ -380,7 +383,7 @@ const AddInputDevice = ({
                     <MenuItem value='' disabled>
                       <em>{boardIndex ? 'Selecione' : 'Selecione uma porta primeiro'}</em>
                     </MenuItem>
-                    {handleRenderDeviceOptions(devicesAvailable)}
+                    {handleRenderDeviceOptions(devicesAvailableOrNot)}
                   </CustomTextField>
                 )}
               />
