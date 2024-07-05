@@ -146,7 +146,9 @@ const Devices = ({ devices }: DevicesProps) => {
                         icon='tabler:circle-filled'
                         width='0.7em'
                         color={
-                          centralStatusObj?.[centralsStatus?.[index]?.[central?.boardId]] || centralStatusObj['false']
+                          centralStatusObj[
+                            centralsStatus[index][central?.boardId].toString() || centralStatusObj['false']
+                          ]
                         }
                       />
                     ) : (
