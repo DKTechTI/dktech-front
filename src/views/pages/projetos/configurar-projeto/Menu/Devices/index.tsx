@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/router'
 
 import { Typography, Box } from '@mui/material'
@@ -52,10 +52,21 @@ const Devices = ({ devices }: DevicesProps) => {
   const [deviceId, setDeviceId] = useState<string>('')
   const [centralsStatus, setCentralsStatus] = useState<CentralStatusType[]>([])
 
+  const isFetchingRef = useRef(false)
+  const isMounted = useRef<boolean>(false)
+
   useEffect(() => {
+    isMounted.current = true
+    const controllerApi = new AbortController()
+
     const fetchCentralsStatus = () => {
+      if (isFetchingRef.current) return
+
+      isFetchingRef.current = true
+
       const centralsCheck = devices.map(device =>
         api.get('/mqtt/device-status', {
+          signal: controllerApi.signal,
           params: {
             boardId: device.boardId,
             projectId: projectId
@@ -65,25 +76,25 @@ const Devices = ({ devices }: DevicesProps) => {
 
       Promise.all(centralsCheck)
         .then(response => {
-          const centralsChecked = devices.map((device, index: number) => ({
+          const centralsChecked = devices.map((device, index) => ({
             [device.boardId]: response[index].data
           }))
-
           setCentralsStatus(centralsChecked)
         })
         .catch(() => {
           setCentralsStatus([])
         })
+        .finally(() => {
+          isFetchingRef.current = false
+          isMounted.current && setTimeout(fetchCentralsStatus, 8000)
+        })
     }
 
     fetchCentralsStatus()
 
-    const interval = setInterval(() => {
-      fetchCentralsStatus()
-    }, 8000)
-
     return () => {
-      clearInterval(interval)
+      isMounted.current = false
+      controllerApi.abort()
     }
   }, [devices, projectId, refreshMenu])
 
