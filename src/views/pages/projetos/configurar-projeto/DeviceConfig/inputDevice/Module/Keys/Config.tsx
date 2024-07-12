@@ -50,6 +50,9 @@ const Config = ({ keyData }: ConfigProps) => {
 
   const { data: environments } = useGetDataApi<any>({
     url: `projectEnvironments/by-project/${id}`,
+    params: {
+      perPage: 1000
+    },
     callInit: Boolean(keyId && router.isReady)
   })
 
