@@ -32,11 +32,15 @@ import AuthGuard from 'src/@core/components/auth/AuthGuard'
 import GuestGuard from 'src/@core/components/auth/GuestGuard'
 import DynamicSEO from 'src/components/DynamicSEO/index'
 
+// ** Error Boundary
+import ErrorBoundary from 'src/components/ErrorBoundary'
+
 // ** Spinner Import
 import Spinner from 'src/@core/components/spinner'
 
 // ** Contexts
 import { AuthProvider } from 'src/context/AuthContext'
+import { AutoSaveProvider } from 'src/context/AutoSaveContext'
 import { SettingsConsumer, SettingsProvider } from 'src/@core/context/settingsContext'
 
 // ** Styled Components
@@ -58,7 +62,6 @@ import 'src/iconify-bundle/icons-bundle-react'
 
 // ** Global css styles
 import '../../styles/globals.css'
-import { AutoSaveProvider } from 'src/context/AutoSaveContext'
 
 // ** Extend App Props with Emotion
 type ExtendedAppProps = AppProps & {
@@ -126,7 +129,13 @@ const App = (props: ExtendedAppProps) => {
                   <Guard authGuard={authGuard} guestGuard={guestGuard}>
                     <AclGuard aclAbilities={aclAbilities} guestGuard={guestGuard} authGuard={authGuard}>
                       <DynamicSEO defaultTitle={themeConfig.templateName} />
-                      <AutoSaveProvider>{getLayout(<Component {...pageProps} />)}</AutoSaveProvider>
+                      <AutoSaveProvider>
+                        {getLayout(
+                          <ErrorBoundary>
+                            <Component {...pageProps} />
+                          </ErrorBoundary>
+                        )}
+                      </AutoSaveProvider>
                     </AclGuard>
                   </Guard>
                   <ReactHotToast>
