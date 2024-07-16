@@ -41,7 +41,7 @@ const BackdropConfig = ({ open, handleClose, finished, success, errors }: Backdr
   const theme = useTheme()
 
   const [progress, setProgress] = useState(0)
-  const [buffer, setBuffer] = useState(10)
+  const [buffer, setBuffer] = useState(0)
 
   const handleShowError = (error: ErrorsProps) => {
     const centralId = error.reason.split(' ').pop()
@@ -54,14 +54,14 @@ const BackdropConfig = ({ open, handleClose, finished, success, errors }: Backdr
       if (prevProgress >= 100) {
         return 100
       }
-      const diff = Math.random() * 10
+      const diff = 2
 
       return prevProgress + diff
     })
 
     setBuffer(prevProgress => {
-      const diff = Math.random() * 5
-      const diff2 = Math.random() * 5
+      const diff = 2
+      const diff2 = 2
       const newBuffer = prevProgress + diff + diff2
 
       return newBuffer > 100 ? 100 : newBuffer
@@ -77,7 +77,7 @@ const BackdropConfig = ({ open, handleClose, finished, success, errors }: Backdr
 
   useEffect(() => {
     if (!finished) {
-      const timer = setInterval(updateProgress, 60000)
+      const timer = setInterval(updateProgress, 3000)
 
       return () => {
         clearInterval(timer)
