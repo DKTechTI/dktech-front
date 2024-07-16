@@ -22,7 +22,6 @@ import EditCentral from './EditCentral'
 
 import { api } from 'src/services/api'
 import { DeviceProps } from 'src/types/menu'
-import { boolean } from 'yup'
 
 type CentralStatusType = {
   [key: string]: string
