@@ -29,7 +29,8 @@ type CentralStatusType = {
 
 const centralStatusObj: CentralStatusType = {
   true: '#28C76F',
-  false: '#EA5455'
+  false: '#EA5455',
+  pending: '#ffa726'
 }
 
 interface DevicesProps {
@@ -60,42 +61,48 @@ const Devices = ({ devices }: DevicesProps) => {
     isMounted.current = true
     const controllerApi = new AbortController()
 
-    const fetchCentralsStatus = () => {
+    const fetchCentralsStatus = async () => {
       if (isFetchingRef.current) return
 
       isFetchingRef.current = true
 
-      const centralsCheck = devices.map(device =>
-        api.get('/mqtt/device-status', {
-          signal: controllerApi.signal,
-          params: {
-            boardId: device.boardId,
-            projectId: projectId
+      try {
+        const centralsCheck = devices.map(device =>
+          api.get('/mqtt/device-status', {
+            signal: controllerApi.signal,
+            params: {
+              boardId: device.boardId,
+              projectId
+            }
+          })
+        )
+
+        const results = await Promise.allSettled(centralsCheck)
+
+        if (results.some(result => result.status === 'rejected')) throw new Error('Erro ao buscar status das centrais')
+
+        const centralsChecked = devices.map((device, index) => {
+          const result = results[index]
+
+          return {
+            [device.boardId]: result.status === 'fulfilled' ? result.value.data : 'pending'
           }
         })
-      )
 
-      Promise.all(centralsCheck)
-        .then(response => {
-          const centralsChecked = devices.map((device, index) => ({
-            [device.boardId]: response[index].data
-          }))
-          setCentralsStatus(centralsChecked)
-        })
-        .catch(() => {
-          setCentralsStatus([])
-        })
-        .finally(() => {
-          isFetchingRef.current = false
-          isMounted.current && setTimeout(fetchCentralsStatus, 8000)
-        })
+        setCentralsStatus(centralsChecked)
+      } catch (error) {
+        console.error(error)
+      } finally {
+        isFetchingRef.current = false
+        isMounted.current && setTimeout(fetchCentralsStatus, 8000)
+      }
     }
 
     fetchCentralsStatus()
 
     return () => {
       isMounted.current = false
-      controllerApi.abort()
+      !isFetchingRef.current && controllerApi.abort()
     }
   }, [devices, projectId, refreshMenu])
 
@@ -160,12 +167,12 @@ const Devices = ({ devices }: DevicesProps) => {
                         width='0.7em'
                         color={
                           centralStatusObj[
-                            centralsStatus[index][central?.boardId].toString() || centralStatusObj['false']
+                            centralsStatus[index][central?.boardId].toString() || centralStatusObj['pending']
                           ]
                         }
                       />
                     ) : (
-                      <IconifyIcon icon='tabler:circle-filled' width='0.7em' color={centralStatusObj['false']} />
+                      <IconifyIcon icon='tabler:circle-filled' width='0.7em' color={centralStatusObj['pending']} />
                     )}
                     <Typography component={'span'} variant={'h6'}>
                       {central.projectDeviceName}
