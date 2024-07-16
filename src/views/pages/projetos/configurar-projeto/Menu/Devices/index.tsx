@@ -50,6 +50,7 @@ const Devices = ({ devices }: DevicesProps) => {
   const [showDeleteDialog, setShowDeleteDialog] = useState<boolean>(false)
 
   const [deviceId, setDeviceId] = useState<string>('')
+  const [deviceType, setDeviceType] = useState<'INPUT' | 'OUTPUT' | null>(null)
   const [centralsStatus, setCentralsStatus] = useState<CentralStatusType[]>([])
 
   const isFetchingRef = useRef(false)
@@ -123,6 +124,7 @@ const Devices = ({ devices }: DevicesProps) => {
         description={
           'Os dispositivos ou teclas vinculados serão deletados, deseja continuar? Esta ação não poderá ser desfeita!'
         }
+        deviceType={deviceType}
       />
 
       <TreeItem nodeId='1' label='Dispositivos'>
@@ -257,6 +259,7 @@ const Devices = ({ devices }: DevicesProps) => {
                               onClick={e => {
                                 e.stopPropagation()
                                 setDeviceId(input.projectDeviceId)
+                                setDeviceType('INPUT')
                                 setShowDeleteDialog(true)
                               }}
                               sx={{ fontSize: 16 }}
@@ -336,6 +339,7 @@ const Devices = ({ devices }: DevicesProps) => {
                               onClick={e => {
                                 e.stopPropagation()
                                 setDeviceId(output.projectDeviceId)
+                                setDeviceType('OUTPUT')
                                 setShowDeleteDialog(true)
                               }}
                               sx={{ fontSize: 16 }}
