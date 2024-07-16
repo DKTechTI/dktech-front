@@ -22,6 +22,7 @@ import EditCentral from './EditCentral'
 
 import { api } from 'src/services/api'
 import { DeviceProps } from 'src/types/menu'
+import { boolean } from 'yup'
 
 type CentralStatusType = {
   [key: string]: string
@@ -38,6 +39,7 @@ interface DevicesProps {
 }
 
 const Devices = ({ devices }: DevicesProps) => {
+  console.log('devices: ', devices)
   const router = useRouter()
   const { id: projectId } = router.query
 
@@ -167,7 +169,9 @@ const Devices = ({ devices }: DevicesProps) => {
                         width='0.7em'
                         color={
                           centralStatusObj[
-                            centralsStatus[index][central?.boardId].toString() || centralStatusObj['pending']
+                            typeof centralsStatus[index]?.[central?.boardId] === 'boolean'
+                              ? centralsStatus[index][central.boardId].toString()
+                              : 'pending'
                           ]
                         }
                       />
