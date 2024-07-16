@@ -14,6 +14,9 @@ import { api } from 'src/services/api'
 import { useProjectMenu } from 'src/hooks/useProjectMenu'
 import useErrorHandling from 'src/hooks/useErrorHandling'
 import projectDevicesErrors from 'src/errors/projectDevicesErrors'
+import { useProject } from 'src/hooks/useProject'
+import { useDeviceKeys } from 'src/hooks/useDeviceKeys'
+import { useActionsDnD } from 'src/hooks/useActionsDnD'
 
 interface DeleteDeviceProps {
   id: string
@@ -22,17 +25,23 @@ interface DeleteDeviceProps {
   open: boolean
   setOpen: Dispatch<SetStateAction<boolean>>
   handleClose?: () => void
+  deviceType?: 'INPUT' | 'OUTPUT' | null
 }
 
-const DeleteDevice = ({ id, open, question, setOpen, description, handleClose }: DeleteDeviceProps) => {
+const DeleteDevice = ({ id, open, question, setOpen, description, handleClose, deviceType }: DeleteDeviceProps) => {
   const { handleErrorResponse } = useErrorHandling()
   const { setRefreshMenu, refreshMenu } = useProjectMenu()
+  const { projectDeviceId, setProjectDeviceId } = useProject()
+  const { keyId, setKeyId } = useDeviceKeys()
+  const { setRefreshActions, refreshActions } = useActionsDnD()
 
   const handleConfirmDelete = (deviceId: string) => {
     api
       .delete(`/projectDevices/${deviceId}`)
       .then(response => {
         if (response.status === 200) {
+          if (projectDeviceId === id) setProjectDeviceId(null), keyId && setKeyId(null)
+          deviceType === 'OUTPUT' && setRefreshActions(!refreshActions)
           setRefreshMenu(!refreshMenu)
           handleClose?.()
           toast.success('Dispositivo deletado com sucesso!')
