@@ -1,4 +1,4 @@
-import { SyntheticEvent } from 'react'
+import { ChangeEvent, SyntheticEvent } from 'react'
 
 import { Box, Button, Grid, useMediaQuery, Checkbox, FormControlLabel, MenuItem } from '@mui/material'
 
@@ -55,6 +55,7 @@ const TryKey = ({ keyData, operationType, environments, blockButton }: TryKeyPro
     control,
     handleSubmit,
     setValue,
+    getValues,
     formState: { errors }
   } = useForm({
     values: {
@@ -69,6 +70,20 @@ const TryKey = ({ keyData, operationType, environments, blockButton }: TryKeyPro
     const { checked } = event.target as HTMLInputElement
 
     setValue('voiceActivation', String(checked))
+
+    onSubmit(getValues())
+  }
+
+  const handleSetEnvironment = (environmentId: string) => {
+    setValue('environmentId', environmentId)
+
+    onSubmit(getValues())
+  }
+
+  const handleSetInitialValue = (initialValue: string) => {
+    setValue('initialValue', initialValue)
+
+    onSubmit(getValues())
   }
 
   const handleCheckInitialValue = (operationType: string) => {
@@ -169,7 +184,7 @@ const TryKey = ({ keyData, operationType, environments, blockButton }: TryKeyPro
         <Controller
           name='environmentId'
           control={control}
-          render={({ field: { value, onChange } }) => (
+          render={({ field: { value } }) => (
             <CustomTextField
               select
               fullWidth
@@ -177,7 +192,7 @@ const TryKey = ({ keyData, operationType, environments, blockButton }: TryKeyPro
               required
               value={value || ''}
               onBlur={handleSubmit(onSubmit)}
-              onChange={onChange}
+              onChange={(e: ChangeEvent<HTMLInputElement>) => handleSetEnvironment(e.target.value)}
               error={Boolean(errors.environmentId)}
               {...(errors.environmentId && { helperText: errors.environmentId.message })}
             >
@@ -198,7 +213,7 @@ const TryKey = ({ keyData, operationType, environments, blockButton }: TryKeyPro
         <Controller
           name='initialValue'
           control={control}
-          render={({ field: { value, onChange } }) => (
+          render={({ field: { value } }) => (
             <CustomTextField
               select
               fullWidth
@@ -206,7 +221,7 @@ const TryKey = ({ keyData, operationType, environments, blockButton }: TryKeyPro
               required
               value={value || ''}
               onBlur={handleSubmit(onSubmit)}
-              onChange={onChange}
+              onChange={(e: ChangeEvent<HTMLInputElement>) => handleSetInitialValue(e.target.value)}
               error={Boolean(errors.initialValue)}
               {...(errors.initialValue && { helperText: errors.initialValue.message })}
             >
@@ -232,7 +247,6 @@ const TryKey = ({ keyData, operationType, environments, blockButton }: TryKeyPro
             <FormControlLabel
               onChange={(e: SyntheticEvent) => handleSetVoiceActivation(e)}
               checked={value === 'true'}
-              onBlur={handleSubmit(onSubmit)}
               control={<Checkbox />}
               label='Ativação por voz'
             />
