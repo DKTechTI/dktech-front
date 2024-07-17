@@ -38,7 +38,6 @@ interface DevicesProps {
 }
 
 const Devices = ({ devices }: DevicesProps) => {
-  console.log('devices: ', devices)
   const router = useRouter()
   const { id: projectId } = router.query
 
