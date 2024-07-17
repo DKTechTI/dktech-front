@@ -55,18 +55,21 @@ const Devices = ({ devices }: DevicesProps) => {
   const [centralsStatus, setCentralsStatus] = useState<CentralStatusType[]>([])
 
   const isFetchingRef = useRef(false)
-  const isMounted = useRef<boolean>(false)
 
   useEffect(() => {
-    isMounted.current = true
-    const controllerApi = new AbortController()
+    let isMounted = true
+    let controllerApi = new AbortController()
+    let fetchTimeout: NodeJS.Timeout
 
     const fetchCentralsStatus = async () => {
-      if (isFetchingRef.current) return
-
-      isFetchingRef.current = true
-
       try {
+        if (isFetchingRef.current) {
+          controllerApi.abort()
+          controllerApi = new AbortController()
+        }
+
+        isFetchingRef.current = true
+
         const centralsCheck = devices.map(device =>
           api.get('/mqtt/device-status', {
             signal: controllerApi.signal,
@@ -89,22 +92,23 @@ const Devices = ({ devices }: DevicesProps) => {
           }
         })
 
-        setCentralsStatus(centralsChecked)
+        if (isMounted) setCentralsStatus(centralsChecked)
       } catch (error) {
-        console.error(error)
+        console.error('Erro ao buscar status das centrais:', error)
       } finally {
         isFetchingRef.current = false
-        isMounted.current && setTimeout(fetchCentralsStatus, 8000)
+        if (isMounted) fetchTimeout = setTimeout(fetchCentralsStatus, 8000)
       }
     }
 
     fetchCentralsStatus()
 
     return () => {
-      isMounted.current = false
-      !isFetchingRef.current && controllerApi.abort()
+      isMounted = false
+      clearTimeout(fetchTimeout)
+      controllerApi.abort()
     }
-  }, [devices, projectId, refreshMenu])
+  }, [devices, projectId])
 
   return (
     <>
