@@ -10,7 +10,7 @@ import { yupResolver } from '@hookform/resolvers/yup'
 import toast from 'react-hot-toast'
 
 import { delay } from 'src/utils/delay'
-import { applyMask } from 'src/utils/inputs'
+import { applyMask, applyPhoneMask, StatesEnum } from 'src/utils/inputs'
 
 import { api } from 'src/services/api'
 
@@ -51,7 +51,10 @@ const schema = yup.object().shape({
   city: yup.string().required('Cidade obrigatória'),
   address: yup.string().required('Endereço obrigatório'),
   neighborhood: yup.string().required('Bairro obrigatório'),
-  state: yup.string().required('Estado obrigatório'),
+  state: yup
+    .mixed<StatesEnum>()
+    .oneOf(Object.values(StatesEnum), 'O estado deve conter apenas a sigla')
+    .required('Estado obrigatório, digite a sigla'),
   number: yup.string().required('Número obrigatório'),
   complement: yup.string(),
   referenceCarrier: yup.string()
@@ -458,7 +461,7 @@ const CreateResale = () => {
                     label='Telefone'
                     value={value}
                     onBlur={onBlur}
-                    onChange={onChange}
+                    onChange={e => onChange(applyPhoneMask(e.target.value))}
                     placeholder='Telefone'
                     error={Boolean(errors.cellphone)}
                     {...(errors.cellphone && { helperText: errors.cellphone.message })}
@@ -477,7 +480,7 @@ const CreateResale = () => {
                     label='Telefone Fixo'
                     value={value}
                     onBlur={onBlur}
-                    onChange={onChange}
+                    onChange={e => onChange(applyPhoneMask(e.target.value))}
                     placeholder='Telefone Fixo'
                     error={Boolean(errors.phone)}
                     {...(errors.phone && { helperText: errors.phone.message })}
