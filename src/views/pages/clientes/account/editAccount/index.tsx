@@ -38,7 +38,7 @@ const schema = yup.object().shape({
   neighborhood: yup.string().required('Bairro obrigatório'),
   state: yup
     .mixed<StatesEnum>()
-    .oneOf(Object.values(StatesEnum), 'O estado deve conter apenas a sigla')
+    .oneOf(Object.values(StatesEnum), 'Estado obrigatório e deve conter apenas a sigla')
     .required('Estado obrigatório, digite a sigla'),
   number: yup
     .number()
