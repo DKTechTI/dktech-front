@@ -25,7 +25,7 @@ interface DeleteDeviceProps {
   open: boolean
   setOpen: Dispatch<SetStateAction<boolean>>
   handleClose?: () => void
-  deviceType?: 'INPUT' | 'OUTPUT' | null
+  deviceType?: 'INPUT' | 'OUTPUT' | 'INOUT' | null
 }
 
 const DeleteDevice = ({ id, open, question, setOpen, description, handleClose, deviceType }: DeleteDeviceProps) => {
@@ -35,26 +35,77 @@ const DeleteDevice = ({ id, open, question, setOpen, description, handleClose, d
   const { keyId, setKeyId } = useDeviceKeys()
   const { setRefreshActions, refreshActions } = useActionsDnD()
 
-  const handleConfirmDelete = (deviceId: string) => {
+  const handleCheckProjectDeviceExistsOnDevice = async (deviceId: string, projectDeviceId: string) => {
+    const response = await api
+      .get(`/projectDevices/${deviceId}`)
+      .then(response => {
+        if (response.status === 200) {
+          const indexMenuDevices = response.data.data.indexMenuDevices
+
+          for (const keyDeviceType in indexMenuDevices) {
+            if (indexMenuDevices.hasOwnProperty(keyDeviceType)) {
+              const boardIndex = indexMenuDevices[keyDeviceType]
+
+              for (const index in boardIndex) {
+                if (boardIndex.hasOwnProperty(index)) {
+                  for (const device in boardIndex[index]) {
+                    if (boardIndex[index].hasOwnProperty(device)) {
+                      const currentDeviceId = boardIndex[index][device]
+
+                      if (projectDeviceId && currentDeviceId === projectDeviceId) return true
+                    }
+                  }
+                }
+              }
+            }
+          }
+
+          return false
+        }
+      })
+      .catch(() => {
+        toast.error('Erro ao verificar se o dispositivo está em uso.')
+
+        return false
+      })
+
+    if (response) {
+      return response
+    }
+
+    return false
+  }
+
+  const handleCheckActionsAfterRequest = (deviceId: string, projectDeviceId: string, deviceExists: boolean) => {
+    if (projectDeviceId === deviceId || deviceExists) setProjectDeviceId(null), keyId && setKeyId(null)
+
+    if (deviceType === 'OUTPUT') setRefreshActions(!refreshActions)
+
+    setRefreshMenu(!refreshMenu)
+  }
+
+  const handleConfirmDelete = async (deviceId: string) => {
+    let deviceExists = false
+
+    if (deviceType === 'INOUT') deviceExists = await handleCheckProjectDeviceExistsOnDevice(deviceId, projectDeviceId)
+
     api
       .delete(`/projectDevices/${deviceId}`)
       .then(response => {
         if (response.status === 200) {
-          if (projectDeviceId === id) setProjectDeviceId(null), keyId && setKeyId(null)
-          deviceType === 'OUTPUT' && setRefreshActions(!refreshActions)
-          setRefreshMenu(!refreshMenu)
-          handleClose?.()
+          handleCheckActionsAfterRequest(deviceId, projectDeviceId, deviceExists)
+
           toast.success('Dispositivo deletado com sucesso!')
         }
       })
       .catch(error => {
-        handleClose?.()
         handleErrorResponse({
           error: error,
           errorReference: projectDevicesErrors,
           defaultErrorMessage: 'Erro ao deletar dispositivo.'
         })
       })
+      .finally(() => handleClose?.())
   }
 
   return (
