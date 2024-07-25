@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useEffect } from 'react'
 import { useRouter } from 'next/router'
 
 import { Box, CircularProgress, Typography } from '@mui/material'
