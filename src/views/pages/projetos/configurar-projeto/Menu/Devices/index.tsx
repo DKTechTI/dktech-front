@@ -51,7 +51,7 @@ const Devices = ({ devices }: DevicesProps) => {
   const [showDeleteDialog, setShowDeleteDialog] = useState<boolean>(false)
 
   const [deviceId, setDeviceId] = useState<string>('')
-  const [deviceType, setDeviceType] = useState<'INPUT' | 'OUTPUT' | null>(null)
+  const [deviceType, setDeviceType] = useState<'INPUT' | 'OUTPUT' | 'INOUT' | null>(null)
   const [centralsStatus, setCentralsStatus] = useState<CentralStatusType[]>([])
 
   const isFetchingRef = useRef(false)
@@ -199,6 +199,7 @@ const Devices = ({ devices }: DevicesProps) => {
                         e.stopPropagation()
                         setDeviceId(central.projectDeviceId)
                         setShowDeleteDialog(true)
+                        setDeviceType('INOUT')
                       }}
                     />
                   </Box>
