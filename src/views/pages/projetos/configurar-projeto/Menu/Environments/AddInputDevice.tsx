@@ -243,6 +243,14 @@ const AddInputDevice = ({
     }
 
     setValue('environmentId', environmentId)
+
+    return () => {
+      setPorts([])
+      setDevicesAvailableOrNot([])
+      reset()
+      setBoardId(null)
+      setBoardIndex(null)
+    }
   }, [environmentId, open, reset, setValue])
 
   return (

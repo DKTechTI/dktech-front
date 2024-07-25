@@ -29,10 +29,10 @@ interface DeleteDeviceProps {
 }
 
 const DeleteDevice = ({ id, open, question, setOpen, description, handleClose, deviceType }: DeleteDeviceProps) => {
+  const { keyId, setKeyId } = useDeviceKeys()
   const { handleErrorResponse } = useErrorHandling()
   const { setRefreshMenu, refreshMenu } = useProjectMenu()
   const { projectDeviceId, setProjectDeviceId } = useProject()
-  const { keyId, setKeyId } = useDeviceKeys()
   const { setRefreshActions, refreshActions } = useActionsDnD()
 
   const handleCheckProjectDeviceExistsOnDevice = async (deviceId: string, projectDeviceId: string) => {
