@@ -17,7 +17,7 @@ import { useForm, Controller } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
 
 import { ResaleProps } from 'src/types/resales'
-import { applyMask } from 'src/utils/inputs'
+import { applyMask, applyPhoneMask, StatesEnum } from 'src/utils/inputs'
 import { formatDocumentNumber } from 'src/utils/formatDocumentNumber'
 
 import toast from 'react-hot-toast'
@@ -60,7 +60,10 @@ const schema = yup.object().shape({
   city: yup.string().required('Cidade obrigatória'),
   address: yup.string().required('Endereço obrigatório'),
   neighborhood: yup.string().required('Bairro obrigatório'),
-  state: yup.string().required('Estado obrigatório'),
+  state: yup
+    .mixed<StatesEnum>()
+    .oneOf(Object.values(StatesEnum), 'Estado obrigatório e deve conter apenas a sigla')
+    .required('Estado obrigatório, digite a sigla'),
   number: yup.string().required('Número obrigatório'),
   complement: yup.string(),
   referenceCarrier: yup.string()
@@ -483,7 +486,7 @@ const EditAccount = ({ openEdit, handleEditClose, data, refresh, setRefresh }: E
                     label='Telefone'
                     value={value}
                     onBlur={onBlur}
-                    onChange={onChange}
+                    onChange={e => onChange(applyPhoneMask(e.target.value))}
                     placeholder='Telefone'
                     error={Boolean(errors.cellphone)}
                     {...(errors.cellphone && { helperText: errors.cellphone.message })}
@@ -503,7 +506,7 @@ const EditAccount = ({ openEdit, handleEditClose, data, refresh, setRefresh }: E
                     label='Telefone Fixo'
                     value={value}
                     onBlur={onBlur}
-                    onChange={onChange}
+                    onChange={e => onChange(applyPhoneMask(e.target.value))}
                     placeholder='Telefone Fixo'
                     error={Boolean(errors.phone)}
                     {...(errors.phone && { helperText: errors.phone.message })}

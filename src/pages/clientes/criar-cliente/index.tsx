@@ -13,6 +13,7 @@ import { api } from 'src/services/api'
 
 import { delay } from 'src/utils/delay'
 
+import { applyPhoneMask, StatesEnum } from 'src/utils/inputs'
 import clientsErrors from 'src/errors/clientsErrors'
 import useErrorHandling from 'src/hooks/useErrorHandling'
 
@@ -21,11 +22,17 @@ const schema = yup.object().shape({
   status: yup.string().required('Status obrigatório'),
   phone: yup.string(),
   cellphone: yup.string(),
-  cep: yup.string().required('CEP obrigatório').matches(/([\d]{2})\.?([\d]{3})\-?([\d]{3})/, 'CEP inválido'),
+  cep: yup
+    .string()
+    .required('CEP obrigatório')
+    .matches(/([\d]{2})\.?([\d]{3})\-?([\d]{3})/, 'CEP inválido'),
   city: yup.string().required('Cidade obrigatória'),
   address: yup.string().required('Endereço obrigatório'),
   neighborhood: yup.string().required('Bairro obrigatório'),
-  state: yup.string().required('Estado obrigatório'),
+  state: yup
+    .mixed<StatesEnum>()
+    .oneOf(Object.values(StatesEnum), 'Estado obrigatório e deve conter apenas a sigla')
+    .required('Estado obrigatório, digite a sigla'),
   number: yup
     .number()
     .typeError('Número do endereço deve conter apenas números')
@@ -208,7 +215,7 @@ const CreateClient = () => {
                     value={value}
                     onBlur={onBlur}
                     onChange={onChange}
-                    placeholder='Estado'
+                    placeholder='Ex: SP'
                     error={Boolean(errors.state)}
                     {...(errors.state && { helperText: errors.state.message })}
                   />
@@ -265,7 +272,7 @@ const CreateClient = () => {
                     label='Telefone'
                     value={value}
                     onBlur={onBlur}
-                    onChange={onChange}
+                    onChange={e => onChange(applyPhoneMask(e.target.value))}
                     placeholder='Telefone'
                     error={Boolean(errors.cellphone)}
                     {...(errors.cellphone && { helperText: errors.cellphone.message })}
@@ -284,7 +291,7 @@ const CreateClient = () => {
                     label='Telefone Fixo'
                     value={value}
                     onBlur={onBlur}
-                    onChange={onChange}
+                    onChange={e => onChange(applyPhoneMask(e.target.value))}
                     placeholder='Telefone Fixo'
                     error={Boolean(errors.phone)}
                     {...(errors.phone && { helperText: errors.phone.message })}
