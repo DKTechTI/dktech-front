@@ -1,4 +1,4 @@
-import { createContext } from 'react'
+import { createContext, useCallback } from 'react'
 
 import { useRouter } from 'next/router'
 
@@ -62,7 +62,11 @@ const ProjectMenuProvider = ({ children }: Props) => {
     loading: loadingMenu
   } = useGetDataApi<MenuProps>({ url: `/projects/menu/${id}`, callInit: router.isReady })
 
-  const handleAvaliableInputPorts = async (centralId: string) => {
+  const handleAvaliableInputPorts = useCallback(async (centralId: string) => {
+    if (!centralId) {
+      return []
+    }
+
     try {
       const ports: PortsProps[] = []
 
@@ -127,9 +131,13 @@ const ProjectMenuProvider = ({ children }: Props) => {
 
       return []
     }
-  }
+  }, [])
 
-  const handleAvaliableOutputPorts = async (centralId: string) => {
+  const handleAvaliableOutputPorts = useCallback(async (centralId: string) => {
+    if (!centralId) {
+      return []
+    }
+
     try {
       const ports: PortsProps[] = []
 
@@ -194,7 +202,7 @@ const ProjectMenuProvider = ({ children }: Props) => {
 
       return []
     }
-  }
+  }, [])
 
   const handleCheckDeviceSequence = (deviceId: string, centralId: string, where: 'inputPorts' | 'outputPorts') => {
     const central = menu?.devices.find((central: DeviceProps) => central.projectDeviceId === centralId)

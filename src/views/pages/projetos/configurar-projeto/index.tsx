@@ -45,7 +45,7 @@ export default function ProjectConfig() {
             border: '1px solid #D0D4F1'
           }}
         >
-          {DeviceConfig({ projectDeviceId })}
+          <DeviceConfig projectDeviceId={projectDeviceId} />
         </Grid>
         <Grid item xs={12} sm={6} lg={4}>
           {projectDeviceModuleType === 'INPUT' && <KeyConfig />}

@@ -236,6 +236,14 @@ const AddOutputDevice = ({
     }
 
     setValue('environmentId', environmentId)
+
+    return () => {
+      reset()
+      setPorts([])
+      handleResetDevices()
+      setBoardId(null)
+      setBoardIndex(null)
+    }
   }, [environmentId, handleResetDevices, open, reset, setValue])
 
   return (

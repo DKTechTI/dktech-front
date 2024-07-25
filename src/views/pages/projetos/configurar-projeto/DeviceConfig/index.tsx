@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import { useRouter } from 'next/router'
 
 import { Box, CircularProgress, Typography } from '@mui/material'
@@ -19,9 +19,9 @@ const DeviceConfig = ({ projectDeviceId }: DeviceConfigProps) => {
 
   const { setProjectDeviceType, setProjectDeviceModuleType, setOrderKeys } = useDeviceKeys()
 
-  const { data, loading, refresh, setRefresh } = useGetDataApi<any>({
+  const { data, loading, refresh, setRefresh, handleResetData } = useGetDataApi<any>({
     url: `/projectDevices/${projectDeviceId}`,
-    callInit: Boolean(projectDeviceId && router.isReady)
+    callInit: Boolean(!!projectDeviceId && router.isReady)
   })
 
   useEffect(() => {
@@ -31,6 +31,10 @@ const DeviceConfig = ({ projectDeviceId }: DeviceConfigProps) => {
       setOrderKeys(data.data.indexDeviceKeys)
     }
   }, [data, setOrderKeys, setProjectDeviceModuleType, setProjectDeviceType])
+
+  useEffect(() => {
+    if (!projectDeviceId) handleResetData()
+  }, [handleResetData, projectDeviceId])
 
   if (loading) {
     return (
