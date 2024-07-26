@@ -20,6 +20,8 @@ import { api } from 'src/services/api'
 import useErrorHandling from 'src/hooks/useErrorHandling'
 import projectDevicesErrors from 'src/errors/projectDevicesErrors'
 
+import { applyIPMask } from 'src/utils/inputs'
+
 const schema = yup.object().shape({
   deviceId: yup.string().required('Dispositivo obrigatório'),
   name: yup.string().required('Nome obrigatório'),
@@ -117,8 +119,6 @@ const AddCentral = ({ handleClose, open, refresh, setRefresh }: AddCentralProps)
   const handleChangeConnectionType = (event: SyntheticEvent) => {
     const { value } = event.target as HTMLInputElement
 
-    setValue('connection', value)
-
     if (value) {
       clearErrors('connection')
 
@@ -128,6 +128,14 @@ const AddCentral = ({ handleClose, open, refresh, setRefresh }: AddCentralProps)
         resetField('subnet')
         resetField('dns')
       }
+
+      if (value === 'STATIC_IP') {
+        setValue('ip', applyIPMask('192168001001'))
+        setValue('subnet', applyIPMask('2552552550'))
+        setValue('dns', applyIPMask('8888'))
+      }
+
+      setValue('connection', value)
 
       return
     }
@@ -356,7 +364,7 @@ const AddCentral = ({ handleClose, open, refresh, setRefresh }: AddCentralProps)
                     disabled={handleCheckConnectionType(watch('connection') as string)}
                     value={value || ''}
                     onBlur={onBlur}
-                    onChange={onChange}
+                    onChange={e => onChange(applyIPMask(e.target.value))}
                     error={Boolean(errors.ip)}
                     {...(errors.ip && { helperText: errors.ip.message })}
                   />
@@ -392,7 +400,7 @@ const AddCentral = ({ handleClose, open, refresh, setRefresh }: AddCentralProps)
                     disabled={handleCheckConnectionType(watch('connection') as string)}
                     value={value || ''}
                     onBlur={onBlur}
-                    onChange={onChange}
+                    onChange={e => onChange(applyIPMask(e.target.value))}
                     error={Boolean(errors.subnet)}
                     {...(errors.subnet && { helperText: errors.subnet.message })}
                   />
@@ -410,7 +418,7 @@ const AddCentral = ({ handleClose, open, refresh, setRefresh }: AddCentralProps)
                     disabled={handleCheckConnectionType(watch('connection') as string)}
                     value={value || ''}
                     onBlur={onBlur}
-                    onChange={onChange}
+                    onChange={e => onChange(applyIPMask(e.target.value))}
                     error={Boolean(errors.dns)}
                     {...(errors.dns && { helperText: errors.dns.message })}
                   />
@@ -428,7 +436,7 @@ const AddCentral = ({ handleClose, open, refresh, setRefresh }: AddCentralProps)
                     disabled={handleCheckConnectionType(watch('connection') as string)}
                     value={value || ''}
                     onBlur={onBlur}
-                    onChange={onChange}
+                    onChange={e => onChange(applyIPMask(e.target.value))}
                     error={Boolean(errors.gateway)}
                     {...(errors.gateway && { helperText: errors.gateway.message })}
                   />
