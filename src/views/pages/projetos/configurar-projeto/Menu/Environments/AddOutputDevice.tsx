@@ -84,6 +84,7 @@ const AddOutputDevice = ({
   const [ports, setPorts] = useState<any[]>([])
   const [boardId, setBoardId] = useState<string | null>(null)
   const [boardIndex, setBoardIndex] = useState<string | null>(null)
+  const [optionsInitialValue, setOptionsInitialValue] = useState<any[]>([])
 
   const { data: projectDevices } = useGetDataApi<any>({
     url: `/projectDevices/by-project/${id}`,
@@ -157,6 +158,19 @@ const AddOutputDevice = ({
     setError('boardIndex', { type: 'manual', message: 'Porta obrigatória' })
   }
 
+  const handleCheckDefaultValue = (operationType: string) => {
+    switch (operationType) {
+      case 'DIMMER':
+        return '100'
+      case 'RELES':
+        return 'TRUE'
+      case 'ENGINE':
+        return 'OPEN'
+      default:
+        return ''
+    }
+  }
+
   const handleSetDevice = (event: SyntheticEvent, devices: any) => {
     const { value } = event.target as HTMLInputElement
 
@@ -168,7 +182,14 @@ const AddOutputDevice = ({
       setValue('type', device.type)
       clearErrors('deviceId')
 
-      return
+      const operationType = device.operationType
+
+      const deviceInitialValue = checkInitialValue(operationType)
+      const deviceDefaultValue = handleCheckDefaultValue(operationType)
+
+      setValue('initialValue', deviceDefaultValue)
+
+      return setOptionsInitialValue(deviceInitialValue)
     }
 
     setValue('deviceId', value)
@@ -179,14 +200,6 @@ const AddOutputDevice = ({
     const { checked } = event.target as HTMLInputElement
 
     setValue('voiceActivation', String(checked))
-  }
-
-  const handleCheckInitialValue = (deviceId: string) => {
-    const device = devices?.data.filter((device: any) => device._id === deviceId)[0]
-
-    const deviceInitialValue = checkInitialValue(device?.operationType)
-
-    return deviceInitialValue
   }
 
   const handleRenderDeviceOption = (device: any) => {
@@ -422,16 +435,14 @@ const AddOutputDevice = ({
                     error={Boolean(errors.initialValue)}
                     {...(errors.initialValue && { helperText: errors.initialValue.message })}
                   >
-                    <MenuItem value=''>
+                    <MenuItem value='' disabled>
                       <em>{watch('deviceId') ? 'Selecione' : 'Selecione um dispositivo primeiro'}</em>
                     </MenuItem>
-                    {handleCheckInitialValue(watch('deviceId')).map((initialValue: any, index: number) => {
-                      return (
-                        <MenuItem key={index} value={initialValue?.value}>
-                          {initialValue?.name}
-                        </MenuItem>
-                      )
-                    })}
+                    {optionsInitialValue.map((initialValue: any, index: number) => (
+                      <MenuItem key={index} value={initialValue?.value}>
+                        {initialValue?.name}
+                      </MenuItem>
+                    ))}
                   </CustomTextField>
                 )}
               />

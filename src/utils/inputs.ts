@@ -97,4 +97,36 @@ const applyPhoneMask = (value: string) => {
   return value
 }
 
-export { applyMask, applyCpfMask, applyCnpjMask, applyPhoneMask, StatesEnum }
+const applyIPMask = (value: string) => {
+  if (!value) return value
+  value = value.replace(/\D/g, '')
+
+  value = value.slice(0, 12)
+
+  switch (true) {
+    case value.length > 10:
+      value = value.replace(/(\d{3})(\d{3})(\d{3})(\d{3})/, '$1.$2.$3.$4')
+      break
+    case value.length == 10:
+      value = value.replace(/(\d{3})(\d{3})(\d{3})(\d{1})/, '$1.$2.$3.$4')
+      break
+    case value.length > 6:
+      value = value.replace(/(\d{3})(\d{3})(\d{3})/, '$1.$2.$3')
+      break
+    case value.length == 4:
+      value = value.replace(/(\d{1})(\d{1})(\d{1})(\d{1})/, '$1.$2.$3.$4')
+      break
+    case value.length > 2:
+      value = value.replace(/(\d{2})(\d{1})/, '$1.$2')
+      break
+    case value.length > 0:
+      value = value.replace(/(\d*)/, '$1')
+      break
+    default:
+      break
+  }
+
+  return value
+}
+
+export { applyMask, applyCpfMask, applyCnpjMask, applyPhoneMask, StatesEnum, applyIPMask }

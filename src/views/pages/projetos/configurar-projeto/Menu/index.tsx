@@ -12,20 +12,12 @@ import { useProjectMenu } from 'src/hooks/useProjectMenu'
 export default function Menu() {
   const { menu } = useProjectMenu()
 
-  const defaultExpandedValues = menu
-    ? menu.devices
-        .map((device) => device.projectDeviceId)
-        .concat(menu.environments.map((environment) => environment.environmentId))
-        .concat(['1', '2', '3'])
-    : []
-
   return (
     <Box sx={{ flexGrow: 1, width: '100%', padding: '0 0 1rem 0' }}>
       {menu ? (
         <TreeView
           aria-label='rich object'
           defaultCollapseIcon={<ExpandMoreIcon />}
-          defaultExpanded={defaultExpandedValues}
           defaultExpandIcon={<ChevronRightIcon />}
           sx={{
             display: 'flex',

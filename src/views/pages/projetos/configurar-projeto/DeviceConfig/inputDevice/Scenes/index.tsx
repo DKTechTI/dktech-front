@@ -82,17 +82,21 @@ const Scenes = ({ keyId }: ScenesProps) => {
       projectId: id as string,
       deviceId: deviceId,
       projectDeviceKeyId: keyId,
-      sceneType: 'LOAD',
+      sceneType: projectDeviceType === 'KEYPAD' ? 'TOGGLE' : 'LOAD',
       eventType: 'PULSE',
       eventValue: 'onePulse',
       isRepeatEvent: false,
-      ledAction: 'NONE'
+      ledAction: projectDeviceType === 'KEYPAD' ? 'FOLLOW' : 'NONE'
     } as FormDataScene,
     mode: 'onBlur',
     resolver: yupResolver(schemaScene)
   })
 
-  const { data: sceneData, error } = useGetDataApi<any>({
+  const {
+    data: sceneData,
+    error,
+    handleResetData
+  } = useGetDataApi<any>({
     url: `/projectScenes/by-event-type/${keyId}`,
     params: {
       eventType: formatEventTypeForRequest(watchScene('eventValue')),
@@ -296,6 +300,10 @@ const Scenes = ({ keyId }: ScenesProps) => {
       sceneData.data.indexActions ? setOrderActions(sceneData.data.indexActions) : setOrderActions(null)
       autoSaveEnabledRef.current = true
       sceneDataRef.current = watchScene()
+    }
+
+    return () => {
+      handleResetData()
     }
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
