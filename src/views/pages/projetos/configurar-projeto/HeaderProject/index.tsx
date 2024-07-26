@@ -107,7 +107,12 @@ const HeaderProject = ({ data, refresh, setRefresh }: HeaderProjectProps) => {
               label={data.name}
               onClick={() => setOpenEdit(true)}
               sx={{
-                width: '8rem',
+                maxWidth: {
+                  xs: '200px',
+                  sm: '250px',
+                  md: '300px'
+                },
+                width: '100%',
                 height: '2rem',
                 fontSize: 'medium'
               }}
