@@ -5,8 +5,10 @@ import useGetDataApi from 'src/hooks/useGetDataApi'
 type deviceKeysValuesType = {
   deviceKeys: null | any
   setOrderKeys: (value: any) => void
-  keyId: null | any
-  setKeyId: (value: any) => void
+  keyId: null | string
+  setKeyId: (value: string | null) => void
+  keyType: null | string
+  setKeyType: (value: string | null) => void
   projectDeviceId: null | any
   setProjectDeviceId: (value: any) => void
   projectDeviceType: null | string
@@ -27,6 +29,8 @@ const defaultDeviceKeysProvider: deviceKeysValuesType = {
   setOrderKeys: () => null,
   keyId: null,
   setKeyId: () => null,
+  keyType: null,
+  setKeyType: () => null,
   projectDeviceId: null,
   setProjectDeviceId: () => null,
   projectDeviceType: null,
@@ -53,7 +57,8 @@ const DeviceKeysProvider = ({ children }: Props) => {
 
   const { id: projectId } = router.query
 
-  const [keyId, setKeyId] = useState('')
+  const [keyId, setKeyId] = useState<string | null>(null)
+  const [keyType, setKeyType] = useState<string | null>(null)
   const [projectDeviceId, setProjectDeviceId] = useState('')
   const [deviceId, setDeviceId] = useState('')
   const [deviceKeys, setDeviceKeys] = useState<any[]>([])
@@ -102,6 +107,8 @@ const DeviceKeysProvider = ({ children }: Props) => {
         setOrderKeys,
         keyId,
         setKeyId,
+        keyType,
+        setKeyType,
         projectDeviceId,
         setProjectDeviceId,
         projectDeviceType,

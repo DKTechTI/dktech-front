@@ -1,4 +1,4 @@
-import { SyntheticEvent, useEffect, useState } from 'react'
+import { SyntheticEvent, useCallback, useEffect, useState } from 'react'
 
 import { Box, Button, Grid, List, ListItem, ListItemButton, ListItemText, Typography, useTheme } from '@mui/material'
 
@@ -23,27 +23,35 @@ interface KeysProps {
 const Keys = ({ keys }: KeysProps) => {
   const theme = useTheme()
 
-  const { keyId, setKeyId, refreshDeviceKeys, setRefreshDeviceKeys } = useDeviceKeys()
+  const { keyId, setKeyId, refreshDeviceKeys, setRefreshDeviceKeys, setKeyType } = useDeviceKeys()
 
   const [selected, setSelected] = useState<string>('')
   const [showDialogStatusKeys, setShowDialogStatusKeys] = useState<boolean>(false)
 
+  const handleSelectCurrentKey = useCallback(
+    (keyId: string | null) => {
+      if (!keyId) return setSelected('')
+
+      const key = keys.find(key => key._id === keyId)
+
+      if (key && key.status === 'INACTIVE') return toast.error('Tecla inativa, não é possível selecionar')
+
+      setSelected(keyId)
+      setKeyId(keyId)
+      setKeyType(key.keyType)
+    },
+    [keys, setKeyId, setKeyType]
+  )
+
   const handleSelectKeyHighlight = (e: SyntheticEvent<HTMLElement>, id: string) => {
     e.stopPropagation()
 
-    if (!id) return setSelected('')
-
-    const key = keys.find(key => key._id === id)
-
-    if (key && key.status === 'INACTIVE') return toast.error('Tecla inativa, não é possível selecionar')
-
-    setSelected(id)
-    setKeyId(id)
+    handleSelectCurrentKey(id)
   }
 
   useEffect(() => {
-    if (keyId) setSelected(keyId)
-  }, [keyId])
+    handleSelectCurrentKey(keyId)
+  }, [handleSelectCurrentKey, keyId])
 
   const handleShowKeys = (keys: any[]) => {
     return keys.map(key => {

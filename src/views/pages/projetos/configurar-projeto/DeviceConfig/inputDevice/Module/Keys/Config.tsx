@@ -191,7 +191,7 @@ const Config = ({ keyData }: ConfigProps) => {
           </Grid>
         </CardContent>
       </Box>
-      <Scenes keyId={keyId} />
+      {keyId && <Scenes keyId={keyId} />}
     </Box>
   )
 }

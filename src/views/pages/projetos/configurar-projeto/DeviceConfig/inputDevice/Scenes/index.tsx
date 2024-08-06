@@ -19,6 +19,7 @@ import { useDeviceKeys } from 'src/hooks/useDeviceKeys'
 import {
   checkEventTypeValue,
   checkSceneTypeValue,
+  eventTypeOptions,
   formatEventTypeForRequest,
   formatEventValueForRequest,
   formatSceneObject
@@ -62,7 +63,7 @@ const Scenes = ({ keyId }: ScenesProps) => {
 
   const { handleSaveOnStateChange } = useAutoSave()
   const { handleErrorResponse } = useErrorHandling()
-  const { deviceId, projectDeviceType } = useDeviceKeys()
+  const { deviceId, projectDeviceType, keyType } = useDeviceKeys()
   const { setProjectSceneId, setOrderActions } = useActionsDnD()
 
   const autoSaveEnabledRef = useRef(false)
@@ -82,7 +83,7 @@ const Scenes = ({ keyId }: ScenesProps) => {
       projectId: id as string,
       deviceId: deviceId,
       projectDeviceKeyId: keyId,
-      sceneType: projectDeviceType === 'KEYPAD' ? 'TOGGLE' : 'LOAD',
+      sceneType: keyType === 'PULSATOR_NA' ? 'TOGGLE' : 'LOAD',
       eventType: 'PULSE',
       eventValue: 'onePulse',
       isRepeatEvent: false,
@@ -106,9 +107,9 @@ const Scenes = ({ keyId }: ScenesProps) => {
   })
 
   const [switchOptions, setSwitchOptions] = useState({
-    loadingScene: true,
-    toggleScene: false,
-    onOffScene: false
+    loadingScene: getValuesScene('sceneType') === 'LOAD',
+    toggleScene: getValuesScene('sceneType') === 'TOGGLE',
+    onOffScene: getValuesScene('sceneType') === 'ON/OFF'
   })
 
   const handleCheckIsEmpty = (data: any) => {
@@ -121,9 +122,9 @@ const Scenes = ({ keyId }: ScenesProps) => {
     resetScene()
 
     setSwitchOptions({
-      loadingScene: true,
-      toggleScene: false,
-      onOffScene: false
+      loadingScene: getValuesScene('sceneType') === 'LOAD',
+      toggleScene: getValuesScene('sceneType') === 'TOGGLE',
+      onOffScene: getValuesScene('sceneType') === 'ON/OFF'
     })
 
     setValueScene('eventValue', target.value)
@@ -184,6 +185,16 @@ const Scenes = ({ keyId }: ScenesProps) => {
     })
   }
 
+  const handleCheckEventTypeOptions = () => {
+    return eventTypeOptions.map((option, index) => {
+      return (
+        <MenuItem key={index} value={option.value} disabled={option.disabled}>
+          {option.label}
+        </MenuItem>
+      )
+    })
+  }
+
   const onSubmitScene = (formData: FormDataScene) => {
     if (sceneDataRef.current && JSON.stringify(sceneDataRef.current) === JSON.stringify(formData)) return null
 
@@ -195,6 +206,7 @@ const Scenes = ({ keyId }: ScenesProps) => {
         }
 
         const data = formatSceneObject(getValuesScene())
+
         handleSaveOnStateChange({
           apiUrl: `/projectScenes`,
           storageData: data,
@@ -278,6 +290,16 @@ const Scenes = ({ keyId }: ScenesProps) => {
   }, [error])
 
   useEffect(() => {
+    if (keyType)
+      setValueScene('sceneType', keyType === 'PULSATOR_NA' ? 'TOGGLE' : 'LOAD'),
+        setSwitchOptions({
+          loadingScene: getValuesScene('sceneType') === 'LOAD',
+          toggleScene: getValuesScene('sceneType') === 'TOGGLE',
+          onOffScene: getValuesScene('sceneType') === 'ON/OFF'
+        })
+  }, [getValuesScene, keyType, setValueScene])
+
+  useEffect(() => {
     if (sceneData?.data) {
       setValueScene('sceneId', sceneData.data?._id)
       setValueScene('deviceId', sceneData.data?.deviceId)
@@ -352,25 +374,7 @@ const Scenes = ({ keyId }: ScenesProps) => {
                     error={Boolean(errorsScene.eventValue)}
                     {...(errorsScene.eventValue && { helperText: errorsScene.eventValue.message })}
                   >
-                    <MenuItem disabled value=''>
-                      <em>Pulsos</em>
-                    </MenuItem>
-                    <MenuItem value='onePulse'>1 pulso</MenuItem>
-                    <MenuItem value='twoPulse'>2 pulsos</MenuItem>
-                    <MenuItem value='threePulse'>3 pulsos</MenuItem>
-                    <MenuItem value='fourPulse'>4 pulsos</MenuItem>
-                    <MenuItem value='fivePulse'>5 pulsos</MenuItem>
-                    <MenuItem disabled value=''>
-                      Tempo Pressionado
-                    </MenuItem>
-                    <MenuItem value='twoTimePressed'>2 segundos</MenuItem>
-                    <MenuItem value='threeTimePressed'>3 segundos</MenuItem>
-                    <MenuItem value='fourTimePressed'>4 segundos</MenuItem>
-                    <MenuItem value='fiveTimePressed'>5 segundos</MenuItem>
-                    <MenuItem disabled value=''>
-                      Repetição
-                    </MenuItem>
-                    <MenuItem value='repeat'>Manter pressionado</MenuItem>
+                    {handleCheckEventTypeOptions()}
                   </CustomTextField>
                 )}
               />
@@ -386,6 +390,7 @@ const Scenes = ({ keyId }: ScenesProps) => {
                     label='Led de Ação'
                     required
                     value={value || ''}
+                    disabled={projectDeviceType !== 'KEYPAD' ? true : false}
                     onBlur={handleSubmitScene(onSubmitScene)}
                     onChange={onChange}
                     error={Boolean(errorsScene.ledAction)}
@@ -426,7 +431,7 @@ const Scenes = ({ keyId }: ScenesProps) => {
               <FormControlLabel
                 control={
                   <Switch
-                    disabled={projectDeviceType === 'KEYPAD' ? true : false}
+                    disabled={keyType === 'LIGHT_SWITCH' ? true : false}
                     checked={switchOptions.onOffScene}
                     onChange={() => handleSwitchSceneType('onOffScene')}
                     name='onOffScene'
