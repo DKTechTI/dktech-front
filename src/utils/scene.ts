@@ -104,10 +104,79 @@ const formatEventTypeForRequest = (eventType: string) => {
   if (eventType && eventTypeObj[eventType]) return eventTypeObj[eventType]
 }
 
+const eventTypeOptions = [
+  {
+    value: '',
+    label: 'Pulsos',
+    disabled: true
+  },
+  {
+    value: 'onePulse',
+    label: '1 pulso',
+    disabled: false
+  },
+  {
+    value: 'twoPulse',
+    label: '2 pulsos',
+    disabled: false
+  },
+  {
+    value: 'threePulse',
+    label: '3 pulsos',
+    disabled: false
+  },
+  {
+    value: 'fourPulse',
+    label: '4 pulsos',
+    disabled: false
+  },
+  {
+    value: 'fivePulse',
+    label: '5 pulsos',
+    disabled: false
+  },
+  {
+    value: '',
+    label: 'Tempo Pressionado',
+    disabled: true
+  },
+  {
+    value: 'twoTimePressed',
+    label: '2 segundos',
+    disabled: false
+  },
+  {
+    value: 'threeTimePressed',
+    label: '3 segundos',
+    disabled: false
+  },
+  {
+    value: 'fourTimePressed',
+    label: '4 segundos',
+    disabled: false
+  },
+  {
+    value: 'fiveTimePressed',
+    label: '5 segundos',
+    disabled: false
+  },
+  {
+    value: '',
+    label: 'Repetição',
+    disabled: true
+  },
+  {
+    value: 'repeat',
+    label: 'Manter pressionado',
+    disabled: false
+  }
+]
+
 export {
   checkEventTypeValue,
   checkSceneTypeValue,
   formatSceneObject,
   formatEventValueForRequest,
-  formatEventTypeForRequest
+  formatEventTypeForRequest,
+  eventTypeOptions
 }

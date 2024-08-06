@@ -85,6 +85,7 @@ const AddOutputDevice = ({
   const [boardId, setBoardId] = useState<string | null>(null)
   const [boardIndex, setBoardIndex] = useState<string | null>(null)
   const [optionsInitialValue, setOptionsInitialValue] = useState<any[]>([])
+  const [devicesAvailableOrNot, setDevicesAvailableOrNot] = useState<any[]>([])
 
   const { data: projectDevices } = useGetDataApi<any>({
     url: `/projectDevices/by-project/${id}`,
@@ -99,7 +100,7 @@ const AddOutputDevice = ({
     params: {
       moduleType: 'OUTPUT'
     },
-    callInit: router.isReady && open && !!boardIndex
+    callInit: router.isReady && open
   })
 
   const {
@@ -107,6 +108,7 @@ const AddOutputDevice = ({
     handleSubmit,
     reset,
     setValue,
+    getValues,
     watch,
     setError,
     clearErrors,
@@ -143,19 +145,32 @@ const AddOutputDevice = ({
     setError('centralId', { type: 'manual', message: 'Central obrigatória' })
   }
 
-  const handleSetBoardIndex = (event: SyntheticEvent) => {
+  const handleSetBoardIndex = async (event: SyntheticEvent) => {
     const { value } = event.target as HTMLInputElement
 
     if (value) {
       setValue('boardIndex', value)
       setBoardIndex(value)
       clearErrors('boardIndex')
+      handleCheckDeviceOptions(devices?.data)
 
       return
     }
 
     setValue('boardIndex', value)
     setError('boardIndex', { type: 'manual', message: 'Porta obrigatória' })
+  }
+
+  const handleCheckDeviceOptions = (devices: any[]) => {
+    const devicesFiltered = devices?.map((device: any) => {
+      if (device?.outputTotal <= ports[Number(watch('boardIndex'))]?.keysQuantityAvaliable) {
+        return Object.assign(device, { avaliable: true })
+      }
+
+      return Object.assign(device, { avaliable: false })
+    })
+
+    setDevicesAvailableOrNot(devicesFiltered)
   }
 
   const handleCheckDefaultValue = (operationType: string) => {
@@ -202,12 +217,22 @@ const AddOutputDevice = ({
     setValue('voiceActivation', String(checked))
   }
 
-  const handleRenderDeviceOption = (device: any) => {
-    return (
-      <MenuItem key={device._id} value={device._id}>
-        {device.modelName}
-      </MenuItem>
-    )
+  const handleRenderDeviceOptions = (currentDevicesAvailable: any[]) => {
+    if (currentDevicesAvailable.length > 0)
+      return currentDevicesAvailable.map(device => (
+        <MenuItem key={device._id} value={device._id} disabled={!device.avaliable}>
+          {device.modelName}
+        </MenuItem>
+      ))
+
+    if (getValues('boardIndex'))
+      return (
+        <MenuItem value='' disabled>
+          <em>Nenhum dispositivo disponível</em>
+        </MenuItem>
+      )
+
+    return null
   }
 
   const onSubmit = (formData: FormData) => {
@@ -396,7 +421,7 @@ const AddOutputDevice = ({
                     <MenuItem value='' disabled>
                       <em>{boardIndex ? 'Selecione' : 'Selecione uma porta primeiro'}</em>
                     </MenuItem>
-                    {devices && devices?.data.map((device: any) => handleRenderDeviceOption(device))}
+                    {handleRenderDeviceOptions(devicesAvailableOrNot)}
                   </CustomTextField>
                 )}
               />

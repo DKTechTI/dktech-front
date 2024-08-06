@@ -132,7 +132,7 @@ const Create = ({ open, handleClose }: CreateProps) => {
         const initialValue = device.initialValue
         const operationType = handleCheckOperationType(initialValue)
 
-        if (!initialValue && !operationType)
+        if ((!initialValue && !operationType) || !keyId)
           return setError('outputs', { message: 'Erro ao buscar informações', type: 'manual' })
 
         append({

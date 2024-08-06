@@ -1,6 +1,6 @@
 import { SyntheticEvent, useEffect, useState } from 'react'
 
-import { Box, Button, CardContent, CardHeader, CircularProgress, Grid, MenuItem, Typography } from '@mui/material'
+import { Box, CardContent, CardHeader, CircularProgress, Grid, MenuItem, Typography } from '@mui/material'
 
 import CustomTextField from 'src/@core/components/mui/text-field'
 
@@ -48,8 +48,14 @@ interface KeypadProps {
 const Keypad = ({ deviceData, refresh, setRefresh }: KeypadProps) => {
   const { handleErrorResponse } = useErrorHandling()
   const { setDeviceId, setProjectDeviceId, deviceKeys, loadingDeviceKeys } = useDeviceKeys()
-  const { handleAvaliableInputPorts, setRefreshMenu, refreshMenu, handleCheckDeviceSequence, handleCheckDevicePort } =
-    useProjectMenu()
+  const {
+    handleAvaliableInputPorts,
+    setRefreshMenu,
+    refreshMenu,
+    handleCheckDeviceSequence,
+    handleCheckDevicePort,
+    menu
+  } = useProjectMenu()
 
   const [ports, setPorts] = useState<any[] | null>(null)
   const [sequences, setSequences] = useState<any[] | null>(null)
@@ -173,6 +179,12 @@ const Keypad = ({ deviceData, refresh, setRefresh }: KeypadProps) => {
     setError('index', { type: 'manual', message: 'Sequência obrigatória' })
   }
 
+  const formTrigger = () => {
+    const form = document.getElementById('device-form')
+
+    if (form) form.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }))
+  }
+
   const onSubmit = (formData: FormData) => {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { index, boardIndex, ...formattedData } = formData
@@ -224,13 +236,13 @@ const Keypad = ({ deviceData, refresh, setRefresh }: KeypadProps) => {
 
     fetchData()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [deviceData, watch('boardIndex')])
+  }, [deviceData, menu])
 
   return (
     <Box>
       <CardHeader title={`Keypad: ${getValues('name')}`} />
       <CardContent>
-        <form noValidate autoComplete='off' onSubmit={handleSubmit(onSubmit)}>
+        <form id='device-form' noValidate autoComplete='off' onSubmit={handleSubmit(onSubmit)}>
           <Grid container spacing={6}>
             <Grid item xs={12} sm={6}>
               <Controller
@@ -262,13 +274,13 @@ const Keypad = ({ deviceData, refresh, setRefresh }: KeypadProps) => {
               <Controller
                 name='name'
                 control={control}
-                render={({ field: { value, onChange, onBlur } }) => (
+                render={({ field: { value, onChange } }) => (
                   <CustomTextField
                     fullWidth
                     label='Nome'
                     required
                     value={value || ''}
-                    onBlur={onBlur}
+                    onBlur={formTrigger}
                     onChange={onChange}
                     placeholder='Nome'
                     error={Boolean(errors.name)}
@@ -325,13 +337,6 @@ const Keypad = ({ deviceData, refresh, setRefresh }: KeypadProps) => {
                   </CustomTextField>
                 )}
               />
-            </Grid>
-            <Grid item xs={12} sm={12}>
-              <Box sx={{ display: 'flex', alignItems: 'end', justifyContent: 'end' }}>
-                <Button type='submit' variant='contained' sx={{ mr: 2 }}>
-                  salvar
-                </Button>
-              </Box>
             </Grid>
             <Grid item xs={12} justifyContent={'center'}>
               {loadingDeviceKeys && !isReady && (
