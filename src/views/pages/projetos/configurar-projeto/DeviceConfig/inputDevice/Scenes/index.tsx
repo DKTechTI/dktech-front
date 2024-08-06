@@ -431,7 +431,7 @@ const Scenes = ({ keyId }: ScenesProps) => {
               <FormControlLabel
                 control={
                   <Switch
-                    disabled={keyType === 'LIGHT_SWITCH' ? true : false}
+                    disabled={keyType === 'LIGHT_SWITCH' ? false : true}
                     checked={switchOptions.onOffScene}
                     onChange={() => handleSwitchSceneType('onOffScene')}
                     name='onOffScene'
