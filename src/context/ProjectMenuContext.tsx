@@ -158,7 +158,9 @@ const ProjectMenuProvider = ({ children }: Props) => {
           const keyData = central.indexGlobalKeys.outputs[outputPort][key]
 
           if (keyData.keyId !== null) {
-            keysQuantityAvaliable--
+            keysQuantityAvaliable = 0
+
+            break
           }
         }
 
