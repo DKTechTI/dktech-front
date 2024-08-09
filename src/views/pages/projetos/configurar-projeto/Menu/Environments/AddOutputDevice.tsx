@@ -176,11 +176,11 @@ const AddOutputDevice = ({
   const handleCheckDefaultValue = (operationType: string) => {
     switch (operationType) {
       case 'DIMMER':
-        return '100'
+        return '0'
       case 'RELES':
-        return 'TRUE'
+        return 'FALSE'
       case 'ENGINE':
-        return 'OPEN'
+        return 'CLOSE'
       default:
         return ''
     }
