@@ -218,16 +218,16 @@ const Module = ({ deviceData, refresh, setRefresh }: ModuleProps) => {
   useEffect(() => {
     const fetchData = async () => {
       if (deviceData) {
-        const { portsOptions, sequencesOptions } = await handleCheckAvailablePortsAndSequences(deviceData?.centralId)
-
-        setPorts(portsOptions)
-        setSequences(sequencesOptions)
-
         const devicePort = handleCheckDevicePort(deviceData?._id, deviceData?.centralId, 'inputPorts')
         const deviceSequence = handleCheckDeviceSequence(deviceData?._id, deviceData?.centralId, 'inputPorts')
 
         if (devicePort !== null && String(devicePort)) setValue('boardIndex', String(devicePort))
         if (deviceSequence !== null && String(deviceSequence)) setValue('index', String(deviceSequence))
+
+        const { portsOptions, sequencesOptions } = await handleCheckAvailablePortsAndSequences(deviceData?.centralId)
+
+        setPorts(portsOptions)
+        setSequences(sequencesOptions)
 
         setTimeout(() => {
           setIsReady(true)

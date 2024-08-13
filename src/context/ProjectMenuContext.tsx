@@ -74,9 +74,9 @@ const ProjectMenuProvider = ({ children }: Props) => {
       const response = await api.get(`/projectDevices/${centralId}`)
       const central = response.data.data
 
-      const outputPorts = Object.keys(central.indexMenuDevices.inputs)
+      const inputPorts = Object.keys(central.indexMenuDevices.inputs)
 
-      outputPorts.map((inputPort: any) => {
+      inputPorts.map((inputPort: any) => {
         const keys = Object.keys(central.indexGlobalKeys.inputs[inputPort])
         const keysLimit = keys.length
         const keysQuantity = keys.length
@@ -108,10 +108,6 @@ const ProjectMenuProvider = ({ children }: Props) => {
             index: String(i),
             avaliable: isAvailable
           })
-
-          if (isAvailable) {
-            break
-          }
         }
 
         ports.push({
