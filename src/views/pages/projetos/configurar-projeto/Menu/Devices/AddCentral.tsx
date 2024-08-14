@@ -1,4 +1,4 @@
-import { SyntheticEvent, useEffect, useState } from 'react'
+import { memo, SyntheticEvent, useEffect, useState } from 'react'
 
 import { useRouter } from 'next/router'
 
@@ -74,7 +74,7 @@ interface AddCentralProps {
   setRefresh: (value: boolean) => void
 }
 
-const AddCentral = ({ handleClose, open, refresh, setRefresh }: AddCentralProps) => {
+const AddCentral = memo(({ handleClose, open, refresh, setRefresh }: AddCentralProps) => {
   const router = useRouter()
   const { id } = router.query
   const { handleErrorResponse } = useErrorHandling()
@@ -462,6 +462,6 @@ const AddCentral = ({ handleClose, open, refresh, setRefresh }: AddCentralProps)
       </DialogActions>
     </Dialog>
   )
-}
+})
 
 export default AddCentral

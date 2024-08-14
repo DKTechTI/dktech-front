@@ -1,4 +1,4 @@
-import { Dispatch, Fragment, SetStateAction } from 'react'
+import { Dispatch, Fragment, memo, SetStateAction } from 'react'
 
 import { useProjectMenu } from 'src/hooks/useProjectMenu'
 
@@ -24,7 +24,7 @@ interface DeleteEnvironmentProps {
   setOpen: Dispatch<SetStateAction<boolean>>
 }
 
-const DeleteEnvironment = ({ id, open, setOpen, description, question }: DeleteEnvironmentProps) => {
+const DeleteEnvironment = memo(({ id, open, setOpen, description, question }: DeleteEnvironmentProps) => {
   const { handleErrorResponse } = useErrorHandling()
   const { setRefreshMenu, refreshMenu } = useProjectMenu()
 
@@ -67,6 +67,6 @@ const DeleteEnvironment = ({ id, open, setOpen, description, question }: DeleteE
       </Dialog>
     </Fragment>
   )
-}
+})
 
 export default DeleteEnvironment

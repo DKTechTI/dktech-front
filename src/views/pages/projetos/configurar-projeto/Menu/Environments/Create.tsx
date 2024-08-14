@@ -1,4 +1,4 @@
-import { FormEvent, useEffect, useState } from 'react'
+import { FormEvent, memo, useEffect, useState } from 'react'
 
 import { useRouter } from 'next/router'
 
@@ -54,7 +54,7 @@ interface EditProfileProps {
   setRefresh: (value: boolean) => void
 }
 
-const CreateEnvironment = ({ open, handleClose, refresh, setRefresh }: EditProfileProps) => {
+const CreateEnvironment = memo(({ open, handleClose, refresh, setRefresh }: EditProfileProps) => {
   const theme = useTheme()
   const router = useRouter()
   const { handleErrorResponse } = useErrorHandling()
@@ -260,6 +260,6 @@ const CreateEnvironment = ({ open, handleClose, refresh, setRefresh }: EditProfi
       </DialogActions>
     </Dialog>
   )
-}
+})
 
 export default CreateEnvironment
