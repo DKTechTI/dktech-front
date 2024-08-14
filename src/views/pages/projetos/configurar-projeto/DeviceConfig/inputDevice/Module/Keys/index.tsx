@@ -34,11 +34,12 @@ const Keys = memo(({ keys }: KeysProps) => {
 
       const key = keys.find(key => key._id === keyId)
 
+      key && setKeyType(key.keyType)
+
       if (key && key.status === 'INACTIVE') return toast.error('Tecla inativa, não é possível selecionar')
 
       setSelected(keyId)
       setKeyId(keyId)
-      key && setKeyType(key.keyType)
     },
     [keys, setKeyId, setKeyType]
   )
