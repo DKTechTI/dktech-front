@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { memo, useEffect } from 'react'
 import { useRouter } from 'next/router'
 
 import { Box, CircularProgress, Typography } from '@mui/material'
@@ -14,7 +14,7 @@ interface DeviceConfigProps {
   projectDeviceId: string
 }
 
-const DeviceConfig = ({ projectDeviceId }: DeviceConfigProps) => {
+const DeviceConfig = memo(({ projectDeviceId }: DeviceConfigProps) => {
   const router = useRouter()
 
   const { setProjectDeviceType, setProjectDeviceModuleType, setOrderKeys } = useDeviceKeys()
@@ -77,6 +77,6 @@ const DeviceConfig = ({ projectDeviceId }: DeviceConfigProps) => {
       <Typography variant='h5'>Escolha um dispositivo para configurar</Typography>
     </Box>
   )
-}
+})
 
 export default DeviceConfig

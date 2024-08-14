@@ -1,4 +1,4 @@
-import { SyntheticEvent, useEffect, useState } from 'react'
+import { memo, SyntheticEvent, useEffect, useState } from 'react'
 
 import { Box, CardContent, CardHeader, CircularProgress, Grid, MenuItem, Typography } from '@mui/material'
 
@@ -46,7 +46,7 @@ interface ModuleProps {
   setRefresh: (value: boolean) => void
 }
 
-const Module = ({ deviceData, refresh, setRefresh }: ModuleProps) => {
+const Module = memo(({ deviceData, refresh, setRefresh }: ModuleProps) => {
   const { handleErrorResponse } = useErrorHandling()
   const { setDeviceId, setProjectDeviceId, deviceKeys, loadingDeviceKeys } = useDeviceKeys()
   const {
@@ -364,6 +364,6 @@ const Module = ({ deviceData, refresh, setRefresh }: ModuleProps) => {
       </CardContent>
     </Box>
   )
-}
+})
 
 export default Module

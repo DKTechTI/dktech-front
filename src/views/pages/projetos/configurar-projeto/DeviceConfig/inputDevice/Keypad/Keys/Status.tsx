@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { memo, useCallback, useEffect, useState } from 'react'
 
 import {
   Dialog,
@@ -53,7 +53,7 @@ interface StatusProps {
   setRefresh: (value: boolean) => void
 }
 
-const Status = ({ keys, handleClose, open, refresh, setRefresh }: StatusProps) => {
+const Status = memo(({ keys, handleClose, open, refresh, setRefresh }: StatusProps) => {
   const theme = useTheme()
   const { handleErrorResponse } = useErrorHandling()
 
@@ -71,17 +71,20 @@ const Status = ({ keys, handleClose, open, refresh, setRefresh }: StatusProps) =
     name: 'keys'
   })
 
-  const handleSelectKey = (index: number) => {
-    try {
-      update(index, {
-        ...fields[index],
-        status: fields[index].status === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE'
-      })
-      if (!keysIndexUpdated.includes(index)) setKeysIndexUpdated([...keysIndexUpdated, index])
-    } catch (error) {
-      toast.error('Erro ao atualizar status da tecla, tente novamente mais tarde')
-    }
-  }
+  const handleSelectKey = useCallback(
+    (index: number) => {
+      try {
+        update(index, {
+          ...fields[index],
+          status: fields[index].status === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE'
+        })
+        if (!keysIndexUpdated.includes(index)) setKeysIndexUpdated([...keysIndexUpdated, index])
+      } catch (error) {
+        toast.error('Erro ao atualizar status da tecla, tente novamente mais tarde')
+      }
+    },
+    [fields, keysIndexUpdated, update]
+  )
 
   const onSubmit = (formData: FormData) => {
     const updateKey = async (data: any) => {
@@ -202,6 +205,6 @@ const Status = ({ keys, handleClose, open, refresh, setRefresh }: StatusProps) =
       </DialogActions>
     </Dialog>
   )
-}
+})
 
 export default Status

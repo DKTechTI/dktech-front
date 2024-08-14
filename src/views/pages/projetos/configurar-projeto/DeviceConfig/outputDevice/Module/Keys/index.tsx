@@ -3,13 +3,13 @@ import { Box, Grid, List, ListItem, Typography } from '@mui/material'
 import TryKey from './TryKey'
 import useGetDataApi from 'src/hooks/useGetDataApi'
 import { handleCheckOperationType } from 'src/utils/actions'
-import { useState } from 'react'
+import { memo, useMemo, useState } from 'react'
 
 interface KeysProps {
   keys: any[]
 }
 
-const Keys = ({ keys }: KeysProps) => {
+const Keys = memo(({ keys }: KeysProps) => {
   const router = useRouter()
   const { id } = router.query
 
@@ -23,35 +23,38 @@ const Keys = ({ keys }: KeysProps) => {
     callInit: Boolean(router.isReady)
   })
 
-  const handleShowKeys = (keys: any[]) => {
-    return keys.map((key: any, index: number) => {
-      const operationType = handleCheckOperationType(key.initialValue)
-      Object.assign(key, { order: String(index + 1) })
+  const handleShowKeys = useMemo(
+    () => (keys: any[]) => {
+      return keys.map((key: any, index: number) => {
+        const operationType = handleCheckOperationType(key.initialValue)
+        Object.assign(key, { order: String(index + 1) })
 
-      return (
-        <ListItem
-          key={key._id}
-          disablePadding
-          sx={{
-            width: '100%',
-            margin: '0 auto'
-          }}
-        >
-          {environments && (
-            <TryKey
-              keyData={key}
-              operationType={operationType || ''}
-              environments={environments.data || []}
-              blockButton={{
-                blockButtonTryKey,
-                setBlockButtonTryKey
-              }}
-            />
-          )}
-        </ListItem>
-      )
-    })
-  }
+        return (
+          <ListItem
+            key={key._id}
+            disablePadding
+            sx={{
+              width: '100%',
+              margin: '0 auto'
+            }}
+          >
+            {environments && (
+              <TryKey
+                keyData={key}
+                operationType={operationType || ''}
+                environments={environments.data || []}
+                blockButton={{
+                  blockButtonTryKey,
+                  setBlockButtonTryKey
+                }}
+              />
+            )}
+          </ListItem>
+        )
+      })
+    },
+    [blockButtonTryKey, environments]
+  )
 
   return (
     <Box
@@ -80,6 +83,6 @@ const Keys = ({ keys }: KeysProps) => {
       </List>
     </Box>
   )
-}
+})
 
 export default Keys

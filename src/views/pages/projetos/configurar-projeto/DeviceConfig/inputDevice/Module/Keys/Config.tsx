@@ -17,6 +17,7 @@ import Scenes from '../../Scenes'
 import toast from 'react-hot-toast'
 import useErrorHandling from 'src/hooks/useErrorHandling'
 import projectDevicesKeysErrors from 'src/errors/projectDevicesKeysErrors'
+import { memo } from 'react'
 
 const schemaKey = yup.object().shape({
   name: yup.string().required('Nome da tecla obrigatório'),
@@ -39,7 +40,7 @@ interface ConfigProps {
   keyData: any
 }
 
-const Config = ({ keyData }: ConfigProps) => {
+const Config = memo(({ keyData }: ConfigProps) => {
   const router = useRouter()
 
   const { id } = router.query
@@ -194,6 +195,6 @@ const Config = ({ keyData }: ConfigProps) => {
       {keyId && <Scenes keyId={keyId} />}
     </Box>
   )
-}
+})
 
 export default Config
