@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { memo, useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/router'
 
 import { Typography, Box } from '@mui/material'
@@ -37,7 +37,7 @@ interface DevicesProps {
   devices: DeviceProps[]
 }
 
-const Devices = ({ devices }: DevicesProps) => {
+const Devices = memo(({ devices }: DevicesProps) => {
   const router = useRouter()
   const { id: projectId } = router.query
 
@@ -112,31 +112,37 @@ const Devices = ({ devices }: DevicesProps) => {
 
   return (
     <>
-      <AddCentral
-        open={showAddCentralDialog}
-        handleClose={() => setShowAddCentralDialog(false)}
-        refresh={refreshMenu}
-        setRefresh={setRefreshMenu}
-      />
+      {showAddCentralDialog && (
+        <AddCentral
+          open={showAddCentralDialog}
+          handleClose={() => setShowAddCentralDialog(false)}
+          refresh={refreshMenu}
+          setRefresh={setRefreshMenu}
+        />
+      )}
 
-      <EditCentral
-        projectDeviceId={deviceId}
-        open={showEditCentralDialog}
-        handleClose={() => setShowEditCentralDialog(false)}
-        refresh={refreshMenu}
-        setRefresh={setRefreshMenu}
-      />
+      {showEditCentralDialog && (
+        <EditCentral
+          projectDeviceId={deviceId}
+          open={showEditCentralDialog}
+          handleClose={() => setShowEditCentralDialog(false)}
+          refresh={refreshMenu}
+          setRefresh={setRefreshMenu}
+        />
+      )}
 
-      <DeleteDevice
-        id={deviceId}
-        open={showDeleteDialog}
-        setOpen={setShowDeleteDialog}
-        question={'Deseja realmente deletar este dispositivo?'}
-        description={
-          'Os dispositivos ou teclas vinculados serão deletados, deseja continuar? Esta ação não poderá ser desfeita!'
-        }
-        deviceType={deviceType}
-      />
+      {showDeleteDialog && (
+        <DeleteDevice
+          id={deviceId}
+          open={showDeleteDialog}
+          setOpen={setShowDeleteDialog}
+          question={'Deseja realmente deletar este dispositivo?'}
+          description={
+            'Os dispositivos ou teclas vinculados serão deletados, deseja continuar? Esta ação não poderá ser desfeita!'
+          }
+          deviceType={deviceType}
+        />
+      )}
 
       <TreeItem nodeId='1' label='Dispositivos'>
         <TreeItem
@@ -371,6 +377,6 @@ const Devices = ({ devices }: DevicesProps) => {
       </TreeItem>
     </>
   )
-}
+})
 
 export default Devices

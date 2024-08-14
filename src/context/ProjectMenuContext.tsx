@@ -254,22 +254,30 @@ const ProjectMenuProvider = ({ children }: Props) => {
     [menu]
   )
 
-  return (
-    <ProjectMenuContext.Provider
-      value={{
-        menu,
-        loadingMenu,
-        refreshMenu,
-        setRefreshMenu,
-        handleAvaliableInputPorts,
-        handleAvaliableOutputPorts,
-        handleCheckDeviceSequence,
-        handleCheckDevicePort
-      }}
-    >
-      {children}
-    </ProjectMenuContext.Provider>
+  const memoizedValues = useMemo(
+    () => ({
+      menu,
+      loadingMenu,
+      refreshMenu,
+      setRefreshMenu,
+      handleAvaliableInputPorts,
+      handleAvaliableOutputPorts,
+      handleCheckDeviceSequence,
+      handleCheckDevicePort
+    }),
+    [
+      handleAvaliableInputPorts,
+      handleAvaliableOutputPorts,
+      handleCheckDevicePort,
+      handleCheckDeviceSequence,
+      loadingMenu,
+      menu,
+      refreshMenu,
+      setRefreshMenu
+    ]
   )
+
+  return <ProjectMenuContext.Provider value={memoizedValues}>{children}</ProjectMenuContext.Provider>
 }
 
 export { ProjectMenuProvider, ProjectMenuContext }

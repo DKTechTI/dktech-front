@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { memo, useCallback, useState } from 'react'
 import { Box, Button, Chip, IconButton, Typography } from '@mui/material'
 import IconifyIcon from 'src/@core/components/icon'
 import Edit from './Edit'
@@ -18,7 +18,7 @@ interface HeaderProjectProps {
   setRefresh: (value: boolean) => void
 }
 
-const HeaderProject = ({ data, refresh, setRefresh }: HeaderProjectProps) => {
+const HeaderProject = memo(({ data, refresh, setRefresh }: HeaderProjectProps) => {
   const [openEdit, setOpenEdit] = useState(false)
   const [openBackdrop, setOpenBackdrop] = useState(false)
   const [openMonitoring, setOpenMonitoring] = useState(false)
@@ -36,50 +36,59 @@ const HeaderProject = ({ data, refresh, setRefresh }: HeaderProjectProps) => {
     })
   }
 
-  const hamdleConfigProject = (projectId: string) => {
-    let hasError = false
-    setOpenBackdrop(true)
-    setSuccess(false)
+  const hamdleConfigProject = useCallback(
+    (projectId: string) => {
+      let hasError = false
+      setOpenBackdrop(true)
+      setSuccess(false)
 
-    api
-      .post(`projects/send-config/${projectId}`)
-      .then(() => {
-        setSuccess(true)
-      })
-      .catch(error => {
-        hasError = true
-        setErrors(error.response.data)
-      })
-      .finally(() => {
-        setFinished(true)
+      api
+        .post(`projects/send-config/${projectId}`)
+        .then(() => {
+          setSuccess(true)
+        })
+        .catch(error => {
+          hasError = true
+          setErrors(error.response.data)
+        })
+        .finally(() => {
+          setFinished(true)
 
-        setTimeout(() => {
-          if (!hasError) {
-            setOpenBackdrop(false)
-            setRefresh(!refresh)
-            delay(100).then(() => setFinished(false))
-          }
-        }, 5000)
-      })
-  }
+          setTimeout(() => {
+            if (!hasError) {
+              setOpenBackdrop(false)
+              setRefresh(!refresh)
+              delay(100).then(() => setFinished(false))
+            }
+          }, 5000)
+        })
+    },
+    [refresh, setRefresh]
+  )
 
   return (
     <>
-      <Edit
-        data={data}
-        open={openEdit}
-        handleClose={() => setOpenEdit(false)}
-        refresh={refresh}
-        setRefresh={setRefresh}
-      />
-      <Monitoring open={openMonitoring} handleClose={() => setOpenMonitoring(false)} />
-      <BackdropConfig
-        open={openBackdrop}
-        finished={finished}
-        success={success}
-        errors={errors}
-        handleClose={handleCloseBackdrop}
-      />
+      {openEdit && (
+        <Edit
+          data={data}
+          open={openEdit}
+          handleClose={() => setOpenEdit(false)}
+          refresh={refresh}
+          setRefresh={setRefresh}
+        />
+      )}
+
+      {openMonitoring && <Monitoring open={openMonitoring} handleClose={() => setOpenMonitoring(false)} />}
+
+      {openBackdrop && (
+        <BackdropConfig
+          open={openBackdrop}
+          finished={finished}
+          success={success}
+          errors={errors}
+          handleClose={handleCloseBackdrop}
+        />
+      )}
 
       <Box
         sx={{
@@ -139,6 +148,6 @@ const HeaderProject = ({ data, refresh, setRefresh }: HeaderProjectProps) => {
       </Box>
     </>
   )
-}
+})
 
 export default HeaderProject

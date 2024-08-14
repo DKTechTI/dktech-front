@@ -1,4 +1,4 @@
-import { createContext, useEffect, useState } from 'react'
+import { createContext, useEffect, useMemo, useState } from 'react'
 
 import { useRouter } from 'next/router'
 
@@ -64,20 +64,19 @@ const ProjectProvider = ({ children }: Props) => {
     if (!loadingProject) errorProject && router.push('/404')
   }, [errorProject, loadingProject, router])
 
-  return (
-    <ProjectContext.Provider
-      value={{
-        project,
-        loadingProject,
-        refreshProject,
-        setRefreshProject,
-        projectDeviceId,
-        setProjectDeviceId
-      }}
-    >
-      {children}
-    </ProjectContext.Provider>
+  const memoizedValues = useMemo(
+    () => ({
+      project,
+      loadingProject,
+      refreshProject,
+      setRefreshProject,
+      projectDeviceId,
+      setProjectDeviceId
+    }),
+    [loadingProject, project, projectDeviceId, refreshProject, setRefreshProject]
   )
+
+  return <ProjectContext.Provider value={memoizedValues}>{children}</ProjectContext.Provider>
 }
 
 export { ProjectProvider, ProjectContext }

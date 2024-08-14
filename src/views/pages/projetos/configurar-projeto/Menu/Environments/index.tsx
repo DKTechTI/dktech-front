@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { memo, useState } from 'react'
 
 import { Box, Typography } from '@mui/material'
 import CloseIcon from '@mui/icons-material/Close'
@@ -27,7 +27,7 @@ interface EnvironmentsProps {
   environments: EnvironmentProps[]
 }
 
-const Environments = ({ environments }: EnvironmentsProps) => {
+const Environments = memo(({ environments }: EnvironmentsProps) => {
   const { setProjectDeviceId } = useProject()
   const { refreshMenu, setRefreshMenu } = useProjectMenu()
   const { setKeyId } = useDeviceKeys()
@@ -48,46 +48,56 @@ const Environments = ({ environments }: EnvironmentsProps) => {
 
   return (
     <>
-      <CreateEnvironment
-        open={showDialog}
-        handleClose={() => setShowDialog(false)}
-        refresh={refreshMenu}
-        setRefresh={setRefreshMenu}
-      />
+      {showDialog && (
+        <CreateEnvironment
+          open={showDialog}
+          handleClose={() => setShowDialog(false)}
+          refresh={refreshMenu}
+          setRefresh={setRefreshMenu}
+        />
+      )}
 
-      <EditEnvironment
-        environmentId={environmentId}
-        open={showEditDialog}
-        handleClose={() => setShowEditDialog(false)}
-        refresh={refreshMenu}
-        setRefresh={setRefreshMenu}
-      />
+      {showEditDialog && (
+        <EditEnvironment
+          environmentId={environmentId}
+          open={showEditDialog}
+          handleClose={() => setShowEditDialog(false)}
+          refresh={refreshMenu}
+          setRefresh={setRefreshMenu}
+        />
+      )}
 
-      <DeleteEnvironment
-        id={environmentId}
-        open={showDeleteDialog}
-        setOpen={setShowDeleteDialog}
-        question={'Deseja realmente deletar este ambiente?'}
-        description={'Esta ação não poderá ser desfeita, deseja continuar?'}
-      />
+      {showDeleteDialog && (
+        <DeleteEnvironment
+          id={environmentId}
+          open={showDeleteDialog}
+          setOpen={setShowDeleteDialog}
+          question={'Deseja realmente deletar este ambiente?'}
+          description={'Esta ação não poderá ser desfeita, deseja continuar?'}
+        />
+      )}
 
-      <AddInputDevice
-        environmentId={environmentId}
-        environmentName={environmentName}
-        open={showAddInputDevice}
-        handleClose={() => setShowAddInputDevice(false)}
-        refresh={refreshMenu}
-        setRefresh={setRefreshMenu}
-      />
+      {showAddInputDevice && (
+        <AddInputDevice
+          environmentId={environmentId}
+          environmentName={environmentName}
+          open={showAddInputDevice}
+          handleClose={() => setShowAddInputDevice(false)}
+          refresh={refreshMenu}
+          setRefresh={setRefreshMenu}
+        />
+      )}
 
-      <AddOutputDevice
-        environmentId={environmentId}
-        environmentName={environmentName}
-        open={showAddOutputDevice}
-        handleClose={() => setShowAddOutputDevice(false)}
-        refresh={refreshMenu}
-        setRefresh={setRefreshMenu}
-      />
+      {showAddOutputDevice && (
+        <AddOutputDevice
+          environmentId={environmentId}
+          environmentName={environmentName}
+          open={showAddOutputDevice}
+          handleClose={() => setShowAddOutputDevice(false)}
+          refresh={refreshMenu}
+          setRefresh={setRefreshMenu}
+        />
+      )}
 
       <TreeItem
         nodeId='3'
@@ -108,7 +118,7 @@ const Environments = ({ environments }: EnvironmentsProps) => {
           </Box>
         }
       >
-        {environments.map((environment) => {
+        {environments.map(environment => {
           return (
             <TreeItem
               key={environment.environmentId}
@@ -245,6 +255,6 @@ const Environments = ({ environments }: EnvironmentsProps) => {
       </TreeItem>
     </>
   )
-}
+})
 
 export default Environments

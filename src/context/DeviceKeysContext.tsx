@@ -1,5 +1,5 @@
 import { useRouter } from 'next/router'
-import { createContext, useEffect, useState } from 'react'
+import { createContext, useEffect, useMemo, useState } from 'react'
 import useGetDataApi from 'src/hooks/useGetDataApi'
 
 type deviceKeysValuesType = {
@@ -100,33 +100,44 @@ const DeviceKeysProvider = ({ children }: Props) => {
     setDeviceKeys([])
   }, [data, orderKeys, projectDeviceId])
 
-  return (
-    <DeviceKeysContext.Provider
-      value={{
-        deviceKeys,
-        setOrderKeys,
-        keyId,
-        setKeyId,
-        keyType,
-        setKeyType,
-        projectDeviceId,
-        setProjectDeviceId,
-        projectDeviceType,
-        setProjectDeviceType,
-        projectDeviceModuleType,
-        setProjectDeviceModuleType,
-        deviceId,
-        setDeviceId,
-        environmentId,
-        setEnvironmentId,
-        loadingDeviceKeys,
-        refreshDeviceKeys,
-        setRefreshDeviceKeys
-      }}
-    >
-      {children}
-    </DeviceKeysContext.Provider>
+  const memoizedValues = useMemo(
+    () => ({
+      deviceKeys,
+      setOrderKeys,
+      keyId,
+      setKeyId,
+      keyType,
+      setKeyType,
+      projectDeviceId,
+      setProjectDeviceId,
+      projectDeviceType,
+      setProjectDeviceType,
+      projectDeviceModuleType,
+      setProjectDeviceModuleType,
+      deviceId,
+      setDeviceId,
+      environmentId,
+      setEnvironmentId,
+      loadingDeviceKeys,
+      refreshDeviceKeys,
+      setRefreshDeviceKeys
+    }),
+    [
+      deviceId,
+      deviceKeys,
+      environmentId,
+      keyId,
+      keyType,
+      loadingDeviceKeys,
+      projectDeviceId,
+      projectDeviceModuleType,
+      projectDeviceType,
+      refreshDeviceKeys,
+      setRefreshDeviceKeys
+    ]
   )
+
+  return <DeviceKeysContext.Provider value={memoizedValues}>{children}</DeviceKeysContext.Provider>
 }
 
 export { DeviceKeysProvider, DeviceKeysContext }

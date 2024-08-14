@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { memo, useEffect } from 'react'
 
 import { useRouter } from 'next/router'
 
@@ -35,7 +35,7 @@ interface EditEnvironmentProps {
   setRefresh: (value: boolean) => void
 }
 
-const EditEnvironment = ({ open, handleClose, refresh, setRefresh, environmentId }: EditEnvironmentProps) => {
+const EditEnvironment = memo(({ open, handleClose, refresh, setRefresh, environmentId }: EditEnvironmentProps) => {
   const router = useRouter()
   const { id } = router.query
 
@@ -156,6 +156,6 @@ const EditEnvironment = ({ open, handleClose, refresh, setRefresh, environmentId
       </form>
     </Dialog>
   )
-}
+})
 
 export default EditEnvironment

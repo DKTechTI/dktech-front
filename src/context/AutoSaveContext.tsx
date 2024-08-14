@@ -1,4 +1,4 @@
-import React, { createContext, useRef, useState } from 'react'
+import React, { createContext, useCallback, useMemo, useRef, useState } from 'react'
 import equals from 'fast-deep-equal'
 
 import { useProjectMenu } from 'src/hooks/useProjectMenu'
@@ -40,46 +40,46 @@ const AutoSaveProvider = ({ children }: { children: React.ReactNode }) => {
   const { refreshMenu, setRefreshMenu } = useProjectMenu()
   const { refreshDeviceKeys, setRefreshDeviceKeys } = useDeviceKeys()
 
-  const refreshType: { [key in refreshTypeValues]: () => void } = {
-    menu: () => setRefreshMenu(!refreshMenu),
-    deviceKeys: () => setRefreshDeviceKeys(!refreshDeviceKeys)
-  }
+  const refreshType: { [key in refreshTypeValues]: () => void } = useMemo(
+    () => ({
+      menu: () => setRefreshMenu(!refreshMenu),
+      deviceKeys: () => setRefreshDeviceKeys(!refreshDeviceKeys)
+    }),
+    [refreshDeviceKeys, refreshMenu, setRefreshDeviceKeys, setRefreshMenu]
+  )
 
   const prevData = useRef<any>({})
 
-  const handleSaveOnStateChange = async ({
-    apiUrl,
-    httpMethod,
-    storageData,
-    autoCheck = true,
-    refreshOn
-  }: handleSaveOnStateChangeType) => {
-    if (saveState === 'saved') {
-      if (autoCheck && equals(storageData, prevData.current)) return null
+  const handleSaveOnStateChange = useCallback(
+    async ({ apiUrl, httpMethod, storageData, autoCheck = true, refreshOn }: handleSaveOnStateChangeType) => {
+      if (saveState === 'saved') {
+        if (autoCheck && equals(storageData, prevData.current)) return null
 
-      const savePromise = apiUrl ? saveToApiMethod(apiUrl, storageData, httpMethod) : Promise.resolve()
+        const savePromise = apiUrl ? saveToApiMethod(apiUrl, storageData, httpMethod) : Promise.resolve()
 
-      if (savePromise && typeof savePromise.then === 'function') {
-        setSaveState('saving')
+        if (savePromise && typeof savePromise.then === 'function') {
+          setSaveState('saving')
 
-        try {
-          const response = await savePromise
+          try {
+            const response = await savePromise
 
-          if (refreshOn && refreshOn.length > 0)
-            refreshOn.forEach((refresh: refreshTypeValues) => refreshType[refresh]())
+            if (refreshOn && refreshOn.length > 0)
+              refreshOn.forEach((refresh: refreshTypeValues) => refreshType[refresh]())
 
-          prevData.current = { ...storageData }
+            prevData.current = { ...storageData }
 
-          return response
-        } catch (error) {
-          prevData.current = {}
-          throw error
-        } finally {
-          setSaveState('saved')
+            return response
+          } catch (error) {
+            prevData.current = {}
+            throw error
+          } finally {
+            setSaveState('saved')
+          }
         }
       }
-    }
-  }
+    },
+    [refreshType, saveState]
+  )
 
   const saveToApiMethod = async (apiUrl: string, storageData: any, httpMethod: HttpMethod) => {
     switch (httpMethod) {
@@ -94,10 +94,13 @@ const AutoSaveProvider = ({ children }: { children: React.ReactNode }) => {
     }
   }
 
-  const contextValue: AutoSaveValuesType = {
-    saveState,
-    handleSaveOnStateChange
-  }
+  const contextValue: AutoSaveValuesType = useMemo(
+    () => ({
+      saveState,
+      handleSaveOnStateChange
+    }),
+    [handleSaveOnStateChange, saveState]
+  )
 
   return <AutoSaveContext.Provider value={contextValue}>{children}</AutoSaveContext.Provider>
 }

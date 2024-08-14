@@ -1,4 +1,4 @@
-import { SyntheticEvent, useEffect, useState } from 'react'
+import { memo, SyntheticEvent, useEffect, useState } from 'react'
 
 import { useRouter } from 'next/router'
 
@@ -90,7 +90,7 @@ interface EditCentralProps {
   setRefresh: (value: boolean) => void
 }
 
-const EditCentral = ({ handleClose, open, refresh, setRefresh, projectDeviceId }: EditCentralProps) => {
+const EditCentral = memo(({ handleClose, open, refresh, setRefresh, projectDeviceId }: EditCentralProps) => {
   const router = useRouter()
   const { copyToClipboard } = useClipboard()
   const { handleErrorResponse } = useErrorHandling()
@@ -530,6 +530,6 @@ const EditCentral = ({ handleClose, open, refresh, setRefresh, projectDeviceId }
       </Dialog>
     </>
   )
-}
+})
 
 export default EditCentral
