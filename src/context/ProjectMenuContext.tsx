@@ -1,4 +1,4 @@
-import { createContext, useCallback } from 'react'
+import { createContext, useCallback, useMemo } from 'react'
 
 import { useRouter } from 'next/router'
 
@@ -206,47 +206,53 @@ const ProjectMenuProvider = ({ children }: Props) => {
     }
   }, [])
 
-  const handleCheckDeviceSequence = (deviceId: string, centralId: string, where: 'inputPorts' | 'outputPorts') => {
-    const central = menu?.devices.find((central: DeviceProps) => central.projectDeviceId === centralId)
-    if (central) {
-      const portQuantity = central[where].length
+  const handleCheckDeviceSequence = useMemo(
+    () => (deviceId: string, centralId: string, where: 'inputPorts' | 'outputPorts') => {
+      const central = menu?.devices.find((central: DeviceProps) => central.projectDeviceId === centralId)
+      if (central) {
+        const portQuantity = central[where].length
 
-      for (let i = 0; i < portQuantity; i++) {
-        const devices = central[where][i]
+        for (let i = 0; i < portQuantity; i++) {
+          const devices = central[where][i]
 
-        if (devices['inputs'].length > 0) {
-          const deviceSequence = devices['inputs'].findIndex((device: any) => device.projectDeviceId === deviceId)
+          if (devices['inputs'].length > 0) {
+            const deviceSequence = devices['inputs'].findIndex((device: any) => device.projectDeviceId === deviceId)
 
-          if (deviceSequence >= 0) {
-            return deviceSequence
+            if (deviceSequence >= 0) {
+              return deviceSequence
+            }
           }
         }
       }
-    }
 
-    return null
-  }
+      return null
+    },
+    [menu]
+  )
 
-  const handleCheckDevicePort = (deviceId: string, centralId: string, where: 'inputPorts' | 'outputPorts') => {
-    const central = menu?.devices.find((central: DeviceProps) => central.projectDeviceId === centralId)
-    if (central) {
-      const portQuantity = central[where].length
+  const handleCheckDevicePort = useMemo(
+    () => (deviceId: string, centralId: string, where: 'inputPorts' | 'outputPorts') => {
+      const central = menu?.devices.find((central: DeviceProps) => central.projectDeviceId === centralId)
+      if (central) {
+        const portQuantity = central[where].length
 
-      for (let i = 0; i < portQuantity; i++) {
-        const devices = central[where][i]
+        for (let i = 0; i < portQuantity; i++) {
+          const devices = central[where][i]
 
-        if (devices['inputs'].length > 0) {
-          const deviceFound = devices['inputs'].findIndex((device: any) => device.projectDeviceId === deviceId)
+          if (devices['inputs'].length > 0) {
+            const deviceFound = devices['inputs'].findIndex((device: any) => device.projectDeviceId === deviceId)
 
-          if (deviceFound >= 0) {
-            return i
+            if (deviceFound >= 0) {
+              return i
+            }
           }
         }
       }
-    }
 
-    return null
-  }
+      return null
+    },
+    [menu]
+  )
 
   return (
     <ProjectMenuContext.Provider

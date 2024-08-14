@@ -1,4 +1,4 @@
-import { SyntheticEvent, useEffect, useState } from 'react'
+import { memo, SyntheticEvent, useCallback, useEffect, useMemo, useState } from 'react'
 
 import { Box, CardContent, CardHeader, CircularProgress, Grid, MenuItem, Typography } from '@mui/material'
 
@@ -46,7 +46,7 @@ interface ModuleProps {
   setRefresh: (value: boolean) => void
 }
 
-const Module = ({ deviceData, refresh, setRefresh }: ModuleProps) => {
+const Module = memo(({ deviceData, refresh, setRefresh }: ModuleProps) => {
   const { handleErrorResponse } = useErrorHandling()
   const { setDeviceId, setProjectDeviceId, deviceKeys, loadingDeviceKeys } = useDeviceKeys()
   const {
@@ -87,98 +87,107 @@ const Module = ({ deviceData, refresh, setRefresh }: ModuleProps) => {
     resolver: yupResolver(schema)
   })
 
-  const handleCheckAvailablePortsAndSequences = async (centralId: string) => {
-    const inputPorts = await handleAvaliableInputPorts(centralId)
-    const inputSequence = inputPorts[Number(watch('boardIndex'))]?.sequenceUpdate
+  const handleCheckAvailablePortsAndSequences = useMemo(
+    () => async (centralId: string) => {
+      const inputPorts = await handleAvaliableInputPorts(centralId)
+      const inputSequence = inputPorts[Number(watch('boardIndex'))]?.sequenceUpdate
 
-    const portsOptions = Array.isArray(inputPorts)
-      ? inputPorts.map((port: any, index: number) => (
-          <MenuItem key={index} value={port.port} disabled={!port.avaliable}>
-            {checkPortName(Number(port?.port))}
-          </MenuItem>
-        ))
-      : null
+      const portsOptions = Array.isArray(inputPorts)
+        ? inputPorts.map((port: any, index: number) => (
+            <MenuItem key={index} value={port.port} disabled={!port.avaliable}>
+              {checkPortName(Number(port?.port))}
+            </MenuItem>
+          ))
+        : null
 
-    const sequencesOptions = Array.isArray(inputSequence)
-      ? inputSequence.map((sequence: any, index: number) => (
-          <MenuItem key={index} value={sequence.index} disabled={!sequence.avaliable}>
-            {checkSequenceIndex(sequence.index)}
-          </MenuItem>
-        ))
-      : null
+      const sequencesOptions = Array.isArray(inputSequence)
+        ? inputSequence.map((sequence: any, index: number) => (
+            <MenuItem key={index} value={sequence.index} disabled={!sequence.avaliable}>
+              {checkSequenceIndex(sequence.index)}
+            </MenuItem>
+          ))
+        : null
 
-    return { portsOptions, sequencesOptions }
-  }
+      return { portsOptions, sequencesOptions }
+    },
+    [handleAvaliableInputPorts, watch]
+  )
 
-  const handleChangePort = (event: SyntheticEvent, data: any) => {
-    const { value } = event.target as HTMLInputElement
+  const handleChangePort = useCallback(
+    (event: SyntheticEvent, data: any) => {
+      const { value } = event.target as HTMLInputElement
 
-    if (value) {
-      const previousSequence = getValues('index')
+      if (value) {
+        const previousSequence = getValues('index')
 
-      api
-        .put(`/projectDevices/update-menu-index/${data?.centralId}`, {
-          from: Number(previousSequence),
-          moduleType: data?.moduleType,
-          boardIndex: data?.boardIndex,
-          toPort: Number(value)
-        })
-        .then(response => {
-          if (response.status === 200) {
-            setValue('boardIndex', value)
-            clearErrors('boardIndex')
-            setRefreshMenu(!refreshMenu)
-          }
-        })
-        .catch(error => {
-          handleErrorResponse({
-            error: error,
-            errorReference: projectDevicesErrors,
-            defaultErrorMessage: 'Erro ao alterar porta, tente novamente mais tarde.'
+        api
+          .put(`/projectDevices/update-menu-index/${data?.centralId}`, {
+            from: Number(previousSequence),
+            moduleType: data?.moduleType,
+            boardIndex: data?.boardIndex,
+            toPort: Number(value)
           })
-        })
-
-      return
-    }
-
-    setValue('boardIndex', value)
-    setError('boardIndex', { type: 'manual', message: 'Porta obrigatória' })
-  }
-
-  const handleChangeSequence = (event: SyntheticEvent, data: any) => {
-    const { value } = event.target as HTMLInputElement
-
-    if (value) {
-      const previousSequence = getValues('index')
-
-      api
-        .put(`/projectDevices/update-menu-index/${data?.centralId}`, {
-          from: Number(previousSequence),
-          to: Number(value),
-          moduleType: data?.moduleType,
-          boardIndex: data?.boardIndex
-        })
-        .then(response => {
-          if (response.status === 200) {
-            setValue('index', value)
-            clearErrors('index')
-            setRefreshMenu(!refreshMenu)
-          }
-        })
-        .catch(error => {
-          handleErrorResponse({
-            error: error,
-            errorReference: projectDevicesErrors,
-            defaultErrorMessage: 'Erro ao alterar sequência, tente novamente mais tarde.'
+          .then(response => {
+            if (response.status === 200) {
+              setValue('boardIndex', value)
+              clearErrors('boardIndex')
+              setRefreshMenu(!refreshMenu)
+            }
           })
-        })
+          .catch(error => {
+            handleErrorResponse({
+              error: error,
+              errorReference: projectDevicesErrors,
+              defaultErrorMessage: 'Erro ao alterar porta, tente novamente mais tarde.'
+            })
+          })
 
-      return
-    }
+        return
+      }
 
-    setValue('index', value)
-    setError('index', { type: 'manual', message: 'Sequência obrigatória' })
-  }
+      setValue('boardIndex', value)
+      setError('boardIndex', { type: 'manual', message: 'Porta obrigatória' })
+    },
+    [clearErrors, getValues, handleErrorResponse, refreshMenu, setError, setRefreshMenu, setValue]
+  )
+
+  const handleChangeSequence = useCallback(
+    (event: SyntheticEvent, data: any) => {
+      const { value } = event.target as HTMLInputElement
+
+      if (value) {
+        const previousSequence = getValues('index')
+
+        api
+          .put(`/projectDevices/update-menu-index/${data?.centralId}`, {
+            from: Number(previousSequence),
+            to: Number(value),
+            moduleType: data?.moduleType,
+            boardIndex: data?.boardIndex
+          })
+          .then(response => {
+            if (response.status === 200) {
+              setValue('index', value)
+              clearErrors('index')
+              setRefreshMenu(!refreshMenu)
+            }
+          })
+          .catch(error => {
+            handleErrorResponse({
+              error: error,
+              errorReference: projectDevicesErrors,
+              defaultErrorMessage: 'Erro ao alterar sequência, tente novamente mais tarde.'
+            })
+          })
+
+        return
+      }
+
+      setValue('index', value)
+      setError('index', { type: 'manual', message: 'Sequência obrigatória' })
+    },
+    [clearErrors, getValues, handleErrorResponse, refreshMenu, setError, setRefreshMenu, setValue]
+  )
 
   const formTrigger = () => {
     const form = document.getElementById('device-form')
@@ -186,27 +195,30 @@ const Module = ({ deviceData, refresh, setRefresh }: ModuleProps) => {
     if (form) form.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }))
   }
 
-  const onSubmit = (formData: FormData) => {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { index, boardIndex, ...formattedData } = formData
+  const onSubmit = useCallback(
+    (formData: FormData) => {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { index, boardIndex, ...formattedData } = formData
 
-    api
-      .put(`/projectDevices/${deviceData?._id}`, formattedData)
-      .then(response => {
-        if (response.status === 200) {
-          toast.success('Dados alterados com sucesso!')
-          setRefresh(!refresh)
-          setRefreshMenu(!refreshMenu)
-        }
-      })
-      .catch(error => {
-        handleErrorResponse({
-          error: error,
-          errorReference: projectDevicesErrors,
-          defaultErrorMessage: 'Erro ao alterar dados, tente novamente mais tarde.'
+      api
+        .put(`/projectDevices/${deviceData?._id}`, formattedData)
+        .then(response => {
+          if (response.status === 200) {
+            toast.success('Dados alterados com sucesso!')
+            setRefresh(!refresh)
+            setRefreshMenu(!refreshMenu)
+          }
         })
-      })
-  }
+        .catch(error => {
+          handleErrorResponse({
+            error: error,
+            errorReference: projectDevicesErrors,
+            defaultErrorMessage: 'Erro ao alterar dados, tente novamente mais tarde.'
+          })
+        })
+    },
+    [deviceData?._id, handleErrorResponse, refresh, refreshMenu, setRefresh, setRefreshMenu]
+  )
 
   useEffect(() => {
     if (deviceData) {
@@ -364,6 +376,6 @@ const Module = ({ deviceData, refresh, setRefresh }: ModuleProps) => {
       </CardContent>
     </Box>
   )
-}
+})
 
 export default Module

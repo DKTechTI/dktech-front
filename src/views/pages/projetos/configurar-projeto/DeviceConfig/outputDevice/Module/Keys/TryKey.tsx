@@ -1,4 +1,4 @@
-import { ChangeEvent, SyntheticEvent } from 'react'
+import { ChangeEvent, memo, SyntheticEvent } from 'react'
 
 import { Box, Button, Grid, useMediaQuery, Checkbox, FormControlLabel, MenuItem } from '@mui/material'
 
@@ -43,7 +43,7 @@ interface TryKeyProps {
   blockButton: BlockButtonTryKeyProps
 }
 
-const TryKey = ({ keyData, operationType, environments, blockButton }: TryKeyProps) => {
+const TryKey = memo(({ keyData, operationType, environments, blockButton }: TryKeyProps) => {
   const matches = useMediaQuery('(min-width:1534px)')
 
   const { blockButtonTryKey, setBlockButtonTryKey } = blockButton
@@ -270,6 +270,6 @@ const TryKey = ({ keyData, operationType, environments, blockButton }: TryKeyPro
       </Grid>
     </Grid>
   )
-}
+})
 
 export default TryKey

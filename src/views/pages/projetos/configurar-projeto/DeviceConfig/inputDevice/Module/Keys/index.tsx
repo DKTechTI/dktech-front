@@ -1,4 +1,4 @@
-import { SyntheticEvent, useCallback, useEffect, useState } from 'react'
+import { memo, SyntheticEvent, useCallback, useEffect, useMemo, useState } from 'react'
 
 import { Box, Button, Grid, List, ListItem, ListItemButton, ListItemText, Typography, useTheme } from '@mui/material'
 
@@ -20,7 +20,7 @@ interface KeysProps {
   keys: any[]
 }
 
-const Keys = ({ keys }: KeysProps) => {
+const Keys = memo(({ keys }: KeysProps) => {
   const theme = useTheme()
 
   const { keyId, setKeyId, refreshDeviceKeys, setRefreshDeviceKeys, setKeyType } = useDeviceKeys()
@@ -38,59 +38,67 @@ const Keys = ({ keys }: KeysProps) => {
 
       setSelected(keyId)
       setKeyId(keyId)
-      setKeyType(key.keyType)
+      key && setKeyType(key.keyType)
     },
     [keys, setKeyId, setKeyType]
   )
 
-  const handleSelectKeyHighlight = (e: SyntheticEvent<HTMLElement>, id: string) => {
-    e.stopPropagation()
+  const handleSelectKeyHighlight = useCallback(
+    (e: SyntheticEvent<HTMLElement>, id: string) => {
+      e.stopPropagation()
 
-    handleSelectCurrentKey(id)
-  }
+      handleSelectCurrentKey(id)
+    },
+    [handleSelectCurrentKey]
+  )
 
   useEffect(() => {
     handleSelectCurrentKey(keyId)
   }, [handleSelectCurrentKey, keyId])
 
-  const handleShowKeys = (keys: any[]) => {
-    return keys.map(key => {
-      return (
-        <ListItem
-          key={key._id}
-          disablePadding
-          sx={{
-            maxWidth: 300,
-            width: '100%',
-            margin: '0 auto',
-            border: `1px solid ${theme.palette.divider}`,
-            backgroundColor: keyStatusObj[key?.status]
-          }}
-        >
-          <ListItemButton
-            id='keyButton'
-            selected={selected === key._id}
-            onClick={e => handleSelectKeyHighlight(e, key._id)}
+  const handleShowKeys = useMemo(
+    () => (keys: any[]) => {
+      return keys.map(key => {
+        return (
+          <ListItem
+            key={key._id}
+            disablePadding
             sx={{
-              textAlign: 'center'
+              maxWidth: 300,
+              width: '100%',
+              margin: '0 auto',
+              border: `1px solid ${theme.palette.divider}`,
+              backgroundColor: keyStatusObj[key?.status]
             }}
           >
-            <ListItemText primary={key.name} />
-          </ListItemButton>
-        </ListItem>
-      )
-    })
-  }
+            <ListItemButton
+              id='keyButton'
+              selected={selected === key._id}
+              onClick={e => handleSelectKeyHighlight(e, key._id)}
+              sx={{
+                textAlign: 'center'
+              }}
+            >
+              <ListItemText primary={key.name} />
+            </ListItemButton>
+          </ListItem>
+        )
+      })
+    },
+    [handleSelectKeyHighlight, selected, theme.palette.divider]
+  )
 
   return (
     <>
-      <StatusKeys
-        keys={keys}
-        open={showDialogStatusKeys}
-        handleClose={() => setShowDialogStatusKeys(false)}
-        refresh={refreshDeviceKeys}
-        setRefresh={setRefreshDeviceKeys}
-      />
+      {showDialogStatusKeys && (
+        <StatusKeys
+          keys={keys}
+          open={showDialogStatusKeys}
+          handleClose={() => setShowDialogStatusKeys(false)}
+          refresh={refreshDeviceKeys}
+          setRefresh={setRefreshDeviceKeys}
+        />
+      )}
 
       <Box
         sx={{
@@ -125,6 +133,6 @@ const Keys = ({ keys }: KeysProps) => {
       </Box>
     </>
   )
-}
+})
 
 export default Keys
