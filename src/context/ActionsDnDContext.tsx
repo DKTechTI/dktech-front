@@ -20,19 +20,6 @@ type DraggableItem = {
   type: string
 }
 
-type ChildProps = {
-  actions: any
-  setActions: any
-  loadingActions: any
-  refreshActions: any
-  setRefreshActions: any
-  projectSceneId: any
-  setProjectSceneId: any
-  draggedItem: any
-  beginDrag: any
-  endDrag: any
-}
-
 type actionsDnDValuesType = {
   actions: null | any
   setActions: (value: any) => void
@@ -263,45 +250,27 @@ const ActionsDnDProvider = ({ children }: Props) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id, projectSceneId, refreshActions])
 
-  const memoizedChildren = useMemo(() => {
-    return React.Children.map(children, child => {
-      if (React.isValidElement<ChildProps>(child)) {
-        return React.cloneElement<ChildProps>(child, {
-          actions,
-          setActions,
-          loadingActions,
-          refreshActions,
-          setRefreshActions,
-          projectSceneId,
-          setProjectSceneId,
-          draggedItem,
-          beginDrag,
-          endDrag
-        })
-      }
-
-      return child
-    })
-  }, [children, actions, loadingActions, refreshActions, setRefreshActions, projectSceneId, draggedItem])
+  const memoizedValues = useMemo(
+    () => ({
+      actions,
+      setActions,
+      loadingActions,
+      refreshActions,
+      setRefreshActions,
+      orderActions,
+      setOrderActions,
+      projectSceneId,
+      setProjectSceneId,
+      draggedItem,
+      beginDrag,
+      endDrag
+    }),
+    [actions, draggedItem, loadingActions, orderActions, projectSceneId, refreshActions]
+  )
 
   return (
-    <ActionsDnDContext.Provider
-      value={{
-        actions,
-        setActions,
-        loadingActions,
-        refreshActions,
-        setRefreshActions,
-        orderActions,
-        setOrderActions,
-        projectSceneId,
-        setProjectSceneId,
-        draggedItem,
-        beginDrag,
-        endDrag
-      }}
-    >
-      <DragDropContext onDragEnd={handleDragEnd}>{memoizedChildren}</DragDropContext>
+    <ActionsDnDContext.Provider value={memoizedValues}>
+      <DragDropContext onDragEnd={handleDragEnd}>{children}</DragDropContext>
     </ActionsDnDContext.Provider>
   )
 }

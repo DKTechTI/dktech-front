@@ -1,4 +1,4 @@
-import { createContext, useEffect, useState, ReactNode } from 'react'
+import { createContext, useEffect, useState, ReactNode, useMemo, useCallback } from 'react'
 import { useRouter } from 'next/router'
 
 import { setCookie, deleteCookie, getCookie } from 'cookies-next'
@@ -69,53 +69,59 @@ const AuthProvider = ({ children }: Props) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  const handleLogin = async (params: LoginParams, errorCallback?: ErrCallbackType) => {
-    try {
-      const { data } = await api.post(authConfig.loginEndpoint, {
-        email: params.email,
-        password: params.password
-      })
+  const handleLogin = useCallback(
+    async (params: LoginParams, errorCallback?: ErrCallbackType) => {
+      try {
+        const { data } = await api.post(authConfig.loginEndpoint, {
+          email: params.email,
+          password: params.password
+        })
 
-      api.defaults.headers['Authorization'] = `Bearer ${data.token}`
+        api.defaults.headers['Authorization'] = `Bearer ${data.token}`
 
-      setCookie(authConfig.storageTokenKeyName, data.token)
-      setCookie(authConfig.storageUserDataKeyName, data.userId)
+        setCookie(authConfig.storageTokenKeyName, data.token)
+        setCookie(authConfig.storageUserDataKeyName, data.userId)
 
-      const userData = await api.get(`${authConfig.meEndpoint}/${data.userId}`)
+        const userData = await api.get(`${authConfig.meEndpoint}/${data.userId}`)
 
-      setUser(formatAuthUser(userData.data.data))
+        setUser(formatAuthUser(userData.data.data))
 
-      const returnUrl = router.query.returnUrl
+        const returnUrl = router.query.returnUrl
 
-      const redirectURL = returnUrl && returnUrl !== '/' ? returnUrl : '/'
+        const redirectURL = returnUrl && returnUrl !== '/' ? returnUrl : '/'
 
-      router.replace(redirectURL as string)
-    } catch (error) {
-      if (errorCallback) return errorCallback(error as any)
+        router.replace(redirectURL as string)
+      } catch (error) {
+        if (errorCallback) return errorCallback(error as any)
 
-      handleErrorResponse({
-        error: error as any,
-        errorReference: authErrors,
-        defaultErrorMessage: 'Ocorreu um erro, tente novamente.'
-      })
-    }
-  }
+        handleErrorResponse({
+          error: error as any,
+          errorReference: authErrors,
+          defaultErrorMessage: 'Ocorreu um erro, tente novamente.'
+        })
+      }
+    },
+    [handleErrorResponse, router]
+  )
 
-  const handleLogout = () => {
+  const handleLogout = useCallback(() => {
     setUser(null)
     deleteCookie(authConfig.storageUserDataKeyName)
     deleteCookie(authConfig.storageTokenKeyName)
     router.push('/login')
-  }
+  }, [router])
 
-  const values = {
-    user,
-    loading,
-    setUser,
-    setLoading,
-    login: handleLogin,
-    logout: handleLogout
-  }
+  const values = useMemo(
+    () => ({
+      user,
+      loading,
+      setUser,
+      setLoading,
+      login: handleLogin,
+      logout: handleLogout
+    }),
+    [user, loading, handleLogin, handleLogout]
+  )
 
   return <AuthContext.Provider value={values}>{children}</AuthContext.Provider>
 }
